@@ -51,6 +51,6 @@ Mở file `DatabaseConfig.java` trong package `util` để cập nhật thông t
 -Quản lý
   + Username: admin
   + Password: 123456
-- Khách hàng
+-Khách hàng
   + Username: khach1
   + Password: 123456
