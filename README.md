@@ -37,12 +37,12 @@ CarRental là hệ thống quản lý thuê xe được phát triển bằng Jav
 Mở file `DatabaseConfig.java` trong package `util` để cập nhật thông tin kết nối:
 
 #### Kết nối với Oracle 18c
-private static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
-private static final String URL = "jdbc:oracle:thin:@localhost:1521:orcl"; // Hoặc SID phù hợp
-private static final String USER = "username";
-private static final String PASSWORD = "password";
+- private static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
+- private static final String URL = "jdbc:oracle:thin:@localhost:1521:orcl"; // Hoặc SID phù hợp
+- private static final String USER = "username";
+- private static final String PASSWORD = "password";
 #### Kết nối với Oracle 21c
-private static final String DRIVER = "oracle.jdbc.OracleDriver";
-private static final String URL = "jdbc:oracle:thin:@//localhost:1521/XEPDB1"; // Sử dụng service name
-private static final String USER = "username";
-private static final String PASSWORD = "password";
+- private static final String DRIVER = "oracle.jdbc.OracleDriver";
+- private static final String URL = "jdbc:oracle:thin:@//localhost:1521/XEPDB1"; // Sử dụng service name
+- private static final String USER = "username";
+- private static final String PASSWORD = "password";
