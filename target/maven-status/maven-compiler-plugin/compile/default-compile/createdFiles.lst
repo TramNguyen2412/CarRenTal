@@ -45,6 +45,7 @@ ui\admin\XeDialog$2.class
 controller\HopDongController.class
 util\ValidationUtil.class
 ui\admin\HopDongKhachHangDialog.class
+util\DatabaseConfig.class
 util\DatabaseUtil.class
 controller\NhanVienController.class
 com\mycompany\carrental\Main$1.class

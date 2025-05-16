@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+
 public class CustomerDashboard extends JFrame {
     private TaiKhoan taiKhoan;
     private JPanel mainPanel, menuPanel, contentPanel;
@@ -101,13 +102,11 @@ public class CustomerDashboard extends JFrame {
         // Thêm khoảng cách
         menuPanel.add(Box.createVerticalStrut(10));
 
-        // Các nút menu không có icon
+        // Các nút menu mới theo yêu cầu
         addMenuItem("Trang chủ", e -> showPanel("trangChu"));
-        addMenuItem("Thông tin cá nhân", e -> showPanel("thongTinCaNhan"));
-        addMenuItem("Đặt xe", e -> showPanel("datXe"));
-        addMenuItem("Xem xe đã thuê", e -> showPanel("xeThue"));
-        addMenuItem("Hợp đồng", e -> showPanel("hopDong"));
-        addMenuItem("Thanh toán", e -> showPanel("thanhToan"));
+        addMenuItem("Thuê xe", e -> showPanel("thueXe"));
+        addMenuItem("Giỏ xe", e -> showPanel("gioXe"));
+        addMenuItem("Đánh giá dịch vụ", e -> showPanel("danhGia"));
 
         // Nút đăng xuất ở dưới cùng
         menuPanel.add(Box.createVerticalGlue());
@@ -170,13 +169,11 @@ public class CustomerDashboard extends JFrame {
         contentPanel.setLayout(cardLayout);
         contentPanel.setBackground(Color.WHITE);
 
-        // Tạo các panel cho từng chức năng
+        // Tạo các panel cho các chức năng mới
         contentPanel.add(createDashboardPanel(), "trangChu");
-        contentPanel.add(createProfilePanel(), "thongTinCaNhan");
-        contentPanel.add(createBookingPanel(), "datXe");
-        contentPanel.add(createRentedCarsPanel(), "xeThue");
-        contentPanel.add(createContractsPanel(), "hopDong");
-        contentPanel.add(createPaymentPanel(), "thanhToan");
+        contentPanel.add(createPlaceholderPanel("Thuê xe", "Chức năng đang được phát triển"), "thueXe");
+        contentPanel.add(createPlaceholderPanel("Giỏ xe", "Chức năng đang được phát triển"), "gioXe");
+        contentPanel.add(createPlaceholderPanel("Đánh giá dịch vụ", "Chức năng đang được phát triển"), "danhGia");
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
         
@@ -186,6 +183,30 @@ public class CustomerDashboard extends JFrame {
     
     private void showPanel(String panelName) {
         cardLayout.show(contentPanel, panelName);
+    }
+
+    // Tạo panel placeholder cho các chức năng đang phát triển
+    private JPanel createPlaceholderPanel(String title, String message) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setBackground(Color.WHITE);
+        
+        JLabel messageLabel = new JLabel(message);
+        messageLabel.setFont(new Font("Arial", Font.ITALIC, 18));
+        messageLabel.setForeground(new Color(120, 120, 120));
+        
+        centerPanel.add(messageLabel);
+        
+        panel.add(titleLabel, BorderLayout.NORTH);
+        panel.add(centerPanel, BorderLayout.CENTER);
+        
+        return panel;
     }
 
     private JPanel createDashboardPanel() {
@@ -215,17 +236,16 @@ public class CustomerDashboard extends JFrame {
         contentArea.setBorder(new EmptyBorder(20, 20, 20, 20));
         
         // Welcome message
-        JLabel welcomeLabel = new JLabel("Chào mừng đến với hệ thống quản lý thuê xe!");
+        JLabel welcomeLabel = new JLabel("Chào mừng đến với hệ thống thuê xe CarRental!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 18));
         welcomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         JLabel instructionLabel = new JLabel(
             "<html>Hệ thống cho phép bạn thực hiện các thao tác:<br>" +
-            "- Xem và cập nhật thông tin cá nhân<br>" +
-            "- Đặt xe và quản lý lịch đặt<br>" +
-            "- Xem lại các xe đã thuê<br>" +
-            "- Quản lý hợp đồng<br>" +
-            "- Thực hiện thanh toán</html>"
+            "- Thuê xe và quản lý đơn hàng<br>" +
+            "- Quản lý giỏ xe của bạn<br>" +
+            "- Đánh giá chất lượng dịch vụ<br>" +
+            "- Liên hệ hỗ trợ khách hàng</html>"
         );
         instructionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         instructionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -236,91 +256,6 @@ public class CustomerDashboard extends JFrame {
         
         panel.add(headerPanel, BorderLayout.NORTH);
         panel.add(contentArea, BorderLayout.CENTER);
-        
-        return panel;
-    }
-
-    private JPanel createProfilePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
-        JLabel titleLabel = new JLabel("Thông tin cá nhân");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        panel.add(titleLabel, BorderLayout.NORTH);
-        
-        // Placeholder cho nội dung
-        JLabel placeholderLabel = new JLabel("Nội dung thông tin cá nhân sẽ được hiển thị tại đây");
-        placeholderLabel.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(placeholderLabel, BorderLayout.CENTER);
-        
-        return panel;
-    }
-
-    private JPanel createBookingPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
-        JLabel titleLabel = new JLabel("Đặt xe");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        panel.add(titleLabel, BorderLayout.NORTH);
-        
-        // Placeholder cho nội dung
-        JLabel placeholderLabel = new JLabel("Chức năng đặt xe sẽ được hiển thị tại đây");
-        placeholderLabel.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(placeholderLabel, BorderLayout.CENTER);
-        
-        return panel;
-    }
-
-    private JPanel createRentedCarsPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
-        JLabel titleLabel = new JLabel("Xe đã thuê");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        panel.add(titleLabel, BorderLayout.NORTH);
-        
-        // Placeholder cho nội dung
-        JLabel placeholderLabel = new JLabel("Danh sách xe đã thuê sẽ được hiển thị tại đây");
-        placeholderLabel.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(placeholderLabel, BorderLayout.CENTER);
-        
-        return panel;
-    }
-
-    private JPanel createContractsPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
-        JLabel titleLabel = new JLabel("Hợp đồng");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        panel.add(titleLabel, BorderLayout.NORTH);
-        
-        // Placeholder cho nội dung
-        JLabel placeholderLabel = new JLabel("Danh sách hợp đồng sẽ được hiển thị tại đây");
-        placeholderLabel.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(placeholderLabel, BorderLayout.CENTER);
-        
-        return panel;
-    }
-
-    private JPanel createPaymentPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
-        JLabel titleLabel = new JLabel("Thanh toán");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        panel.add(titleLabel, BorderLayout.NORTH);
-        
-        // Placeholder cho nội dung
-        JLabel placeholderLabel = new JLabel("Chức năng thanh toán sẽ được hiển thị tại đây");
-        placeholderLabel.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(placeholderLabel, BorderLayout.CENTER);
         
         return panel;
     }
@@ -338,11 +273,11 @@ public class CustomerDashboard extends JFrame {
             dispose(); // Đóng cửa sổ hiện tại
             
             // Hiển thị màn hình đăng nhập
-            // LoginForm loginForm = new LoginForm();
-            // loginForm.setVisible(true);
-            
-            // Hoặc hiển thị thông báo tạm thời
-            JOptionPane.showMessageDialog(null, "Đã đăng xuất thành công!");
+             ui.auth.LoginForm loginForm = new ui.auth.LoginForm();
+             loginForm.setVisible(true);
+//            
+//            // Hoặc hiển thị thông báo tạm thời
+//            JOptionPane.showMessageDialog(null, "Đã đăng xuất thành công!");
         }
     }
 
