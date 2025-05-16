@@ -48,9 +48,9 @@ Mở file `DatabaseConfig.java` trong package `util` để cập nhật thông t
 - private static final String PASSWORD = "password";
 
 ### Tài khoản đăng nhập để test chức năng
--Quản lý
+- Quản lý
   + Username: admin
   + Password: 123456
--Khách hàng
+- Khách hàng
   + Username: khach1
   + Password: 123456
