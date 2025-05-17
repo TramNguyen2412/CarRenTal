@@ -6,24 +6,19 @@ import java.util.List;
 import model.HopDong;
 import model.ChiTietHD;
 import util.DatabaseUtil;
-import javax.swing.JOptionPane;
 
 public class HopDongDAO {
-    private Connection conn;
-    
-    public HopDongDAO() {
-        try {
-            conn = DatabaseUtil.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    // Kiểm tra và khôi phục kết nối nếu cần
-    private void checkConnection() throws SQLException {
-        if (conn == null || conn.isClosed()) {
+    // Phương thức kiểm tra và lấy kết nối hợp lệ
+    private Connection getValidConnection() throws SQLException {
+        Connection conn = DatabaseUtil.getConnection();
+        
+        // Kiểm tra kết nối còn hợp lệ không
+        if (!conn.isValid(2)) { // timeout 2 giây
+            DatabaseUtil.reconnect();
             conn = DatabaseUtil.getConnection();
         }
+        
+        return conn;
     }
     
     public List<HopDong> getAllHopDong() {
@@ -34,9 +29,10 @@ public class HopDongDAO {
                      "LEFT JOIN NHANVIEN n ON h.MANV = n.MANV " +
                      "ORDER BY h.NGAYLAP DESC";
 
-        try (Connection connection = DatabaseUtil.getConnection();
-             Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try {
+            Connection conn = getValidConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
 
             System.out.println("Executing SQL: " + sql);
             int count = 0;
@@ -51,20 +47,31 @@ public class HopDongDAO {
                 hd.setDiaChiGiao(rs.getString("DIACHIGIAO"));
                 hd.setTongTien(rs.getDouble("TONGTIEN"));
                 hd.setTrangThai(rs.getString("TRANGTHAI"));
-                hd.setTenKH(rs.getString("TENKH")); // Alias từ k.HOTEN as TENKH
-                hd.setTenNV(rs.getString("TENNV")); // Alias từ n.HOTEN as TENNV
+                hd.setTenKH(rs.getString("TENKH")); 
+                hd.setTenNV(rs.getString("TENNV")); 
 
                 danhSachHD.add(hd);
             }
 
             System.out.println("Found " + count + " contracts in database");
+            
+            rs.close();
+            stmt.close();
         } catch (SQLException e) {
             System.err.println("Error in getAllHopDong: " + e.getMessage());
             e.printStackTrace();
+            
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return getAllHopDong(); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
         }
 
         return danhSachHD;
-
     }
     
     public HopDong getHopDongByMa(String maHD) {
@@ -75,47 +82,64 @@ public class HopDongDAO {
                      "LEFT JOIN NHANVIEN n ON h.MANV = n.MANV " +
                      "WHERE h.MAHD = ?";
 
-        try (Connection connection = DatabaseUtil.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try {
+            Connection conn = getValidConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
 
             System.out.println("Executing SQL for getHopDongByMa: " + sql + " with MaHD=" + maHD);
             pstmt.setString(1, maHD);
 
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    hd = new HopDong();
-                    hd.setMaHD(rs.getString("MAHD"));
-                    hd.setMaKH(rs.getString("MAKH"));
-                    hd.setMaNV(rs.getString("MANV"));
-                    hd.setNgayLap(rs.getDate("NGAYLAP"));
-                    hd.setDiaChiGiao(rs.getString("DIACHIGIAO"));
-                    hd.setTongTien(rs.getDouble("TONGTIEN"));
-                    hd.setTrangThai(rs.getString("TRANGTHAI"));
-                    hd.setTenKH(rs.getString("TENKH"));
-                    hd.setTenNV(rs.getString("TENNV"));
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                hd = new HopDong();
+                hd.setMaHD(rs.getString("MAHD"));
+                hd.setMaKH(rs.getString("MAKH"));
+                hd.setMaNV(rs.getString("MANV"));
+                hd.setNgayLap(rs.getDate("NGAYLAP"));
+                hd.setDiaChiGiao(rs.getString("DIACHIGIAO"));
+                hd.setTongTien(rs.getDouble("TONGTIEN"));
+                hd.setTrangThai(rs.getString("TRANGTHAI"));
+                hd.setTenKH(rs.getString("TENKH"));
+                hd.setTenNV(rs.getString("TENNV"));
 
-                    System.out.println("Found contract: " + hd.getMaHD() + ", Customer: " + hd.getTenKH());
+                System.out.println("Found contract: " + hd.getMaHD() + ", Customer: " + hd.getTenKH());
 
-                    // Lấy danh sách chi tiết hợp đồng
-                    ChiTietHDDao cthdDAO = new ChiTietHDDao();
-                    List<ChiTietHD> danhSachCT = cthdDAO.getChiTietHDByMaHD(maHD);
-                    hd.setDanhSachXeThue(danhSachCT);
-                } else {
-                    System.out.println("No contract found with MAHD=" + maHD);
-                }
+                // Lấy danh sách chi tiết hợp đồng
+                ChiTietHDDao cthdDAO = new ChiTietHDDao();
+                List<ChiTietHD> danhSachCT = cthdDAO.getChiTietHDByMaHD(maHD);
+                hd.setDanhSachXeThue(danhSachCT);
+            } else {
+                System.out.println("No contract found with MAHD=" + maHD);
             }
+            
+            rs.close();
+            pstmt.close();
         } catch (SQLException e) {
             System.err.println("Error in getHopDongByMa: " + e.getMessage());
             e.printStackTrace();
+            
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return getHopDongByMa(maHD); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
         }
 
         return hd;
     }
+    
     public String addHopDong(HopDong hd, StringBuilder errorMessage) {
         String maHD = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet generatedKeys = null;
         
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             // Đảm bảo MaNV luôn có giá trị
             if (hd.getMaNV() == null || hd.getMaNV().trim().isEmpty()) {
@@ -134,7 +158,7 @@ public class HopDongDAO {
             String sql = "INSERT INTO HOPDONG (MAKH, MANV, NGAYLAP, DIACHIGIAO, TONGTIEN, TRANGTHAI) " +
                          "VALUES (?, ?, ?, ?, 0, ?)";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql, new String[] {"MAHD"});
+            pstmt = conn.prepareStatement(sql, new String[] {"MAHD"});
             pstmt.setString(1, hd.getMaKH());
             pstmt.setString(2, hd.getMaNV());
             pstmt.setDate(3, new java.sql.Date(hd.getNgayLap().getTime()));
@@ -150,7 +174,7 @@ public class HopDongDAO {
             }
             
             // Lấy mã hợp đồng vừa được tạo
-            ResultSet generatedKeys = pstmt.getGeneratedKeys();
+            generatedKeys = pstmt.getGeneratedKeys();
             if (generatedKeys.next()) {
                 maHD = generatedKeys.getString(1);
             } else {
@@ -244,8 +268,6 @@ public class HopDongDAO {
             }
             
             conn.commit();
-            generatedKeys.close();
-            pstmt.close();
             return maHD;
             
         } catch (SQLException e) {
@@ -259,13 +281,22 @@ public class HopDongDAO {
             
             String errorMsg = e.getMessage();
             
-            // Phân tích thông báo lỗi nếu là từ Oracle
-            if (errorMsg.contains("ORA-20002")) {
-                errorMessage.append("Tổng tiền ban đầu của hợp đồng phải bằng 0");
-            } else if (errorMsg.contains("cannot insert NULL")) {
-                errorMessage.append("Thông tin hợp đồng không đầy đủ");
+            if (errorMsg != null && errorMsg.contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return addHopDong(hd, errorMessage); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
             } else {
-                errorMessage.append("Lỗi: " + errorMsg);
+                // Phân tích thông báo lỗi nếu là từ Oracle
+                if (errorMsg.contains("ORA-20002")) {
+                    errorMessage.append("Tổng tiền ban đầu của hợp đồng phải bằng 0");
+                } else if (errorMsg.contains("cannot insert NULL")) {
+                    errorMessage.append("Thông tin hợp đồng không đầy đủ");
+                } else {
+                    errorMessage.append("Lỗi: " + errorMsg);
+                }
             }
             
             e.printStackTrace();
@@ -273,9 +304,9 @@ public class HopDongDAO {
             
         } finally {
             try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
+                if (generatedKeys != null) generatedKeys.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.setAutoCommit(true);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -289,8 +320,11 @@ public class HopDongDAO {
     }
     
     public boolean updateHopDong(HopDong hd, StringBuilder errorMessage) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             // Đảm bảo MaNV luôn có giá trị
             if (hd.getMaNV() == null || hd.getMaNV().trim().isEmpty()) {
@@ -314,7 +348,7 @@ public class HopDongDAO {
                          "MAKH = ?, MANV = ?, DIACHIGIAO = ?, TRANGTHAI = ? " +
                          "WHERE MAHD = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, hd.getMaKH());
             pstmt.setString(2, hd.getMaNV());
             pstmt.setString(3, hd.getDiaChiGiao() != null ? hd.getDiaChiGiao() : "");
@@ -392,7 +426,6 @@ public class HopDongDAO {
             }
             
             conn.commit();
-            pstmt.close();
             return true;
             
         } catch (SQLException e) {
@@ -405,16 +438,25 @@ public class HopDongDAO {
             }
             
             String errorMsg = e.getMessage();
-            errorMessage.append("Lỗi cập nhật hợp đồng: " + errorMsg);
+            
+            if (errorMsg != null && errorMsg.contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return updateHopDong(hd, errorMessage); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            } else {
+                errorMessage.append("Lỗi cập nhật hợp đồng: " + errorMsg);
+            }
             
             e.printStackTrace();
             return false;
             
         } finally {
             try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.setAutoCommit(true);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -428,8 +470,12 @@ public class HopDongDAO {
     }
     
     public boolean deleteHopDong(String maHD, StringBuilder errorMessage) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             if (maHD == null || maHD.isEmpty()) {
                 errorMessage.append("Mã hợp đồng không hợp lệ");
@@ -443,7 +489,7 @@ public class HopDongDAO {
             PreparedStatement checkStmt = conn.prepareStatement(checkSql);
             checkStmt.setString(1, maHD);
             
-            ResultSet rs = checkStmt.executeQuery();
+            rs = checkStmt.executeQuery();
             if (rs.next() && "Đang thuê".equals(rs.getString("TRANGTHAI"))) {
                 conn.rollback();
                 errorMessage.append("Không thể xóa hợp đồng đang trong trạng thái 'Đang thuê'");
@@ -465,9 +511,9 @@ public class HopDongDAO {
             
             // Sau đó xóa hợp đồng
             String sqlHD = "DELETE FROM HOPDONG WHERE MAHD = ?";
-            PreparedStatement pstmtHD = conn.prepareStatement(sqlHD);
-            pstmtHD.setString(1, maHD);
-            int rows = pstmtHD.executeUpdate();
+            pstmt = conn.prepareStatement(sqlHD);
+            pstmt.setString(1, maHD);
+            int rows = pstmt.executeUpdate();
             
             if (rows == 0) {
                 conn.rollback();
@@ -476,7 +522,6 @@ public class HopDongDAO {
             }
             
             conn.commit();
-            pstmtHD.close();
             return true;
             
         } catch (SQLException e) {
@@ -489,16 +534,26 @@ public class HopDongDAO {
             }
             
             String errorMsg = e.getMessage();
-            errorMessage.append("Lỗi xóa hợp đồng: " + errorMsg);
+            
+            if (errorMsg != null && errorMsg.contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return deleteHopDong(maHD, errorMessage); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            } else {
+                errorMessage.append("Lỗi xóa hợp đồng: " + errorMsg);
+            }
             
             e.printStackTrace();
             return false;
             
         } finally {
             try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.setAutoCommit(true);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -513,17 +568,20 @@ public class HopDongDAO {
     
     public List<HopDong> searchHopDong(String keyword, String trangThai) {
         List<HopDong> danhSachHD = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.append("SELECT h.*, k.TENKH, n.TENNV FROM HOPDONG h ");
+            sqlBuilder.append("SELECT h.*, k.HOTEN as TENKH, n.HOTEN as TENNV FROM HOPDONG h ");
             sqlBuilder.append("LEFT JOIN KHACHHANG k ON h.MAKH = k.MAKH ");
             sqlBuilder.append("LEFT JOIN NHANVIEN n ON h.MANV = n.MANV WHERE 1=1 ");
             
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sqlBuilder.append("AND (UPPER(h.MAHD) LIKE ? OR UPPER(k.TENKH) LIKE ? OR UPPER(h.DIACHIGIAO) LIKE ?) ");
+                sqlBuilder.append("AND (UPPER(h.MAHD) LIKE ? OR UPPER(k.HOTEN) LIKE ? OR UPPER(h.DIACHIGIAO) LIKE ?) ");
             }
             
             if (trangThai != null && !trangThai.equals("Tất cả")) {
@@ -532,7 +590,7 @@ public class HopDongDAO {
             
             sqlBuilder.append("ORDER BY h.NGAYLAP DESC");
             
-            PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString());
+            pstmt = conn.prepareStatement(sqlBuilder.toString());
             
             int paramIndex = 1;
             if (keyword != null && !keyword.trim().isEmpty()) {
@@ -546,7 +604,7 @@ public class HopDongDAO {
                 pstmt.setString(paramIndex, trangThai);
             }
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             while (rs.next()) {
                 HopDong hd = new HopDong();
@@ -563,10 +621,24 @@ public class HopDongDAO {
                 danhSachHD.add(hd);
             }
             
-            rs.close();
-            pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return searchHopDong(keyword, trangThai); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         
         return danhSachHD;
