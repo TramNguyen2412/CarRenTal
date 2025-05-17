@@ -7,33 +7,32 @@ import model.NhanVien;
 import util.DatabaseUtil;
 
 public class NhanVienDAO {
-    private Connection conn;
-    
-    public NhanVienDAO() {
-        try {
-            conn = DatabaseUtil.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    // Kiểm tra và khôi phục kết nối nếu cần
-    private void checkConnection() throws SQLException {
-        if (conn == null || conn.isClosed()) {
+    // Phương thức kiểm tra và lấy kết nối hợp lệ
+    private Connection getValidConnection() throws SQLException {
+        Connection conn = DatabaseUtil.getConnection();
+        
+        // Kiểm tra kết nối còn hợp lệ không
+        if (!conn.isValid(2)) { // timeout 2 giây
+            DatabaseUtil.reconnect();
             conn = DatabaseUtil.getConnection();
         }
+        
+        return conn;
     }
     
     public List<NhanVien> getAllNhanVien() {
         List<NhanVien> danhSachNV = new ArrayList<>();
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
         
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "SELECT * FROM NHANVIEN ORDER BY HoTen";
             
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
             
             while (rs.next()) {
                 NhanVien nv = new NhanVien();
@@ -46,11 +45,25 @@ public class NhanVienDAO {
                 
                 danhSachNV.add(nv);
             }
-            
-            rs.close();
-            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return getAllNhanVien(); // Thử lại một lần
+                } catch (SQLException ex) {
+                    // Chỉ ghi log khi không thể kết nối lại
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         
         return danhSachNV;
@@ -58,16 +71,19 @@ public class NhanVienDAO {
     
     public NhanVien getNhanVienByMa(String maNV) {
         NhanVien nv = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "SELECT * FROM NHANVIEN WHERE MaNV = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maNV);
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             if (rs.next()) {
                 nv = new NhanVien();
@@ -78,11 +94,24 @@ public class NhanVienDAO {
                 nv.setEmail(rs.getString("Email"));
                 nv.setChucVu(rs.getString("ChucVu"));
             }
-            
-            rs.close();
-            pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return getNhanVienByMa(maNV); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         
         return nv;
@@ -90,16 +119,19 @@ public class NhanVienDAO {
     
     public NhanVien getNhanVienByMaTK(String maTK) {
         NhanVien nv = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "SELECT * FROM NHANVIEN WHERE MaTK = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maTK);
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             if (rs.next()) {
                 nv = new NhanVien();
@@ -110,11 +142,24 @@ public class NhanVienDAO {
                 nv.setEmail(rs.getString("Email"));
                 nv.setChucVu(rs.getString("ChucVu"));
             }
-            
-            rs.close();
-            pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return getNhanVienByMaTK(maTK); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         
         return nv;
@@ -122,25 +167,41 @@ public class NhanVienDAO {
     
     public boolean existsNhanVien(String maNV) {
         boolean exists = false;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "SELECT COUNT(*) FROM NHANVIEN WHERE MaNV = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maNV);
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             if (rs.next() && rs.getInt(1) > 0) {
                 exists = true;
             }
-            
-            rs.close();
-            pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    DatabaseUtil.reconnect();
+                    return existsNhanVien(maNV); // Thử lại một lần
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         
         return exists;

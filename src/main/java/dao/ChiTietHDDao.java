@@ -8,36 +8,37 @@ import util.DatabaseUtil;
 import javax.swing.JOptionPane;
 
 public class ChiTietHDDao {
-    private Connection conn;
-    
-    public ChiTietHDDao() {
-        try {
-            conn = DatabaseUtil.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    // Kiểm tra và khôi phục kết nối nếu cần
-    private void checkConnection() throws SQLException {
-        if (conn == null || conn.isClosed()) {
+
+    // Thay thế phương thức checkConnection bằng getValidConnection
+    private Connection getValidConnection() throws SQLException {
+        Connection conn = DatabaseUtil.getConnection();
+        
+        // Kiểm tra kết nối còn hợp lệ không
+        if (!conn.isValid(2)) { // timeout 2 giây
+            System.out.println("Connection invalidated, reconnecting...");
+            DatabaseUtil.reconnect();
             conn = DatabaseUtil.getConnection();
         }
+        
+        return conn;
     }
     
     public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
         List<ChiTietHD> danhSachCT = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
         try {
-            checkConnection();
+            conn = getValidConnection();
             
-            String sql = "SELECT c.*, x.TENXE, x.BIENSO, x.HANGXE, x.SOCHO, x.GIATHUE_NGAY " +
+            String sql = "SELECT c.*, x.TENXE, x.BIENSO, x.HANGXE, x.SOCHO, x.GIATHUENGAY " +
                          "FROM CTHD c JOIN XE x ON c.MAXE = x.MAXE " +
                          "WHERE c.MAHD = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maHD);
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             
             while (rs.next()) {
                 ChiTietHD ct = new ChiTietHD();
@@ -49,15 +50,32 @@ public class ChiTietHDDao {
                 ct.setBienSo(rs.getString("BIENSO"));
                 ct.setHangXe(rs.getString("HANGXE"));
                 ct.setSoCho(rs.getInt("SOCHO"));
-                ct.setGiaThueNgay(rs.getDouble("GIATHUE_NGAY"));
+                ct.setGiaThueNgay(rs.getDouble("GIATHUENGAY"));
                 
                 danhSachCT.add(ct);
             }
-            
-            rs.close();
-            pstmt.close();
         } catch (SQLException e) {
+            System.err.println("Error in getChiTietHDByMaHD: " + e.getMessage());
             e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in getChiTietHDByMaHD");
+                    DatabaseUtil.reconnect();
+                    return getChiTietHDByMaHD(maHD); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
         
         return danhSachCT;
@@ -69,25 +87,46 @@ public class ChiTietHDDao {
             throw new SQLException("Thông tin chi tiết hợp đồng không đầy đủ");
         }
         
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "INSERT INTO CTHD (MAHD, MAXE, NGAYBATDAU, NGAYKETTHUC) " +
                          "VALUES (?, ?, ?, ?)";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, ct.getMaHD());
             pstmt.setString(2, ct.getMaXe());
             pstmt.setDate(3, new java.sql.Date(ct.getNgayBatDau().getTime()));
             pstmt.setDate(4, new java.sql.Date(ct.getNgayKetThuc().getTime()));
             
             int rows = pstmt.executeUpdate();
-            pstmt.close();
-            
             return rows > 0;
         } catch (SQLException e) {
-            // Chuyển tiếp ngoại lệ để xử lý ở tầng DAO
+            System.err.println("Error in addChiTietHD: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in addChiTietHD");
+                    DatabaseUtil.reconnect();
+                    return addChiTietHD(ct); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+            // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
     
@@ -97,25 +136,46 @@ public class ChiTietHDDao {
             throw new SQLException("Thông tin chi tiết hợp đồng không đầy đủ");
         }
         
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "UPDATE CTHD SET NGAYBATDAU = ?, NGAYKETTHUC = ? " +
                          "WHERE MAHD = ? AND MAXE = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setDate(1, new java.sql.Date(ct.getNgayBatDau().getTime()));
             pstmt.setDate(2, new java.sql.Date(ct.getNgayKetThuc().getTime()));
             pstmt.setString(3, ct.getMaHD());
             pstmt.setString(4, ct.getMaXe());
             
             int rows = pstmt.executeUpdate();
-            pstmt.close();
-            
             return rows > 0;
         } catch (SQLException e) {
-            // Chuyển tiếp ngoại lệ để xử lý ở tầng DAO
+            System.err.println("Error in updateChiTietHD: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in updateChiTietHD");
+                    DatabaseUtil.reconnect();
+                    return updateChiTietHD(ct); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+            // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
     
@@ -124,22 +184,43 @@ public class ChiTietHDDao {
             throw new SQLException("Mã hợp đồng và mã xe không được để trống");
         }
         
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "DELETE FROM CTHD WHERE MAHD = ? AND MAXE = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maHD);
             pstmt.setString(2, maXe);
             
             int rows = pstmt.executeUpdate();
-            pstmt.close();
-            
             return rows > 0;
         } catch (SQLException e) {
-            // Chuyển tiếp ngoại lệ để xử lý ở tầng DAO
+            System.err.println("Error in deleteChiTietHD: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in deleteChiTietHD");
+                    DatabaseUtil.reconnect();
+                    return deleteChiTietHD(maHD, maXe); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+            // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
     
@@ -148,109 +229,190 @@ public class ChiTietHDDao {
             throw new SQLException("Mã hợp đồng không được để trống");
         }
         
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "DELETE FROM CTHD WHERE MAHD = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maHD);
             
             int rows = pstmt.executeUpdate();
-            pstmt.close();
-            
             return rows > 0;
         } catch (SQLException e) {
-            // Chuyển tiếp ngoại lệ để xử lý ở tầng DAO
+            System.err.println("Error in deleteChiTietHDByMaHD: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in deleteChiTietHDByMaHD");
+                    DatabaseUtil.reconnect();
+                    return deleteChiTietHDByMaHD(maHD); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+            // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
     
     // Phương thức kiểm tra xem xe có đang được thuê trong khoảng thời gian không
     public boolean isXeDangThueTrongThoiGian(String maXe, java.util.Date ngayBatDau, java.util.Date ngayKetThuc) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "SELECT COUNT(*) FROM CTHD c JOIN HOPDONG h ON c.MAHD = h.MAHD " +
                          "WHERE c.MAXE = ? AND h.TRANGTHAI IN ('Chờ xác nhận', 'Đang thuê') " +
                          "AND (? <= c.NGAYKETTHUC AND ? >= c.NGAYBATDAU)";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maXe);
             pstmt.setDate(2, new java.sql.Date(ngayBatDau.getTime()));
             pstmt.setDate(3, new java.sql.Date(ngayKetThuc.getTime()));
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             boolean result = false;
             
             if (rs.next() && rs.getInt(1) > 0) {
                 result = true;
             }
-            
-            rs.close();
-            pstmt.close();
-            
             return result;
         } catch (SQLException e) {
+            System.err.println("Error in isXeDangThueTrongThoiGian: " + e.getMessage());
             e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in isXeDangThueTrongThoiGian");
+                    DatabaseUtil.reconnect();
+                    return isXeDangThueTrongThoiGian(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
             return false;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
     
     // Phương thức kiểm tra xe có lịch bảo dưỡng trong khoảng thời gian không
     public boolean hasMaintenanceSchedule(String maXe, java.util.Date ngayBatDau, java.util.Date ngayKetThuc) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "SELECT COUNT(*) FROM PHIEUBAODUONG " +
                          "WHERE MaXe = ? AND TRUNC(NgayBD) BETWEEN TRUNC(?) AND TRUNC(?)";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maXe);
             pstmt.setDate(2, new java.sql.Date(ngayBatDau.getTime()));
             pstmt.setDate(3, new java.sql.Date(ngayKetThuc.getTime()));
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             boolean result = false;
             
             if (rs.next() && rs.getInt(1) > 0) {
                 result = true;
             }
-            
-            rs.close();
-            pstmt.close();
-            
             return result;
         } catch (SQLException e) {
+            System.err.println("Error in hasMaintenanceSchedule: " + e.getMessage());
             e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in hasMaintenanceSchedule");
+                    DatabaseUtil.reconnect();
+                    return hasMaintenanceSchedule(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
             return false;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
     
     // Phương thức kiểm tra trạng thái xe
     public String getXeTrangThai(String maXe) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
         try {
-            checkConnection();
+            conn = getValidConnection();
             
             String sql = "SELECT TrangThai FROM XE WHERE MaXe = ?";
             
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maXe);
             
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             String trangThai = null;
             
             if (rs.next()) {
                 trangThai = rs.getString("TrangThai");
             }
-            
-            rs.close();
-            pstmt.close();
-            
             return trangThai;
         } catch (SQLException e) {
+            System.err.println("Error in getXeTrangThai: " + e.getMessage());
             e.printStackTrace();
+            
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in getXeTrangThai");
+                    DatabaseUtil.reconnect();
+                    return getXeTrangThai(maXe); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
             return null;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
         }
     }
 }
