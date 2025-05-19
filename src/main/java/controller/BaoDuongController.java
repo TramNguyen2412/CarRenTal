@@ -5,6 +5,7 @@ import model.PhieuBaoDuong;
 import model.ChiTietBaoDuong;
 import java.util.Date;
 import java.util.List;
+import model.DichVuBD;
 
 public class BaoDuongController {
     private BaoDuongService baoDuongService;
@@ -172,5 +173,9 @@ public class BaoDuongController {
     
     public List<PhieuBaoDuong> getPhieuBaoDuongByKhachHang(String maKH) {
         return baoDuongService.getPhieuBaoDuongByKhachHang(maKH);
+    }
+
+    public List<DichVuBD> getAllDichVuBD() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

@@ -71,10 +71,10 @@ public class AdminDashboard extends javax.swing.JFrame {
         khachHangPanel = createSimplePanel("Quản Lý Khách Hàng");
         nhanVienPanel = createSimplePanel("Quản Lý Nhân Viên");
         xePanel = new XePanel();
-        dichVuBDPanel = createSimplePanel("Quản Lý Dịch Vụ Bảo Dưỡng");
+        dichVuBDPanel = new DichVuBDPanel();
         hopDongPanel = new HopDongPanel();
-        baoDuongPanel = createSimplePanel("Quản Lý Bảo Dưỡng");
-        congNoPanel = createSimplePanel("Quản Lý Công Nợ");
+        baoDuongPanel = new BaoDuongPanel();
+        congNoPanel = new CongNoPanel();
         giaoNhanXePanel = createSimplePanel("Quản Lý Giao Nhận Xe");
         
         // Tạo panel báo cáo thống kê
