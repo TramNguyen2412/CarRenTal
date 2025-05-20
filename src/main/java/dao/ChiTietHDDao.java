@@ -279,7 +279,7 @@ public class ChiTietHDDao {
             
             String sql = "SELECT COUNT(*) FROM CTHD c JOIN HOPDONG h ON c.MAHD = h.MAHD " +
                          "WHERE c.MAXE = ? AND h.TRANGTHAI IN ('Chờ xác nhận', 'Đang thuê', 'Đã xác nhận') " +
-                         "AND (? <= c.NGAYKETTHUC AND ? >= c.NGAYBATDAU)";
+                         "AND (TRUNC(?) <= TRUNC(c.NGAYKETTHUC) AND TRUNC(?) >= TRUNC(c.NGAYBATDAU))";
             
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, maXe);

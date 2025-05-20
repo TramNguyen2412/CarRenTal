@@ -167,21 +167,20 @@ public class ChonXeDialog extends JDialog {
         // Sự kiện nút hủy
         btnCancel.addActionListener(e -> dispose());
     }
-    
     private void loadDataToTable() {
         // Xóa dữ liệu cũ
         modelXe.setRowCount(0);
-        
+
         // Format để hiển thị số tiền
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        
+
         Date today = new Date();
         Date tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-        
-        // Lấy danh sách xe có trạng thái "Sẵn sàng"
-        List<Xe> danhSachXe = xeController.getXeByTrangThai("Sẵn sàng");
-        
+
+        // Lấy danh sách tất cả xe (không chỉ xe có trạng thái "Sẵn sàng")
+        List<Xe> danhSachXe = xeController.getAllXe();
+
         // Thêm dữ liệu vào bảng
         for (Xe xe : danhSachXe) {
             modelXe.addRow(new Object[]{
@@ -197,37 +196,32 @@ public class ChonXeDialog extends JDialog {
             });
         }
     }
+
     
     private void searchXe() {
-        String keyword = txtSearch.getText().trim().toLowerCase();
+        String keyword = txtSearch.getText().trim();
         String hangXe = cboHangXe.getSelectedItem().toString();
         String soCho = cboSoCho.getSelectedItem().toString();
-        
+
         // Xóa dữ liệu cũ
         modelXe.setRowCount(0);
-        
+
         // Format để hiển thị số tiền
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        
+
         Date today = new Date();
         Date tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-        
-        // Lấy danh sách xe có trạng thái "Sẵn sàng"
-        List<Xe> danhSachXe = xeController.getXeByTrangThai("Sẵn sàng");
-        
-        // Lọc và thêm dữ liệu vào bảng
+
+        // Sử dụng phương thức searchXe() đã có để tìm kiếm
+        List<Xe> danhSachXe = xeController.searchXe(keyword);
+
+        // Lọc thêm theo hãng xe và số chỗ
         for (Xe xe : danhSachXe) {
-            // Kiểm tra điều kiện tìm kiếm
-            boolean matchKeyword = keyword.isEmpty() || 
-                                   xe.getTenXe().toLowerCase().contains(keyword) || 
-                                   xe.getBienSo().toLowerCase().contains(keyword);
-            
             boolean matchHangXe = hangXe.equals("Tất cả") || xe.getHangXe().equals(hangXe);
-            
             boolean matchSoCho = soCho.equals("Tất cả") || String.valueOf(xe.getSoCho()).equals(soCho);
-            
-            if (matchKeyword && matchHangXe && matchSoCho) {
+
+            if (matchHangXe && matchSoCho) {
                 modelXe.addRow(new Object[]{
                     Boolean.FALSE,
                     xe.getMaXe(),

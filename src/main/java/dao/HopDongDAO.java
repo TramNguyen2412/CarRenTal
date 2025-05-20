@@ -229,14 +229,14 @@ public class HopDongDAO {
                     return null;
                 }
                 
-                // Kiểm tra nếu thuê ngay hôm nay, xe phải ở trạng thái "Sẵn sàng"
-                java.util.Date today = new java.util.Date();
-                if (!ct.getNgayBatDau().after(today) && !"Sẵn sàng".equals(trangThaiXe)) {
-                    conn.rollback();
-                    errorMessage.append("Xe " + ct.getTenXe() + " không ở trạng thái 'Sẵn sàng' nên không thể thuê ngay");
-                    return null;
-                }
-                
+//                // Kiểm tra nếu thuê ngay hôm nay, xe phải ở trạng thái "Sẵn sàng"
+//                java.util.Date today = new java.util.Date();
+//                if (!ct.getNgayBatDau().after(today) && !"Sẵn sàng".equals(trangThaiXe)) {
+//                    conn.rollback();
+//                    errorMessage.append("Xe " + ct.getTenXe() + " không ở trạng thái 'Sẵn sàng' nên không thể thuê ngay");
+//                    return null;
+//                }
+//                
                 try {
                     // Thiết lập mã hợp đồng cho chi tiết
                     ct.setMaHD(maHD);
