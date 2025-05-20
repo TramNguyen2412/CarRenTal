@@ -1,22 +1,22 @@
 package controller;
 
+import dao.KhachHangDAO;
 import model.KhachHang;
-import service.KhachHangService;
 import java.util.List;
 
 public class KhachHangController {
-    private KhachHangService khachHangService;
+    private KhachHangDAO khachHangDAO;
     
     public KhachHangController() {
-        this.khachHangService = new KhachHangService();
+        this.khachHangDAO = new KhachHangDAO();
     }
     
     public List<KhachHang> getAllKhachHang() {
-        return khachHangService.getAllKhachHang();
+        return khachHangDAO.getAllKhachHang();
     }
     
     public KhachHang getKhachHangByMa(String maKH) {
-        return khachHangService.getKhachHangByMa(maKH);
+        return khachHangDAO.getKhachHangByMa(maKH);
     }
     
     public String addKhachHang(KhachHang kh) {
@@ -25,7 +25,7 @@ public class KhachHangController {
             return null;
         }
         
-        return khachHangService.addKhachHang(kh);
+        return khachHangDAO.addKhachHang(kh);
     }
     
     public boolean updateKhachHang(KhachHang kh) {
@@ -34,27 +34,27 @@ public class KhachHangController {
             return false;
         }
         
-        return khachHangService.updateKhachHang(kh);
+        return khachHangDAO.updateKhachHang(kh);
     }
     
     public boolean deleteKhachHang(String maKH) {
-        return khachHangService.deleteKhachHang(maKH);
+        return khachHangDAO.deleteKhachHang(maKH);
     }
     
     public List<KhachHang> searchKhachHang(String keyword) {
-        return khachHangService.searchKhachHang(keyword);
+        return khachHangDAO.searchKhachHang(keyword);
     }
     
     public boolean isPhoneNumberExists(String sdt, String excludeMaKH) {
-        return khachHangService.isPhoneNumberExists(sdt, excludeMaKH);
+        return khachHangDAO.isPhoneNumberExists(sdt, excludeMaKH);
     }
     
     public boolean isEmailExists(String email, String excludeMaKH) {
-        return khachHangService.isEmailExists(email, excludeMaKH);
+        return khachHangDAO.isEmailExists(email, excludeMaKH);
     }
     
     public boolean isCCCDExists(String cccd, String excludeMaKH) {
-        return khachHangService.isCCCDExists(cccd, excludeMaKH);
+        return khachHangDAO.isCCCDExists(cccd, excludeMaKH);
     }
     
     private boolean validateKhachHang(KhachHang kh) {

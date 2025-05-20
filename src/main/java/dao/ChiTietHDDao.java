@@ -278,7 +278,7 @@ public class ChiTietHDDao {
             conn = getValidConnection();
             
             String sql = "SELECT COUNT(*) FROM CTHD c JOIN HOPDONG h ON c.MAHD = h.MAHD " +
-                         "WHERE c.MAXE = ? AND h.TRANGTHAI IN ('Chờ xác nhận', 'Đang thuê') " +
+                         "WHERE c.MAXE = ? AND h.TRANGTHAI IN ('Chờ xác nhận', 'Đang thuê', 'Đã xác nhận') " +
                          "AND (? <= c.NGAYKETTHUC AND ? >= c.NGAYBATDAU)";
             
             pstmt = conn.prepareStatement(sql);

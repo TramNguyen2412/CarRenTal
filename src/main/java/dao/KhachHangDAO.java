@@ -1,4 +1,3 @@
-
 package dao;
 
 import java.sql.*;
@@ -128,35 +127,71 @@ public class KhachHangDAO {
     }
     
     public String addKhachHang(KhachHang kh) {
-        String maKH = generateMaKH();
         Connection conn = null;
         PreparedStatement pstmt = null;
-        
+        ResultSet rs = null;
+        String newMaKH = null;
+
         try {
             conn = getValidConnection();
-            
-            String sql = "INSERT INTO KHACHHANG (MAKH, MATK, TONGTIENNO, HOTEN, SDT, EMAIL, CCCD, DIACHI) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            
+            conn.setAutoCommit(false);
+
+            // INSERT bình thường, cho trigger tạo mã
+            String sql = "INSERT INTO KHACHHANG (MATK, TONGTIENNO, HOTEN, SDT, EMAIL, CCCD, DIACHI) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
             pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, maKH);
-            pstmt.setString(2, kh.getMaTK());
-            pstmt.setDouble(3, kh.getTongTienNo());
-            pstmt.setString(4, kh.getHoTen());
-            pstmt.setString(5, kh.getSdt());
-            pstmt.setString(6, kh.getEmail());
-            pstmt.setString(7, kh.getCccd());
-            pstmt.setString(8, kh.getDiaChi());
-            
+            pstmt.setString(1, kh.getMaTK());
+            pstmt.setDouble(2, kh.getTongTienNo());
+            pstmt.setString(3, kh.getHoTen());
+            pstmt.setString(4, kh.getSdt());
+            pstmt.setString(5, kh.getEmail());
+            pstmt.setString(6, kh.getCccd());
+            pstmt.setString(7, kh.getDiaChi());
+
             int rows = pstmt.executeUpdate();
-            
+            pstmt.close();
+
             if (rows > 0) {
-                return maKH;
+                // Lấy mã khách hàng mới nhất dựa trên SĐT và họ tên
+                // Đây là cách an toàn nhất để lấy đúng khách hàng vừa insert
+                String getIdSql = "SELECT MAKH FROM KHACHHANG " +
+                                  "WHERE SDT = ? AND HOTEN = ? " +
+                                  "ORDER BY MAKH DESC FETCH FIRST 1 ROW ONLY";
+
+                pstmt = conn.prepareStatement(getIdSql);
+                pstmt.setString(1, kh.getSdt());
+                pstmt.setString(2, kh.getHoTen());
+
+                rs = pstmt.executeQuery();
+
+                if (rs.next()) {
+                    newMaKH = rs.getString("MAKH");
+                } else {
+                    // Nếu không tìm thấy mã, rollback và trả về null
+                    conn.rollback();
+                    return null;
+                }
+            } else {
+                // Nếu không thêm được, rollback và trả về null
+                conn.rollback();
+                return null;
             }
+
+            // Commit transaction
+            conn.commit();
+            return newMaKH;
+
         } catch (SQLException e) {
-            System.err.println("Error in addKhachHang: " + e.getMessage());
-            e.printStackTrace();
-            
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error during rollback: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
                 try {
@@ -167,17 +202,22 @@ public class KhachHangDAO {
                     System.err.println("Failed to reconnect: " + ex.getMessage());
                 }
             }
+
+            System.err.println("Error in addKhachHang: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+
         } finally {
             try {
+                if (rs != null) rs.close();
                 if (pstmt != null) pstmt.close();
+                if (conn != null) conn.setAutoCommit(true); // Khôi phục autocommit
             } catch (SQLException e) {
                 System.err.println("Error closing resources: " + e.getMessage());
+                e.printStackTrace();
             }
         }
-        
-        return null;
     }
-    
     public boolean updateKhachHang(KhachHang kh) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -490,47 +530,5 @@ public class KhachHangDAO {
         return false;
     }
     
-    // Tạo mã khách hàng mới
-    private String generateMaKH() {
-        Connection conn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        
-        try {
-            conn = getValidConnection();
-            
-            String sql = "SELECT 'KH' || LPAD(NVL(MAX(TO_NUMBER(SUBSTR(MAKH, 3))), 0) + 1, 6, '0') AS MAKH " +
-                         "FROM KHACHHANG";
-            
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
-            
-            if (rs.next()) {
-                return rs.getString("MAKH");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error in generateMaKH: " + e.getMessage());
-            e.printStackTrace();
-            
-            // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in generateMaKH");
-                    DatabaseUtil.reconnect();
-                    return generateMaKH(); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                System.err.println("Error closing resources: " + e.getMessage());
-            }
-        }
-        
-        return "KH000001"; // Mặc định nếu không có khách hàng nào
-    }
+    
 }

@@ -4,7 +4,7 @@
     <artifactId>JaVa_CarRenTal</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    
+  
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>23</maven.compiler.release>
@@ -17,28 +17,55 @@
             <artifactId>ojdbc8</artifactId>
             <version>19.8.0.0</version>
         </dependency>
-         <dependency>
+          <dependency>
             <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>2.6</version>
+            <artifactId>flatlaf-fonts-roboto</artifactId>
+            <version>2.137</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc11</artifactId>
             <version>21.1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-intellij-themes</artifactId>
+            <version>3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-extras</artifactId>
+            <version>3.2</version>
+        </dependency>
+        
+  
     </dependencies>
     
    
     <build>
         <!-- Thêm cấu hình resources -->
-        <resources>
+<!--        <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
             </resource>
+        </resources>-->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.svg</include>
+                    <include>**/*.png</include>
+                    <!-- Thêm các định dạng khác nếu cần -->
+                </includes>
+            </resource>
         </resources>
-        
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -52,6 +79,7 @@
                     </archive>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
     
