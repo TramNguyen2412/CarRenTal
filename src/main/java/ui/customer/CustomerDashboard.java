@@ -1,296 +1,500 @@
 package ui.customer;
 
 import model.TaiKhoan;
-
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
-
-public class CustomerDashboard extends JFrame {
-    private TaiKhoan taiKhoan;
-    private JPanel mainPanel, menuPanel, contentPanel;
+public class CustomerDashboard extends JFrame implements CustomerSidebarMenuPanel.MenuClickListener {
+    private JPanel mainPanel;
+    private JPanel contentPanel;
     private CardLayout cardLayout;
-
-    // Màu sắc cho giao diện
-    private final Color MENU_COLOR = new Color(252, 227, 138); // Màu vàng nhẹ cho menu
-    private final Color MENU_HOVER_COLOR = new Color(255, 217, 102); // Màu vàng đậm khi hover
-    private final Color MENU_TEXT_COLOR = new Color(51, 51, 51); // Màu chữ đen nhạt
-
+    private TaiKhoan taiKhoan;
+    
+    // Các panel chức năng
+    private JPanel trangChuPanel;
+    private JPanel thongTinCaNhanPanel;
+    private JPanel xemDatXePanel;
+    private JPanel gioXePanel;
+    private JPanel danhGiaHopDongPanel;
+    
     public CustomerDashboard(TaiKhoan taiKhoan) {
         this.taiKhoan = taiKhoan;
-        setTitle("Hệ Thống Quản Lý Thuê Xe - CarRental");
-        setSize(1200, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        
         initComponents();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH); // Mở full màn hình
     }
-
+    
     private void initComponents() {
-        mainPanel = new JPanel(new BorderLayout());
+        setTitle("Hệ Thống Thuê Xe - CarRental");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new Dimension(1200, 800));
         
-        setupMenuPanel();
+        // Panel chính chứa tất cả
+        mainPanel = new JPanel(new BorderLayout(0, 0));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // Bỏ border
+        
+        // Tạo menu panel - menu sidebar cho khách hàng
+        CustomerSidebarMenuPanel menuPanel = new CustomerSidebarMenuPanel(taiKhoan, this);
+        
+        // Thiết lập content
         setupContentPanel();
         
-        add(mainPanel);
-    }
-
-    private void setupMenuPanel() {
-        menuPanel = new JPanel();
-        menuPanel.setPreferredSize(new Dimension(250, 0));
-        menuPanel.setBackground(MENU_COLOR); // Đổi màu nền sang vàng pastel
-        menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
-
-        // Logo và thông tin người dùng
-        JPanel logoPanel = new JPanel(new BorderLayout());
-        logoPanel.setBackground(new Color(13, 25, 38)); // Màu tối cho logo
-        logoPanel.setPreferredSize(new Dimension(250, 80));
-        logoPanel.setMaximumSize(new Dimension(250, 80));
-        logoPanel.setMinimumSize(new Dimension(250, 80));
-
-        JLabel lblLogo = new JLabel("CarRental");
-        lblLogo.setFont(new Font("Arial", Font.BOLD, 28)); // Tăng cỡ chữ
-        lblLogo.setForeground(Color.WHITE);
-        lblLogo.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); // Padding bên trái
-        
-        logoPanel.add(lblLogo, BorderLayout.CENTER);
-        menuPanel.add(logoPanel);
-
-        // Panel thông tin người dùng
-        JPanel userPanel = new JPanel(new BorderLayout());
-        userPanel.setBackground(MENU_COLOR);
-        userPanel.setPreferredSize(new Dimension(250, 60));
-        userPanel.setMaximumSize(new Dimension(250, 60));
-
-        // Xử lý khi taiKhoan có thể null trong giai đoạn phát triển
-        String username = "Khách hàng";
-        if (taiKhoan != null && taiKhoan.getTenDangNhap() != null) {
-            username = taiKhoan.getTenDangNhap();
-        }
-
-        JPanel userInfoPanel = new JPanel();
-        userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
-        userInfoPanel.setOpaque(false);
-        userInfoPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20)); // Padding các cạnh
-
-        JLabel nameLabel = new JLabel(username);
-        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        nameLabel.setForeground(MENU_TEXT_COLOR);
-
-        JLabel roleLabel = new JLabel("Khách hàng");
-        roleLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-        roleLabel.setForeground(new Color(100, 100, 100));
-
-        userInfoPanel.add(nameLabel);
-        userInfoPanel.add(Box.createVerticalStrut(5)); // Khoảng cách giữa tên và role
-        userInfoPanel.add(roleLabel);
-
-        userPanel.add(userInfoPanel, BorderLayout.CENTER);
-        menuPanel.add(userPanel);
-
-        // Thêm đường phân cách
-        JSeparator separator = new JSeparator();
-        separator.setForeground(new Color(200, 200, 200));
-        separator.setBackground(new Color(200, 200, 200));
-        separator.setPreferredSize(new Dimension(250, 1));
-        menuPanel.add(separator);
-
-        // Thêm khoảng cách
-        menuPanel.add(Box.createVerticalStrut(10));
-
-        // Các nút menu mới theo yêu cầu
-        addMenuItem("Trang chủ", e -> showPanel("trangChu"));
-        addMenuItem("Thuê xe", e -> showPanel("thueXe"));
-        addMenuItem("Giỏ xe", e -> showPanel("gioXe"));
-        addMenuItem("Đánh giá dịch vụ", e -> showPanel("danhGia"));
-
-        // Nút đăng xuất ở dưới cùng
-        menuPanel.add(Box.createVerticalGlue());
-
-        // Thêm đường phân cách
-        JSeparator separatorBottom = new JSeparator();
-        separatorBottom.setForeground(new Color(200, 200, 200));
-        separatorBottom.setBackground(new Color(200, 200, 200));
-        separatorBottom.setPreferredSize(new Dimension(250, 1));
-        menuPanel.add(separatorBottom);
-
-        addMenuItem("Đăng xuất", e -> logout());
-
+        // Thêm vào main panel
         mainPanel.add(menuPanel, BorderLayout.WEST);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        
+        // Thêm main panel vào frame
+        getContentPane().add(mainPanel);
     }
-
-    private void addMenuItem(String text, ActionListener action) {
-        JPanel itemPanel = new JPanel(new BorderLayout());
-        itemPanel.setBackground(MENU_COLOR);
-        itemPanel.setPreferredSize(new Dimension(250, 48)); // Chiều cao cố định cho item
-        itemPanel.setMaximumSize(new Dimension(250, 48));
-        
-        JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("Arial", Font.BOLD, 15));
-        textLabel.setForeground(MENU_TEXT_COLOR);
-        textLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); // Padding bên trái
-        
-        itemPanel.add(textLabel, BorderLayout.CENTER);
-        
-        // Xử lý hover effect
-        itemPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                itemPanel.setBackground(MENU_HOVER_COLOR);
-            }
-            
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                itemPanel.setBackground(MENU_COLOR);
-            }
-            
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (action != null) {
-                    action.actionPerformed(new java.awt.event.ActionEvent(
-                        itemPanel, java.awt.event.ActionEvent.ACTION_PERFORMED, text
-                    ));
-                }
-            }
-        });
-        
-        itemPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        menuPanel.add(itemPanel);
-        menuPanel.add(Box.createVerticalStrut(8)); // Khoảng cách giữa các item
-    }
-
+    
     private void setupContentPanel() {
+        // Thiết lập màu nền
+        this.getContentPane().setBackground(new Color(240, 248, 255)); // Màu xanh Alice Blue
+        
         contentPanel = new JPanel();
+        contentPanel.setBackground(new Color(245, 245, 245));
         cardLayout = new CardLayout();
         contentPanel.setLayout(cardLayout);
-        contentPanel.setBackground(Color.WHITE);
-
-        // Tạo các panel cho các chức năng mới
-        contentPanel.add(createDashboardPanel(), "trangChu");
-        contentPanel.add(createPlaceholderPanel("Thuê xe", "Chức năng đang được phát triển"), "thueXe");
-        contentPanel.add(createPlaceholderPanel("Giỏ xe", "Chức năng đang được phát triển"), "gioXe");
-        contentPanel.add(createPlaceholderPanel("Đánh giá dịch vụ", "Chức năng đang được phát triển"), "danhGia");
-
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        
+        // Tạo các panel chức năng
+        trangChuPanel = createWelcomePanel();
+        thongTinCaNhanPanel = createUserInfoPanel();
+        xemDatXePanel = createCarRentalPanel();
+        gioXePanel = createCartPanel();
+        danhGiaHopDongPanel = createContractReviewPanel();
+        
+        // Thêm các panel vào cardLayout
+        contentPanel.add(trangChuPanel, "trangChu");
+        contentPanel.add(thongTinCaNhanPanel, "thongTinCaNhan");
+        contentPanel.add(xemDatXePanel, "xemDatXe");
+        contentPanel.add(gioXePanel, "gioXe");
+        contentPanel.add(danhGiaHopDongPanel, "danhGiaHopDong");
         
         // Hiển thị panel mặc định
         cardLayout.show(contentPanel, "trangChu");
     }
     
-    private void showPanel(String panelName) {
-        cardLayout.show(contentPanel, panelName);
+    // Xử lý khi click vào menu item
+    @Override
+    public void onMenuItemClicked(String panelName) {
+        if ("logout".equals(panelName)) {
+            logout();
+        } else {
+            cardLayout.show(contentPanel, panelName);
+        }
     }
-
-    // Tạo panel placeholder cho các chức năng đang phát triển
-    private JPanel createPlaceholderPanel(String title, String message) {
+    
+    // Phương thức đăng xuất
+    private void logout() {
+        int confirm = JOptionPane.showConfirmDialog(this, 
+                "Bạn có chắc muốn đăng xuất?", 
+                "Xác nhận đăng xuất", 
+                JOptionPane.YES_NO_OPTION);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            this.dispose();
+            try {
+                ui.auth.LoginForm loginForm = new ui.auth.LoginForm();
+                loginForm.setVisible(true);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi đăng xuất: " + e.getMessage());
+                e.printStackTrace();
+                System.exit(0);
+            }
+        }
+    }
+    
+    // Tạo panel chào mừng đơn giản
+    private JPanel createWelcomePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        
-        JPanel centerPanel = new JPanel(new GridBagLayout());
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(Color.WHITE);
         
-        JLabel messageLabel = new JLabel(message);
-        messageLabel.setFont(new Font("Arial", Font.ITALIC, 18));
-        messageLabel.setForeground(new Color(120, 120, 120));
+        JLabel welcomeLabel = new JLabel("CHÀO MỪNG ĐẾN VỚI HỆ THỐNG THUÊ XE");
+        welcomeLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        centerPanel.add(messageLabel);
+        // Khoảng cách
+        centerPanel.add(Box.createVerticalStrut(200));
+        centerPanel.add(welcomeLabel);
+        centerPanel.add(Box.createVerticalStrut(20));
         
-        panel.add(titleLabel, BorderLayout.NORTH);
+        // Thêm thông tin khách hàng nếu có
+        String customerName = "Khách hàng";
+        if (taiKhoan != null && taiKhoan.getTenDangNhap() != null) {
+            customerName = taiKhoan.getTenDangNhap();
+        }
+        
+        JLabel nameLabel = new JLabel("Xin chào, " + customerName + "!");
+        nameLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 18));
+        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        centerPanel.add(nameLabel);
+        
+        // Thêm ngày hiện tại
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        JLabel dateLabel = new JLabel("Hôm nay: " + date);
+        dateLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        dateLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        centerPanel.add(Box.createVerticalStrut(10));
+        centerPanel.add(dateLabel);
+        
+        // Thêm các card thống kê
+        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 15, 0));
+        statsPanel.setOpaque(false);
+        statsPanel.setMaximumSize(new Dimension(800, 120));
+        statsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        statsPanel.add(createStatCard("Xe đang thuê", "0", new Color(76, 175, 80)));
+        statsPanel.add(createStatCard("Giỏ hàng", "0", new Color(255, 152, 0)));
+        statsPanel.add(createStatCard("Lượt đánh giá", "0", new Color(156, 39, 176)));
+        
+        centerPanel.add(Box.createVerticalStrut(50));
+        centerPanel.add(statsPanel);
+        
+        panel.add(centerPanel, BorderLayout.CENTER);
+        return panel;
+    }
+    
+    // Tạo panel thông tin cá nhân
+    private JPanel createUserInfoPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        JLabel lblTitle = new JLabel("Thông Tin Cá Nhân");
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        lblTitle.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(lblTitle, BorderLayout.NORTH);
+        
+        // Form thông tin cá nhân
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        // Tạo các trường nhập liệu
+        addFormField(formPanel, gbc, "Họ tên:", new JTextField(20), 0);
+        addFormField(formPanel, gbc, "Email:", new JTextField(20), 1);
+        addFormField(formPanel, gbc, "Số điện thoại:", new JTextField(20), 2);
+        addFormField(formPanel, gbc, "Địa chỉ:", new JTextField(20), 3);
+        addFormField(formPanel, gbc, "CMND/CCCD:", new JTextField(20), 4);
+        
+        // Nút cập nhật
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setOpaque(false);
+        JButton updateButton = new JButton("Cập nhật thông tin");
+        updateButton.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        updateButton.setBackground(new Color(46, 149, 233));
+        updateButton.setForeground(Color.WHITE);
+        buttonPanel.add(updateButton);
+        
+        // Panel chứa form và nút
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
+        centerPanel.add(formPanel, BorderLayout.CENTER);
+        centerPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
         panel.add(centerPanel, BorderLayout.CENTER);
         
         return panel;
     }
-
-    private JPanel createDashboardPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+    
+    // Hàm trợ giúp thêm trường vào form
+    private void addFormField(JPanel panel, GridBagConstraints gbc, String labelText, JComponent field, int row) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        panel.add(label, gbc);
+        
+        gbc.gridx = 1;
+        panel.add(field, gbc);
+    }
+    
+    // Tạo panel xem và đặt thuê xe
+    private JPanel createCarRentalPanel() {
+        JPanel panel = new JPanel(new BorderLayout(15, 15));
         panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        // Header với ngày hiện tại
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(Color.WHITE);
-        headerPanel.setBorder(new EmptyBorder(20, 20, 10, 20));
+        JLabel lblTitle = new JLabel("Xem & Đặt Thuê Xe");
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        panel.add(lblTitle, BorderLayout.NORTH);
         
-        JLabel titleLabel = new JLabel("Trang chủ");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        // Panel tìm kiếm
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.setBackground(new Color(245, 245, 245));
+        searchPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        LocalDate now = LocalDate.now();
-        String formattedDate = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        JLabel dateLabel = new JLabel(formattedDate);
-        dateLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        searchPanel.add(new JLabel("Tìm kiếm:"));
+        searchPanel.add(new JTextField(20));
         
-        headerPanel.add(titleLabel, BorderLayout.WEST);
-        headerPanel.add(dateLabel, BorderLayout.EAST);
+        JButton searchButton = new JButton("Tìm");
+        searchButton.setBackground(new Color(46, 149, 233));
+        searchButton.setForeground(Color.WHITE);
+        searchPanel.add(searchButton);
         
-        // Content area
-        JPanel contentArea = new JPanel();
-        contentArea.setLayout(new BoxLayout(contentArea, BoxLayout.Y_AXIS));
-        contentArea.setBackground(Color.WHITE);
-        contentArea.setBorder(new EmptyBorder(20, 20, 20, 20));
+        // Panel hiển thị danh sách xe
+        JPanel carListPanel = new JPanel(new GridLayout(0, 3, 15, 15));
+        carListPanel.setBackground(Color.WHITE);
         
-        // Welcome message
-        JLabel welcomeLabel = new JLabel("Chào mừng đến với hệ thống thuê xe CarRental!");
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        welcomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // Thêm một số xe mẫu
+        carListPanel.add(createCarCard("Toyota Vios", "Sedan", "500,000 VNĐ/ngày"));
+        carListPanel.add(createCarCard("Honda City", "Sedan", "550,000 VNĐ/ngày"));
+        carListPanel.add(createCarCard("Ford Ranger", "Bán tải", "800,000 VNĐ/ngày"));
+        carListPanel.add(createCarCard("Hyundai Accent", "Sedan", "450,000 VNĐ/ngày"));
+        carListPanel.add(createCarCard("Mazda CX-5", "SUV", "900,000 VNĐ/ngày"));
+        carListPanel.add(createCarCard("Kia Morning", "Hatchback", "350,000 VNĐ/ngày"));
         
-        JLabel instructionLabel = new JLabel(
-            "<html>Hệ thống cho phép bạn thực hiện các thao tác:<br>" +
-            "- Thuê xe và quản lý đơn hàng<br>" +
-            "- Quản lý giỏ xe của bạn<br>" +
-            "- Đánh giá chất lượng dịch vụ<br>" +
-            "- Liên hệ hỗ trợ khách hàng</html>"
-        );
-        instructionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        instructionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JScrollPane scrollPane = new JScrollPane(carListPanel);
+        scrollPane.setBorder(null);
         
-        contentArea.add(welcomeLabel);
-        contentArea.add(Box.createVerticalStrut(20));
-        contentArea.add(instructionLabel);
-        
-        panel.add(headerPanel, BorderLayout.NORTH);
-        panel.add(contentArea, BorderLayout.CENTER);
+        // Thêm vào panel chính
+        panel.add(searchPanel, BorderLayout.NORTH);
+        panel.add(scrollPane, BorderLayout.CENTER);
         
         return panel;
     }
-
-    private void logout() {
-        // Xử lý đăng xuất
-        int option = JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn đăng xuất?",
-            "Xác nhận đăng xuất",
-            JOptionPane.YES_NO_OPTION
-        );
+    
+    // Hàm trợ giúp tạo card xe
+    private JPanel createCarCard(String carName, String carType, String price) {
+        JPanel cardPanel = new JPanel(new BorderLayout());
+        cardPanel.setBackground(Color.WHITE);
+        cardPanel.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
         
-        if (option == JOptionPane.YES_OPTION) {
-            dispose(); // Đóng cửa sổ hiện tại
-            
-            // Hiển thị màn hình đăng nhập
-             ui.auth.LoginForm loginForm = new ui.auth.LoginForm();
-             loginForm.setVisible(true);
-//            
-//            // Hoặc hiển thị thông báo tạm thời
-//            JOptionPane.showMessageDialog(null, "Đã đăng xuất thành công!");
-        }
+        // Panel ảnh xe (giả lập)
+        JPanel imagePanel = new JPanel();
+        imagePanel.setBackground(new Color(230, 230, 230));
+        imagePanel.setPreferredSize(new Dimension(100, 100));
+        JLabel imageLabel = new JLabel("Ảnh xe");
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
+        imagePanel.add(imageLabel);
+        
+        // Panel thông tin
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBackground(Color.WHITE);
+        infoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        JLabel nameLabel = new JLabel(carName);
+        nameLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 16));
+        
+        JLabel typeLabel = new JLabel("Loại: " + carType);
+        typeLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        
+        JLabel priceLabel = new JLabel("Giá thuê: " + price);
+        priceLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        
+        // Nút thêm vào giỏ
+        JButton addButton = new JButton("Thêm vào giỏ");
+        addButton.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 12));
+        addButton.setBackground(new Color(76, 175, 80));
+        addButton.setForeground(Color.WHITE);
+        
+        infoPanel.add(nameLabel);
+        infoPanel.add(Box.createVerticalStrut(5));
+        infoPanel.add(typeLabel);
+        infoPanel.add(Box.createVerticalStrut(5));
+        infoPanel.add(priceLabel);
+        infoPanel.add(Box.createVerticalStrut(10));
+        infoPanel.add(addButton);
+        
+        cardPanel.add(imagePanel, BorderLayout.NORTH);
+        cardPanel.add(infoPanel, BorderLayout.CENTER);
+        
+        return cardPanel;
     }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    
+    // Tạo panel giỏ xe
+    private JPanel createCartPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
+        JLabel lblTitle = new JLabel("Giỏ Xe");
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        lblTitle.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(lblTitle, BorderLayout.NORTH);
+        
+        // Tạo bảng giỏ hàng
+        String[] columnNames = {"Xe", "Loại xe", "Giá thuê/ngày", "Ngày bắt đầu", "Ngày kết thúc", "Thành tiền", "Thao tác"};
+        Object[][] data = {
+            // Giỏ trống
+        };
+        
+        JTable table = new JTable(data, columnNames);
+        table.setRowHeight(40);
+        table.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        
+        // Panel thông tin thanh toán
+        JPanel paymentPanel = new JPanel(new BorderLayout());
+        paymentPanel.setBackground(new Color(245, 245, 245));
+        paymentPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        JPanel totalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        totalPanel.setOpaque(false);
+        JLabel totalLabel = new JLabel("Tổng cộng: 0 VNĐ");
+        totalLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 18));
+        totalPanel.add(totalLabel);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setOpaque(false);
+        
+        JButton clearButton = new JButton("Xóa giỏ hàng");
+        clearButton.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        clearButton.setBackground(new Color(255, 107, 107));
+        clearButton.setForeground(Color.WHITE);
+        
+        JButton checkoutButton = new JButton("Thanh toán");
+        checkoutButton.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        checkoutButton.setBackground(new Color(76, 175, 80));
+        checkoutButton.setForeground(Color.WHITE);
+        
+        buttonPanel.add(clearButton);
+        buttonPanel.add(Box.createHorizontalStrut(10));
+        buttonPanel.add(checkoutButton);
+        
+        paymentPanel.add(totalPanel, BorderLayout.NORTH);
+        paymentPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Thêm giỏ hàng trống placeholder
+        JPanel emptyCartPanel = new JPanel();
+        emptyCartPanel.setLayout(new BoxLayout(emptyCartPanel, BoxLayout.Y_AXIS));
+        emptyCartPanel.setOpaque(false);
+        
+        JLabel emptyLabel = new JLabel("Giỏ hàng trống");
+        emptyLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 18));
+        emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel suggestLabel = new JLabel("Hãy thêm xe vào giỏ hàng để đặt thuê");
+        suggestLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 14));
+        suggestLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        emptyCartPanel.add(Box.createVerticalGlue());
+        emptyCartPanel.add(emptyLabel);
+        emptyCartPanel.add(Box.createVerticalStrut(10));
+        emptyCartPanel.add(suggestLabel);
+        emptyCartPanel.add(Box.createVerticalGlue());
+        
+        // Thêm vào panel chính
+        panel.add(emptyCartPanel, BorderLayout.CENTER);
+        panel.add(paymentPanel, BorderLayout.SOUTH);
+        
+        return panel;
+    }
+    
+    // Tạo panel đánh giá hợp đồng
+    private JPanel createContractReviewPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        JLabel lblTitle = new JLabel("Đánh Giá Hợp Đồng");
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        lblTitle.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(lblTitle, BorderLayout.NORTH);
+        
+        // Bảng hợp đồng đã hoàn thành
+        String[] columnNames = {"Mã HĐ", "Xe", "Ngày thuê", "Ngày trả", "Thành tiền", "Trạng thái", "Đánh giá"};
+        Object[][] data = {
+            // Chưa có hợp đồng
+        };
+        
+        JTable table = new JTable(data, columnNames);
+        table.setRowHeight(40);
+        table.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        
+        // Panel trống khi chưa có hợp đồng
+        JPanel emptyPanel = new JPanel();
+        emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
+        emptyPanel.setOpaque(false);
+        
+        JLabel emptyLabel = new JLabel("Chưa có hợp đồng nào hoàn thành");
+        emptyLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 18));
+        emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel suggestLabel = new JLabel("Hãy thuê xe để có thể đánh giá sau khi hoàn thành hợp đồng");
+        suggestLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 14));
+        suggestLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        emptyPanel.add(Box.createVerticalGlue());
+        emptyPanel.add(emptyLabel);
+        emptyPanel.add(Box.createVerticalStrut(10));
+        emptyPanel.add(suggestLabel);
+        emptyPanel.add(Box.createVerticalGlue());
+        
+        // Thêm vào panel chính
+        panel.add(emptyPanel, BorderLayout.CENTER);
+        
+        return panel;
+    }
+    
+    // Tạo thẻ thống kê
+    private JPanel createStatCard(String title, String value, Color color) {
+        JPanel card = new JPanel(new BorderLayout(15, 0));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        // Icon panel với nền màu
+        JPanel iconPanel = new JPanel(new BorderLayout());
+        iconPanel.setPreferredSize(new Dimension(60, 60));
+        iconPanel.setBackground(color);
+        
+        JLabel iconLabel = new JLabel("?", JLabel.CENTER);
+        iconLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        iconLabel.setForeground(Color.WHITE);
+        
+        iconPanel.add(iconLabel, BorderLayout.CENTER);
+        
+        // Panel thông tin với tiêu đề và giá trị
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setOpaque(false);
+        
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        titleLabel.setForeground(new Color(100, 100, 100));
+        
+        JLabel valueLabel = new JLabel(value);
+        valueLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        
+        infoPanel.add(titleLabel);
+        infoPanel.add(Box.createVerticalStrut(5));
+        infoPanel.add(valueLabel);
+        
+        card.add(iconPanel, BorderLayout.WEST);
+        card.add(infoPanel, BorderLayout.CENTER);
+        
+        return card;
+    }
+    
+    // Main method cho testing
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            CustomerDashboard dashboard = new CustomerDashboard(null);
-            dashboard.setVisible(true);
+            try {
+                // Set Look and Feel
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                
+                // Test với tài khoản null
+                CustomerDashboard customerDashboard = new CustomerDashboard(null);
+                customerDashboard.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 }

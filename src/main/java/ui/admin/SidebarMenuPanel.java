@@ -247,7 +247,7 @@ public class SidebarMenuPanel extends JPanel {
     // Phương thức thêm menu item
     public void addMenuItem(String text, String iconPath, String panelName) {
         // Panel chứa menu item
-        RoundedPanel roundedPanel = new RoundedPanel();
+        RoundedPanelAdmin roundedPanel = new RoundedPanelAdmin();
         roundedPanel.setOpaque(false); // Quan trọng: để thấy gradient từ sidebar
         roundedPanel.setPreferredSize(new Dimension(230, menuItemHeight));
         roundedPanel.setMaximumSize(new Dimension(230, menuItemHeight));
@@ -339,7 +339,7 @@ public class SidebarMenuPanel extends JPanel {
             public void mouseClicked(MouseEvent evt) {
                 // Bỏ chọn tất cả các panel
                 for (String key : menuItemPanels.keySet()) {
-                    RoundedPanel panel = (RoundedPanel) menuItemPanels.get(key);
+                    RoundedPanelAdmin panel = (RoundedPanelAdmin) menuItemPanels.get(key);
                     panel.setSelected(false);
                     panel.setBackground(new Color(0, 0, 0, 0)); // Transparent
                     panel.repaint();
@@ -374,7 +374,7 @@ public class SidebarMenuPanel extends JPanel {
     public void selectMenuItem(String panelName) {
         // Bỏ chọn tất cả các panel
         for (String key : menuItemPanels.keySet()) {
-            RoundedPanel panel = (RoundedPanel) menuItemPanels.get(key);
+            RoundedPanelAdmin panel = (RoundedPanelAdmin) menuItemPanels.get(key);
             panel.setSelected(false);
             panel.setBackground(new Color(0, 0, 0, 0)); // Transparent
             panel.repaint();
@@ -382,7 +382,7 @@ public class SidebarMenuPanel extends JPanel {
         
         // Chọn panel mới
         if (menuItemPanels.containsKey(panelName)) {
-            RoundedPanel panel = (RoundedPanel) menuItemPanels.get(panelName);
+            RoundedPanelAdmin panel = (RoundedPanelAdmin) menuItemPanels.get(panelName);
             panel.setSelected(true);
             panel.setBackground(menuHoverColor);
             panel.repaint();
@@ -437,7 +437,7 @@ public class SidebarMenuPanel extends JPanel {
         
         // Cập nhật màu cho tất cả menu items (nếu không được chọn)
         for (String key : menuItemPanels.keySet()) {
-            RoundedPanel panel = (RoundedPanel) menuItemPanels.get(key);
+            RoundedPanelAdmin panel = (RoundedPanelAdmin) menuItemPanels.get(key);
             if (!panel.isSelected) {
                 panel.setBackground(new Color(0, 0, 0, 0)); // Transparent để thấy gradient
                 panel.repaint();
