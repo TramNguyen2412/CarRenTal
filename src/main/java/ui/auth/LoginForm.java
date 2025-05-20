@@ -11,7 +11,7 @@ import ui.admin.AdminDashboard;
 import ui.customer.CustomerDashboard;
 import java.io.File;
 import java.awt.Image;
-
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 public class LoginForm extends javax.swing.JFrame {
     
     private JPanel mainPanel;
@@ -39,44 +39,7 @@ public class LoginForm extends javax.swing.JFrame {
         mainPanel = new JPanel(new GridLayout(1, 2));
         leftPanel = new JPanel(new BorderLayout());
         rightPanel = new JPanel(new GridBagLayout());
-        
-        // Left panel with image
-        
-//                try {
-//             // Tạo panel gradient thay vì dùng ảnh
-//             JPanel gradientPanel = new JPanel() {
-//                 @Override
-//                 protected void paintComponent(Graphics g) {
-//                     super.paintComponent(g);
-//                     Graphics2D g2d = (Graphics2D) g.create();
-//
-//                     // Gradient từ xanh đậm sang xanh nhạt
-//                     g2d.setPaint(new GradientPaint(
-//                         0, 0, new Color(41, 128, 185),
-//                         0, getHeight(), new Color(109, 213, 250)
-//                     ));
-//                     g2d.fillRect(0, 0, getWidth(), getHeight());
-//
-//                     // Vẽ tiêu đề
-//                     g2d.setFont(new Font("Arial", Font.BOLD, 30));
-//                     g2d.setColor(Color.WHITE);
-//                     g2d.drawString("CAR RENTAL", getWidth()/2 - 100, getHeight()/2 - 50);
-//                     g2d.setFont(new Font("Arial", Font.BOLD, 20));
-//                     g2d.drawString("MANAGEMENT SYSTEM", getWidth()/2 - 120, getHeight()/2);
-//
-//                     g2d.dispose();
-//                 }
-//             };
-//
-//             leftPanel.setLayout(new BorderLayout());
-//             leftPanel.add(gradientPanel, BorderLayout.CENTER);
-//
-//         } catch (Exception e) {
-//             leftPanel.setBackground(new Color(208, 240, 240));
-//             System.out.println("Lỗi: " + e.getMessage());
-//             e.printStackTrace();
-//         }
-    
+       
         try {
             // Tìm đường dẫn tuyệt đối của file
             File file = new File("src/main/java/img/login_image2.jpg");
@@ -113,7 +76,7 @@ public class LoginForm extends javax.swing.JFrame {
         
         // Title
         lblTitle = new JLabel("ĐĂNG NHẬP VÀO HỆ THỐNG");
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 20));
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -122,14 +85,14 @@ public class LoginForm extends javax.swing.JFrame {
         
         // Username Label
         lblUsername = new JLabel("Tên đăng nhập");
-        lblUsername.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblUsername.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
         gbc.gridy = 1;
         gbc.insets = new Insets(10, 0, 5, 0);
         rightPanel.add(lblUsername, gbc);
         
         // Username TextField
         txtUsername = new JTextField(20);
-        txtUsername.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtUsername.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
         txtUsername.setPreferredSize(new Dimension(300, 40));
         gbc.gridy = 2;
         gbc.insets = new Insets(0, 0, 20, 0);
@@ -137,14 +100,14 @@ public class LoginForm extends javax.swing.JFrame {
         
         // Password Label
         lblPassword = new JLabel("Mật khẩu");
-        lblPassword.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblPassword.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
         gbc.gridy = 3;
         gbc.insets = new Insets(10, 0, 5, 0);
         rightPanel.add(lblPassword, gbc);
         
         // Password Field
         txtPassword = new JPasswordField(20);
-        txtPassword.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtPassword.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
         txtPassword.setPreferredSize(new Dimension(300, 40));
         gbc.gridy = 4;
         gbc.insets = new Insets(0, 0, 40, 0);
@@ -161,7 +124,7 @@ public class LoginForm extends javax.swing.JFrame {
         
         // Login Button
         btnLogin = new JButton("ĐĂNG NHẬP");
-        btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
+        btnLogin.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
         btnLogin.setPreferredSize(new Dimension(300, 50));
         btnLogin.setBackground(Color.BLACK);
         btnLogin.setForeground(Color.WHITE);

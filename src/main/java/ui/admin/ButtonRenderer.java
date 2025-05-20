@@ -5,6 +5,7 @@ package ui.admin;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 public class ButtonRenderer extends JPanel implements TableCellRenderer {
     
@@ -37,7 +38,7 @@ public class ButtonRenderer extends JPanel implements TableCellRenderer {
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorderPainted(false);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 12));
         button.setPreferredSize(new Dimension(60, 28));
         return button;
     }
