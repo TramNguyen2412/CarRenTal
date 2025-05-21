@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import ui.admin.QLXe.XePanel;
 import ui.admin.QLHD.HopDongPanel;
+import ui.admin.QLKH.QuanLyKhachHangPanel;
+import ui.admin.QLNV.NhanVienPanel; // Sửa đường dẫn package từ QLNV sang QLNhanVien
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 
@@ -20,8 +22,8 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
     
     // Các panel quản lý
     private JPanel trangChuPanel;
-    private JPanel khachHangPanel;
-    private JPanel nhanVienPanel;
+    private JPanel QuanLyKhachHangPanel;
+    private NhanVienPanel nhanVienPanel; // Sửa kiểu dữ liệu từ JPanel sang NhanVienPanel
     private XePanel xePanel;
     private JPanel dichVuBDPanel;
     private JPanel hopDongPanel;
@@ -70,8 +72,9 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         
         // Tạo các panel chức năng
         trangChuPanel = createWelcomePanel();
-        khachHangPanel = createSimplePanel("Quản Lý Khách Hàng");
-        nhanVienPanel = createSimplePanel("Quản Lý Nhân Viên");
+        QuanLyKhachHangPanel = new QuanLyKhachHangPanel();
+     
+        nhanVienPanel = new NhanVienPanel(); // Sửa tên biến từ NhanVienPanel sang nhanVienPanel
         xePanel = new XePanel(); // Panel riêng cho Xe
         dichVuBDPanel = createSimplePanel("Quản Lý Dịch Vụ Bảo Dưỡng");
         hopDongPanel = new HopDongPanel(); // Panel riêng cho Hợp đồng
@@ -82,9 +85,9 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         
         // Thêm các panel vào cardLayout
         contentPanel.add(trangChuPanel, "trangChu");
-        contentPanel.add(khachHangPanel, "khachHang");
-        contentPanel.add(nhanVienPanel, "nhanVien");
-        contentPanel.add(xePanel, "xe");
+        contentPanel.add(QuanLyKhachHangPanel, "khachHang");
+        contentPanel.add(nhanVienPanel, "nhanVien"); // Sửa tên biến
+        contentPanel.add(xePanel, "xe");    
         contentPanel.add(dichVuBDPanel, "dichVuBD");
         contentPanel.add(hopDongPanel, "hopDong");
         contentPanel.add(baoDuongPanel, "baoDuong");

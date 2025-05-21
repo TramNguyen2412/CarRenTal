@@ -1,4 +1,5 @@
-package ui.admin;
+package ui.admin.QLNV;
+
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -6,14 +7,13 @@ import java.awt.*;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 public class ButtonRenderer extends JPanel implements TableCellRenderer {
-    
     private JButton btnView, btnEdit, btnDelete;
     
     public ButtonRenderer() {
-        // Thay đổi từ FlowLayout sang GridBagLayout để có thể căn giữa theo chiều dọc
         setLayout(new GridBagLayout());
+        setOpaque(true);
         
-        // Tạo và định dạng các nút
+        // Tạo các nút
         btnView = createStyledButton("Xem", new Color(23, 162, 184));
         btnEdit = createStyledButton("Sửa", new Color(255, 193, 7));
         btnDelete = createStyledButton("Xóa", new Color(220, 53, 69));
@@ -37,6 +37,7 @@ public class ButtonRenderer extends JPanel implements TableCellRenderer {
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 12));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setPreferredSize(new Dimension(60, 28));
         return button;
     }
@@ -44,12 +45,12 @@ public class ButtonRenderer extends JPanel implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
-        // Thiết lập màu nền dựa trên trạng thái được chọn và dòng chẵn/lẻ
         if (isSelected) {
             setBackground(table.getSelectionBackground());
         } else {
-            setBackground(row % 2 == 0 ? Color.WHITE : new Color(248, 248, 248));
+            setBackground(table.getBackground());
         }
+        
         return this;
     }
 }

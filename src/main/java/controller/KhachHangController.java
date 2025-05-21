@@ -2,10 +2,12 @@ package controller;
 
 import dao.KhachHangDAO;
 import model.KhachHang;
+import service.KhachHangService;
 import java.util.List;
 
 public class KhachHangController {
     private KhachHangDAO khachHangDAO;
+    private KhachHangService khachHangService;
     
     public KhachHangController() {
         this.khachHangDAO = new KhachHangDAO();
@@ -26,6 +28,9 @@ public class KhachHangController {
         }
         
         return khachHangDAO.addKhachHang(kh);
+    }
+    public String getErrorMessage() {
+        return khachHangService.getErrorMessage();
     }
     
     public boolean updateKhachHang(KhachHang kh) {
