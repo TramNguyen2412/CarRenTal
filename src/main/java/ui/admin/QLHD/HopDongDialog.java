@@ -3081,7 +3081,11 @@ public class HopDongDialog extends JDialog {
     }
     
     private void showChonXeDialog() {
-        ChonXeDialog dialog = new ChonXeDialog(this);
+        //ChonXeDialog dialog = new ChonXeDialog(this);
+         // Truyền mã hợp đồng hiện tại vào dialog ChonXeDialog
+        String maHD = hopDong.getMaHD(); // Có thể null nếu đang thêm mới
+
+        ChonXeDialog dialog = new ChonXeDialog(this, maHD);
         dialog.setVisible(true);
         
         // Nếu đã chọn xe, thêm vào danh sách
@@ -3116,7 +3120,11 @@ public class HopDongDialog extends JDialog {
             
             if (selectedCT != null) {
                 // Hiển thị dialog sửa thông tin thuê
-                ChiTietThueDialog dialog = new ChiTietThueDialog(this, selectedCT);
+                //ChiTietThueDialog dialog = new ChiTietThueDialog(this, selectedCT);
+                String maHD = hopDong.getMaHD(); // Có thể null nếu đang thêm mới
+            
+                // Hiển thị dialog sửa thông tin thuê
+                ChiTietThueDialog dialog = new ChiTietThueDialog(this, selectedCT, maHD);
                 dialog.setVisible(true);
                 
                 // Cập nhật bảng và tổng tiền nếu đã lưu

@@ -4,13 +4,14 @@ import javax.swing.*;
 import java.awt.*;
 
 public class RoundedPanel extends JPanel {
-    private int cornerRadius = 12; // Giảm độ bo góc
+    private int cornerRadius = 10;
     public boolean isSelected = false;
     
     public RoundedPanel() {
-        // Sử dụng BorderLayout thay vì FlowLayout
         setLayout(new BorderLayout());
         setOpaque(false);
+        // Quan trọng: Đảm bảo không tự thay đổi kích thước
+        setPreferredSize(getPreferredSize());
     }
     
     public void setSelected(boolean selected) {
@@ -25,6 +26,8 @@ public class RoundedPanel extends JPanel {
     
     @Override
     protected void paintComponent(Graphics g) {
+        super.paintComponent(g); // Gọi phương thức của lớp cha
+        
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
@@ -36,8 +39,8 @@ public class RoundedPanel extends JPanel {
         
         // Vẽ viền mỏng
         if (isSelected) {
-            g2.setColor(new Color(255, 255, 255, 150));
-            g2.setStroke(new BasicStroke(1.5f)); // Viền mỏng hơn
+            g2.setColor(new Color(255, 255, 255, 120));
+            g2.setStroke(new BasicStroke(1.0f));
             g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, cornerRadius, cornerRadius);
         }
         g2.dispose();
