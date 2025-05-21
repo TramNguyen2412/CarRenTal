@@ -7,18 +7,19 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import ui.admin.XePanel;
-import ui.admin.HopDongPanel;
+import ui.admin.QLXe.XePanel;
+import ui.admin.QLHD.HopDongPanel;
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
-public class AdminDashboard extends javax.swing.JFrame {
-    
+
+public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClickListener {
     private JPanel mainPanel;
-    private JPanel menuPanel;
     private JPanel contentPanel;
     private CardLayout cardLayout;
-    private TaiKhoan taiKhoan; // Thông tin tài khoản đăng nhập
+    private TaiKhoan taiKhoan;
     
-    // Các panel quản lý - hiện tại chỉ khai báo để tránh lỗi biên dịch
+    // Các panel quản lý
+    private JPanel trangChuPanel;
     private JPanel khachHangPanel;
     private JPanel nhanVienPanel;
     private XePanel xePanel;
@@ -28,12 +29,6 @@ public class AdminDashboard extends javax.swing.JFrame {
     private JPanel congNoPanel;
     private JPanel giaoNhanXePanel;
     private JPanel baoCaoPanel;
-    private JPanel trangChuPanel;
-    
-    // Màu vàng pastel cho menu
-    private final Color MENU_COLOR = new Color(255, 236, 179); // Màu vàng pastel
-    private final Color MENU_HOVER_COLOR = new Color(255, 224, 130); // Màu hover cho menu
-    private final Color MENU_TEXT_COLOR = new Color(50, 50, 50); // Màu chữ tối
     
     public AdminDashboard(TaiKhoan taiKhoan) {
         this.taiKhoan = taiKhoan;
@@ -46,38 +41,45 @@ public class AdminDashboard extends javax.swing.JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1200, 800));
         
+        // Panel chính chứa tất cả
         mainPanel = new JPanel(new BorderLayout(0, 0));
-        mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0)); // Bỏ border
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // Bỏ border
         
-        // Thiết lập menu bên trái
-        setupMenuPanel();
+        // Tạo menu panel - đã tách thành class riêng
+        SidebarMenuPanel menuPanel = new SidebarMenuPanel(taiKhoan, this);
         
-        // Thiết lập phần hiển thị nội dung
+        // Thiết lập content
         setupContentPanel();
         
+        // Thêm vào main panel
+        mainPanel.add(menuPanel, BorderLayout.WEST);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        
+        // Thêm main panel vào frame
         getContentPane().add(mainPanel);
     }
-
+    
     private void setupContentPanel() {
+        // Thiết lập màu nền
+        this.getContentPane().setBackground(new Color(240, 248, 255)); // Màu xanh Alice Blue
+        
         contentPanel = new JPanel();
         contentPanel.setBackground(new Color(245, 245, 245));
         cardLayout = new CardLayout();
         contentPanel.setLayout(cardLayout);
         
-        // Tạo trang chủ đơn giản
+        // Tạo các panel chức năng
         trangChuPanel = createWelcomePanel();
-        
-        // Tạo các panel quản lý
         khachHangPanel = createSimplePanel("Quản Lý Khách Hàng");
         nhanVienPanel = createSimplePanel("Quản Lý Nhân Viên");
+
         xePanel = new XePanel();
         dichVuBDPanel = new DichVuBDPanel();
         hopDongPanel = new HopDongPanel();
         baoDuongPanel = new BaoDuongPanel();
         congNoPanel = new CongNoPanel();
+
         giaoNhanXePanel = createSimplePanel("Quản Lý Giao Nhận Xe");
-        
-        // Tạo panel báo cáo thống kê
         baoCaoPanel = createDashboardPanel();
         
         // Thêm các panel vào cardLayout
@@ -94,197 +96,40 @@ public class AdminDashboard extends javax.swing.JFrame {
         
         // Hiển thị panel mặc định
         cardLayout.show(contentPanel, "trangChu");
+    }
+    
+    // Xử lý khi click vào menu item
+    @Override
+    public void onMenuItemClicked(String panelName) {
+        if ("logout".equals(panelName)) {
+            logout();
+        } else {
+            cardLayout.show(contentPanel, panelName);
+        }
+    }
+    
+    // Phương thức đăng xuất
+    private void logout() {
+        int confirm = JOptionPane.showConfirmDialog(this, 
+                "Bạn có chắc muốn đăng xuất?", 
+                "Xác nhận đăng xuất", 
+                JOptionPane.YES_NO_OPTION);
         
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
-    }
-
-    private void setupMenuPanel() {
-        menuPanel = new JPanel();
-        menuPanel.setPreferredSize(new Dimension(250, 0));
-        menuPanel.setBackground(MENU_COLOR); // Đổi màu nền sang vàng pastel
-        menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
-
-        // Logo và thông tin người dùng - đảm bảo logoPanel có width đúng bằng menuPanel
-        JPanel logoPanel = new JPanel(new BorderLayout());
-        logoPanel.setBackground(new Color(13, 25, 38)); // Màu tối cho logo
-        logoPanel.setPreferredSize(new Dimension(250, 80));
-        logoPanel.setMaximumSize(new Dimension(250, 80));
-        logoPanel.setMinimumSize(new Dimension(250, 80));
-
-        // Logo panel cần layout BorderLayout để căn giữa logo và text
-        JPanel logoContentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        logoContentPanel.setOpaque(false);
-
-        // Thêm logo Car.png
-        try {
-            URL resourceUrl = getClass().getResource("/img/carRental.png");
-            if (resourceUrl != null) {
-                ImageIcon icon = new ImageIcon(resourceUrl);
-                Image img = icon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
-                JLabel iconLabel = new JLabel(new ImageIcon(img));
-                logoContentPanel.add(iconLabel);
-            }
-        } catch (Exception e) {
-            System.out.println("Lỗi khi tải logo: " + e.getMessage());
-        }
-
-        JLabel lblLogo = new JLabel("CarRental");
-        lblLogo.setFont(new Font("Arial", Font.BOLD, 28)); // Tăng cỡ chữ
-        lblLogo.setForeground(Color.WHITE);
-        logoContentPanel.add(lblLogo);
-
-        logoPanel.add(logoContentPanel, BorderLayout.CENTER);
-        menuPanel.add(logoPanel);
-
-        // Panel thông tin người dùng
-        JPanel userPanel = new JPanel(new BorderLayout());
-        userPanel.setBackground(MENU_COLOR);
-        userPanel.setPreferredSize(new Dimension(250, 60));
-        userPanel.setMaximumSize(new Dimension(250, 60));
-
-        // Xử lý khi taiKhoan có thể null trong giai đoạn phát triển
-        String username = "admin";
-        if (taiKhoan != null && taiKhoan.getTenDangNhap() != null) {
-            username = taiKhoan.getTenDangNhap();
-        }
-
-        JPanel avatarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        avatarPanel.setOpaque(false);
-
-        // Tạo iconLabel cho avatar
-        JLabel iconLabel;
-        try {
-            URL resourceUrl = getClass().getResource("/img/admin.png");
-            if (resourceUrl != null) {
-                ImageIcon icon = new ImageIcon(resourceUrl);
-                Image img = icon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
-                iconLabel = new JLabel(new ImageIcon(img));
-            } else {
-                iconLabel = new JLabel("👤");
-                iconLabel.setFont(new Font("Dialog", Font.PLAIN, 24));
-            }
-        } catch (Exception e) {
-            iconLabel = new JLabel("👤");
-            iconLabel.setFont(new Font("Dialog", Font.PLAIN, 24));
-        }
-        iconLabel.setForeground(MENU_TEXT_COLOR);
-
-        avatarPanel.add(iconLabel);
-
-        JPanel userInfoPanel = new JPanel();
-        userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
-        userInfoPanel.setOpaque(false);
-
-        JLabel nameLabel = new JLabel(username);
-        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        nameLabel.setForeground(MENU_TEXT_COLOR);
-        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel roleLabel = new JLabel("Quản trị viên");
-        roleLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-        roleLabel.setForeground(new Color(100, 100, 100));
-        roleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        userInfoPanel.add(nameLabel);
-        userInfoPanel.add(roleLabel);
-
-        avatarPanel.add(userInfoPanel);
-        userPanel.add(avatarPanel, BorderLayout.CENTER);
-
-        menuPanel.add(userPanel);
-
-        // Thêm đường phân cách
-        JSeparator separator = new JSeparator();
-        separator.setForeground(new Color(200, 200, 200));
-        separator.setBackground(new Color(200, 200, 200));
-        menuPanel.add(separator);
-
-        // Thêm khoảng cách
-        menuPanel.add(Box.createVerticalStrut(10));
-
-        // Các nút menu với icon
-        addMenuItem("Trang chủ", "home3.png", e -> showPanel("trangChu"));
-        addMenuItem("Khách Hàng", "customer.png", e -> showPanel("khachHang"));
-        addMenuItem("Nhân Viên", "staff.png", e -> showPanel("nhanVien"));
-        addMenuItem("Quản Lý Xe", "Car.png", e -> showPanel("xe"));
-        addMenuItem("Dịch Vụ Bảo Dưỡng", "carservices.png", e -> showPanel("dichVuBD"));
-        addMenuItem("Hợp Đồng", "contract.png", e -> showPanel("hopDong"));
-        addMenuItem("Bảo Dưỡng", "maintenance.png", e -> showPanel("baoDuong"));
-        addMenuItem("Công Nợ", "dept.png", e -> showPanel("congNo"));
-        addMenuItem("Giao Nhận Xe", "giaonhanxe.png", e -> showPanel("giaoNhanXe"));
-        addMenuItem("Báo Cáo Thống Kê", "thongke.png", e -> showPanel("baoCao"));
-
-        // Nút đăng xuất ở dưới cùng
-        menuPanel.add(Box.createVerticalGlue());
-
-        // Thêm đường phân cách
-        JSeparator separatorBottom = new JSeparator();
-        separatorBottom.setForeground(new Color(200, 200, 200));
-        separatorBottom.setBackground(new Color(200, 200, 200));
-        menuPanel.add(separatorBottom);
-
-        addMenuItem("Đăng Xuất", "logout.png", e -> logout());
-
-        mainPanel.add(menuPanel, BorderLayout.WEST);
-    }
-
-   private void addMenuItem(String text, String iconPath, ActionListener action) {
-        JPanel itemPanel = new JPanel(new BorderLayout());
-        itemPanel.setBackground(MENU_COLOR);
-        itemPanel.setPreferredSize(new Dimension(250, 48));
-        itemPanel.setMaximumSize(new Dimension(250, 48));
-
-        // Sử dụng FlowLayout.CENTER để căn giữa nội dung
-        JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        contentPanel.setOpaque(false);
-
-        // Thêm icon nếu có
-        if (iconPath != null && !iconPath.isEmpty()) {
+        if (confirm == JOptionPane.YES_OPTION) {
+            this.dispose();
             try {
-                URL resourceUrl = getClass().getResource("/img/" + iconPath);
-                if (resourceUrl != null) {
-                    ImageIcon icon = new ImageIcon(resourceUrl);
-                    Image img = icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
-                    JLabel iconLabel = new JLabel(new ImageIcon(img));
-                    contentPanel.add(iconLabel);
-                }
+                
+                ui.auth.LoginForm loginForm = new ui.auth.LoginForm();
+                loginForm.setVisible(true);
             } catch (Exception e) {
-                System.out.println("Không thể tải icon: " + iconPath);
+                JOptionPane.showMessageDialog(this, "Lỗi khi đăng xuất: " + e.getMessage());
+                e.printStackTrace();
+                System.exit(0);
             }
         }
-
-        JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font("Arial", Font.BOLD, 15));
-        textLabel.setForeground(MENU_TEXT_COLOR);
-        contentPanel.add(textLabel);
-
-        itemPanel.add(contentPanel, BorderLayout.CENTER);
-
-        // Sử dụng MouseAdapter thông qua lớp ẩn danh
-        itemPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                itemPanel.setBackground(MENU_HOVER_COLOR);
-            }
-
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                itemPanel.setBackground(MENU_COLOR);
-            }
-
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (action != null) {
-                    action.actionPerformed(new java.awt.event.ActionEvent(itemPanel, java.awt.event.ActionEvent.ACTION_PERFORMED, text));
-                }
-            }
-        });
-
-        itemPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        menuPanel.add(itemPanel);
-        menuPanel.add(Box.createVerticalStrut(8)); // Khoảng cách giữa các item
     }
+    
+    // Tạo panel chào mừng đơn giản
     private JPanel createWelcomePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
@@ -294,7 +139,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         centerPanel.setBackground(Color.WHITE);
         
         JLabel welcomeLabel = new JLabel("CHÀO MỪNG ĐẾN VỚI HỆ THỐNG QUẢN LÝ CHO THUÊ XE");
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        welcomeLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         // Khoảng cách
@@ -303,7 +148,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         centerPanel.add(Box.createVerticalStrut(20));
         
         JLabel subLabel = new JLabel("Hệ thống quản lý hiện đại, tiện lợi và dễ sử dụng");
-        subLabel.setFont(new Font("Arial", Font.ITALIC, 18));
+        subLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 18));
         subLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(subLabel);
         
@@ -311,6 +156,26 @@ public class AdminDashboard extends javax.swing.JFrame {
         return panel;
     }
     
+    // Tạo một panel đơn giản với tiêu đề để hiển thị tạm thời
+    private JPanel createSimplePanel(String title) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+        lblTitle.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(lblTitle, BorderLayout.NORTH);
+        
+        JLabel lblMessage = new JLabel("Chức năng này đang được phát triển...");
+        lblMessage.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 18));
+        lblMessage.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(lblMessage, BorderLayout.CENTER);
+        
+        return panel;
+    }
+    
+    // Tạo màn hình dashboard thống kê
     private JPanel createDashboardPanel() {
         JPanel panel = new JPanel(new BorderLayout(15, 15));
         panel.setBackground(new Color(245, 245, 245));
@@ -323,11 +188,11 @@ public class AdminDashboard extends javax.swing.JFrame {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         
         JLabel welcomeLabel = new JLabel("Chào mừng quay trở lại, Admin!");
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        welcomeLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
         welcomeLabel.setForeground(new Color(50, 50, 50));
         
         JLabel dateLabel = new JLabel("Hôm nay: " + date);
-        dateLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        dateLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
         dateLabel.setForeground(new Color(100, 100, 100));
         
         headerPanel.add(welcomeLabel, BorderLayout.NORTH);
@@ -348,7 +213,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         recentPanel.setOpaque(false);
         
         JLabel recentLabel = new JLabel("Hợp đồng gần đây");
-        recentLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        recentLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 18));
         
         String[] columnNames = {"Mã HĐ", "Khách hàng", "Xe", "Ngày thuê", "Ngày trả", "Trạng thái"};
         Object[][] data = {
@@ -359,8 +224,8 @@ public class AdminDashboard extends javax.swing.JFrame {
         
         JTable table = new JTable(data, columnNames);
         table.setRowHeight(30);
-        table.setFont(new Font("Arial", Font.PLAIN, 14));
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        table.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
         table.setShowVerticalLines(false);
         table.getTableHeader().setBackground(Color.WHITE);
         
@@ -393,7 +258,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         iconPanel.setBackground(color);
         
         JLabel iconLabel = new JLabel("?", JLabel.CENTER);
-        iconLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        iconLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
         iconLabel.setForeground(Color.WHITE);
         
         iconPanel.add(iconLabel, BorderLayout.CENTER);
@@ -404,11 +269,11 @@ public class AdminDashboard extends javax.swing.JFrame {
         infoPanel.setOpaque(false);
         
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        titleLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
         titleLabel.setForeground(new Color(100, 100, 100));
         
         JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        valueLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
         
         infoPanel.add(titleLabel);
         infoPanel.add(Box.createVerticalStrut(5));
@@ -418,49 +283,6 @@ public class AdminDashboard extends javax.swing.JFrame {
         card.add(infoPanel, BorderLayout.CENTER);
         
         return card;
-    }
-    
-    // Tạo một panel đơn giản với tiêu đề để hiển thị tạm thời
-    private JPanel createSimplePanel(String title) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 24));
-        lblTitle.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(lblTitle, BorderLayout.NORTH);
-        
-        JLabel lblMessage = new JLabel("Chức năng này đang được phát triển...");
-        lblMessage.setFont(new Font("Arial", Font.ITALIC, 18));
-        lblMessage.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(lblMessage, BorderLayout.CENTER);
-        
-        return panel;
-    }
-    
-    private void showPanel(String panelName) {
-        cardLayout.show(contentPanel, panelName);
-    }
-    
-    private void logout() {
-        int confirm = JOptionPane.showConfirmDialog(this, 
-                "Bạn có chắc muốn đăng xuất?", 
-                "Xác nhận đăng xuất", 
-                JOptionPane.YES_NO_OPTION);
-        
-        if (confirm == JOptionPane.YES_OPTION) {
-            this.dispose();
-            try {
-                // Giả sử LoginForm là form đăng nhập
-                ui.auth.LoginForm loginForm = new ui.auth.LoginForm();
-                loginForm.setVisible(true);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Lỗi khi đăng xuất: " + e.getMessage());
-                e.printStackTrace();
-                System.exit(0);
-            }
-        }
     }
     
     // Main method cho testing
