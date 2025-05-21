@@ -17,11 +17,15 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 import java.text.NumberFormat;
 import java.util.Locale;
+import controller.HopDongController;
 
 public class ChonXeDialog extends JDialog {
     private XeController xeController;
     private List<ChiTietHD> selectedXeList;
     
+   private HopDongController hopDongController;
+   private String maHDHienTai; // Mã HD hiện tại (nếu đang sửa HD)
+   
     // UI Components
     private JTable tblXe;
     private DefaultTableModel modelXe;
@@ -29,11 +33,22 @@ public class ChonXeDialog extends JDialog {
     private JComboBox<String> cboHangXe;
     private JComboBox<String> cboSoCho;
     
-    public ChonXeDialog(Window owner) {
+//    public ChonXeDialog(Window owner) {
+//        super(owner, "Chọn xe thuê", ModalityType.APPLICATION_MODAL);
+//        this.xeController = new XeController();
+//        this.selectedXeList = new ArrayList<>();
+//        this.hopDongController = new HopDongController();
+//        initComponents();
+//        loadDataToTable();
+//    }
+//    
+    public ChonXeDialog(Window owner, String maHD) {
         super(owner, "Chọn xe thuê", ModalityType.APPLICATION_MODAL);
-        this.xeController = new XeController();
-        this.selectedXeList = new ArrayList<>();
-        
+        this.hopDongController = new HopDongController();
+        this.maHDHienTai = maHD;
+         this.xeController = new XeController();
+       this.selectedXeList = new ArrayList<>();
+       
         initComponents();
         loadDataToTable();
     }
@@ -42,7 +57,7 @@ public class ChonXeDialog extends JDialog {
         setSize(1000, 600);
         setLocationRelativeTo(getOwner());
         setLayout(new BorderLayout(10, 10));
-        
+       
         // Panel tìm kiếm
         JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlSearch.setBorder(BorderFactory.createTitledBorder("Tìm kiếm xe"));
@@ -237,24 +252,104 @@ public class ChonXeDialog extends JDialog {
         }
     }
     
+//    private void addSelectedXe() {
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+//        // Kiểm tra có xe nào được chọn không
+//        boolean hasSelected = false;
+//        
+//        for (int i = 0; i < tblXe.getRowCount(); i++) {
+//            Boolean selected = (Boolean) tblXe.getValueAt(i, 0);
+//            if (selected) {
+//                hasSelected = true;
+//                
+//                try {
+//                    // Lấy thông tin ngày thuê
+//                    String fromDateStr = tblXe.getValueAt(i, 7).toString();
+//                    String toDateStr = tblXe.getValueAt(i, 8).toString();
+//                    
+//                    Date fromDate = dateFormat.parse(fromDateStr);
+//                    Date toDate = dateFormat.parse(toDateStr);
+//                    
+//                    if (toDate.before(fromDate)) {
+//                        JOptionPane.showMessageDialog(this, 
+//                                "Ngày kết thúc phải sau ngày bắt đầu ở xe: " + tblXe.getValueAt(i, 2).toString(), 
+//                                "Lỗi", 
+//                                JOptionPane.ERROR_MESSAGE);
+//                        return;
+//                    }
+//                    
+//                    // Lấy thông tin xe
+//                    String maXe = tblXe.getValueAt(i, 1).toString();
+//                    String tenXe = tblXe.getValueAt(i, 2).toString();
+//                    String bienSo = tblXe.getValueAt(i, 3).toString();
+//                    String hangXe = tblXe.getValueAt(i, 4).toString();
+//                    int soCho = Integer.parseInt(tblXe.getValueAt(i, 5).toString());
+//                    
+//                    // Lấy giá thuê từ cột giá thuê/ngày (cần parse từ string định dạng tiền tệ)
+//                    String giaThueStr = tblXe.getValueAt(i, 6).toString().replaceAll("[^\\d]", "");
+//                    double giaThueNgay = Double.parseDouble(giaThueStr);
+//                    
+//                    // Tạo chi tiết hợp đồng
+//                    ChiTietHD ct = new ChiTietHD();
+//                    ct.setMaXe(maXe);
+//                    ct.setTenXe(tenXe);
+//                    ct.setBienSo(bienSo);
+//                    ct.setHangXe(hangXe);
+//                    ct.setSoCho(soCho);
+//                    ct.setGiaThueNgay(giaThueNgay);
+//                    ct.setNgayBatDau(fromDate);
+//                    ct.setNgayKetThuc(toDate);
+//                    
+//                    selectedXeList.add(ct);
+//                    
+//                } catch (ParseException e) {
+//                    JOptionPane.showMessageDialog(this, 
+//                            "Vui lòng nhập đúng định dạng ngày (dd/MM/yyyy) ở xe: " + tblXe.getValueAt(i, 2).toString(), 
+//                            "Lỗi", 
+//                            JOptionPane.ERROR_MESSAGE);
+//                    return;
+//                } catch (NumberFormatException e) {
+//                    JOptionPane.showMessageDialog(this, 
+//                            "Lỗi khi xử lý giá thuê xe: " + tblXe.getValueAt(i, 2).toString(), 
+//                            "Lỗi", 
+//                            JOptionPane.ERROR_MESSAGE);
+//                    return;
+//                }
+//            }
+//        }
+//        
+//        if (!hasSelected) {
+//            JOptionPane.showMessageDialog(this, 
+//                    "Vui lòng chọn ít nhất một xe!", 
+//                    "Thông báo", 
+//                    JOptionPane.INFORMATION_MESSAGE);
+//        } else {
+//            dispose();
+//        }
+//    }
     private void addSelectedXe() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         // Kiểm tra có xe nào được chọn không
         boolean hasSelected = false;
-        
+
+        // Kiểm tra từng xe được chọn trước khi thêm
+        StringBuilder errorMessages = new StringBuilder();
+        boolean hasErrors = false;
+        List<ChiTietHD> validCars = new ArrayList<>();
+
         for (int i = 0; i < tblXe.getRowCount(); i++) {
             Boolean selected = (Boolean) tblXe.getValueAt(i, 0);
             if (selected) {
                 hasSelected = true;
-                
+
                 try {
                     // Lấy thông tin ngày thuê
                     String fromDateStr = tblXe.getValueAt(i, 7).toString();
                     String toDateStr = tblXe.getValueAt(i, 8).toString();
-                    
+
                     Date fromDate = dateFormat.parse(fromDateStr);
                     Date toDate = dateFormat.parse(toDateStr);
-                    
+
                     if (toDate.before(fromDate)) {
                         JOptionPane.showMessageDialog(this, 
                                 "Ngày kết thúc phải sau ngày bắt đầu ở xe: " + tblXe.getValueAt(i, 2).toString(), 
@@ -262,18 +357,30 @@ public class ChonXeDialog extends JDialog {
                                 JOptionPane.ERROR_MESSAGE);
                         return;
                     }
-                    
+
                     // Lấy thông tin xe
                     String maXe = tblXe.getValueAt(i, 1).toString();
                     String tenXe = tblXe.getValueAt(i, 2).toString();
                     String bienSo = tblXe.getValueAt(i, 3).toString();
+
+                    // THÊM MỚI: Kiểm tra xe có thể thuê được không
+                    String xeError = hopDongController.kiemTraXeThueDuoc(
+                        maXe, fromDate, toDate, maHDHienTai);
+
+                    if (xeError != null) {
+                        hasErrors = true;
+                        errorMessages.append("- ").append(tenXe).append(" (").append(bienSo).append("): ")
+                                  .append(xeError).append("\n");
+                        continue; // Bỏ qua xe này, kiểm tra xe khác
+                    }
+
                     String hangXe = tblXe.getValueAt(i, 4).toString();
                     int soCho = Integer.parseInt(tblXe.getValueAt(i, 5).toString());
-                    
+
                     // Lấy giá thuê từ cột giá thuê/ngày (cần parse từ string định dạng tiền tệ)
                     String giaThueStr = tblXe.getValueAt(i, 6).toString().replaceAll("[^\\d]", "");
                     double giaThueNgay = Double.parseDouble(giaThueStr);
-                    
+
                     // Tạo chi tiết hợp đồng
                     ChiTietHD ct = new ChiTietHD();
                     ct.setMaXe(maXe);
@@ -284,9 +391,9 @@ public class ChonXeDialog extends JDialog {
                     ct.setGiaThueNgay(giaThueNgay);
                     ct.setNgayBatDau(fromDate);
                     ct.setNgayKetThuc(toDate);
-                    
-                    selectedXeList.add(ct);
-                    
+
+                    validCars.add(ct);
+
                 } catch (ParseException e) {
                     JOptionPane.showMessageDialog(this, 
                             "Vui lòng nhập đúng định dạng ngày (dd/MM/yyyy) ở xe: " + tblXe.getValueAt(i, 2).toString(), 
@@ -302,17 +409,32 @@ public class ChonXeDialog extends JDialog {
                 }
             }
         }
-        
+
         if (!hasSelected) {
             JOptionPane.showMessageDialog(this, 
                     "Vui lòng chọn ít nhất một xe!", 
                     "Thông báo", 
                     JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            dispose();
+            return;
         }
+
+        // Hiển thị thông báo lỗi nếu có
+        if (hasErrors) {
+            JOptionPane.showMessageDialog(this, 
+                    "Không thể thêm các xe sau vào hợp đồng:\n" + errorMessages.toString(), 
+                    "Lỗi", 
+                    JOptionPane.ERROR_MESSAGE);
+
+            // Nếu không có xe nào hợp lệ thì không đóng dialog
+            if (validCars.isEmpty()) {
+                return;
+            }
+        }
+
+        // Cập nhật danh sách xe đã chọn với các xe hợp lệ
+        selectedXeList = validCars;
+        dispose();
     }
-    
     public List<ChiTietHD> getSelectedXeList() {
         return selectedXeList;
     }

@@ -21,7 +21,7 @@ public class CustomerSidebarMenuPanel extends JPanel {
      private Color menuHoverColor = new Color(255, 255, 255, 40);
     private Color menuTextColor = new Color(255, 255, 255);
     private TaiKhoan taiKhoan;  // Thông tin người dùng
-    private int menuItemHeight = 36;  // Chiều cao của mỗi menu item
+    private int menuItemHeight = 10;  // Chiều cao của mỗi menu item
     private int iconSize = 20;  // Kích thước icon
     
     // Lưu trữ các panel menu item để quản lý dễ dàng
@@ -202,7 +202,7 @@ public class CustomerSidebarMenuPanel extends JPanel {
     // Phương thức thêm các menu item cho khách hàng
     private void addCustomerMenuItems() {
         addMenuItem("Trang chủ", "home3.svg", "trangChu");
-        addMenuItem("Thông tin cá nhân", "user.svg", "thongTinCaNhan");
+      //  addMenuItem("Thông tin cá nhân", "user.svg", "thongTinCaNhan");
         addMenuItem("Xem & đặt thuê xe", "Car.svg", "xemDatXe");
         addMenuItem("Giỏ xe", "cart.svg", "gioXe");
         addMenuItem("Đánh giá hợp đồng", "contract.svg", "danhGiaHopDong");
@@ -225,14 +225,19 @@ public class CustomerSidebarMenuPanel extends JPanel {
         RoundedPanel roundedPanel = new RoundedPanel();
         roundedPanel.setOpaque(false);
 
-        // Giữ nguyên chiều rộng theo yêu cầu
-        roundedPanel.setPreferredSize(new Dimension(180, menuItemHeight));
-        roundedPanel.setMaximumSize(new Dimension(180, menuItemHeight));
+        // Đặt kích thước cố định và ÉP BUỘC kích thước đó
+        Dimension buttonSize = new Dimension(180, menuItemHeight); // Giảm chiều cao xuống còn 24
+        roundedPanel.setPreferredSize(buttonSize);
+        roundedPanel.setMinimumSize(buttonSize);  // Thêm dòng này
+        roundedPanel.setMaximumSize(buttonSize);
 
-        // Panel chứa icon và text
+        // Panel chứa icon và text - Chuyển sang BoxLayout để kiểm soát tốt hơn
         JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0)); // vgap=0 để loại bỏ khoảng cách dọc
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
         contentPanel.setOpaque(false);
+
+        // Thêm padding trái
+        contentPanel.add(Box.createHorizontalStrut(10));
 
         // Thêm icon nếu có
         if (iconPath != null && !iconPath.isEmpty()) {
@@ -240,28 +245,29 @@ public class CustomerSidebarMenuPanel extends JPanel {
                 URL resourceUrl = getClass().getResource("/img/" + iconPath);
                 if (resourceUrl != null) {
                     FlatSVGIcon svgIcon = new FlatSVGIcon(resourceUrl);
-                    svgIcon = svgIcon.derive(24, 24);
+                    svgIcon = svgIcon.derive(20, 20); // Giảm kích thước icon xuống 20px
                     JLabel iconLabel = new JLabel(svgIcon);
                     contentPanel.add(iconLabel);
-                } else {
-                    System.out.println("Không tìm thấy icon: " + iconPath);
+                    contentPanel.add(Box.createHorizontalStrut(10)); // Khoảng cách giữa icon và text
                 }
             } catch (Exception e) {
                 System.out.println("Lỗi khi tải icon: " + e.getMessage());
             }
         }
 
-        // Thêm text - giữ nguyên kích thước như AdminDashboard
+        // Thêm text
         JLabel textLabel = new JLabel(text);
-        textLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 17)); // Giữ nguyên kích thước font
+        textLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 17));
         textLabel.setForeground(menuTextColor);
         contentPanel.add(textLabel);
 
-        // Thêm content panel vào giữa của rounded panel để căn giữa theo chiều dọc
-        roundedPanel.add(contentPanel, BorderLayout.CENTER);
+        // Thêm padding phải
+        contentPanel.add(Box.createHorizontalGlue());
 
+        // Thêm content panel vào giữa của rounded panel
+        roundedPanel.add(contentPanel, BorderLayout.CENTER);
         roundedPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         // Xử lý sự kiện hover và click
         roundedPanel.addMouseListener(new MouseAdapter() {
             @Override
@@ -271,44 +277,40 @@ public class CustomerSidebarMenuPanel extends JPanel {
                     roundedPanel.repaint();
                 }
             }
-            
+
             @Override
             public void mouseExited(MouseEvent evt) {
                 if (!roundedPanel.isSelected) {
-                    roundedPanel.setBackground(new Color(0, 0, 0, 0)); // Transparent
+                    roundedPanel.setBackground(new Color(0, 0, 0, 0));
                     roundedPanel.repaint();
                 }
             }
-            
+
             @Override
             public void mouseClicked(MouseEvent evt) {
-                // Bỏ chọn tất cả các panel
                 for (String key : menuItemPanels.keySet()) {
                     RoundedPanel panel = (RoundedPanel) menuItemPanels.get(key);
                     panel.setSelected(false);
-                    panel.setBackground(new Color(0, 0, 0, 0)); // Transparent
+                    panel.setBackground(new Color(0, 0, 0, 0));
                     panel.repaint();
                 }
-                
-                // Chọn panel này
+
                 roundedPanel.setSelected(true);
                 roundedPanel.setBackground(new Color(255, 255, 255, 60));
                 roundedPanel.repaint();
-                
+
                 if (clickListener != null) {
                     clickListener.onMenuItemClicked(panelName);
                 }
             }
         });
-        
-        // Lưu panel để quản lý
+
         menuItemPanels.put(panelName, roundedPanel);
         menuItemOrder.add(panelName);
-        
-        // Thêm panel vào container chính với padding
-        // Thêm vào containerPanel với padding nhỏ hơn
+
+        // Thêm panel vào container chính với padding nhỏ
         JPanel containerPanel = new JPanel(new BorderLayout());
-        containerPanel.setBorder(BorderFactory.createEmptyBorder(1, 10, 1, 10)); // Giảm padding dọc từ 2px xuống 1px
+        containerPanel.setBorder(BorderFactory.createEmptyBorder(1, 10, 1, 10)); // Giảm padding vertical
         containerPanel.setOpaque(false);
         containerPanel.add(roundedPanel, BorderLayout.CENTER);
 

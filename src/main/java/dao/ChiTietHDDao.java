@@ -6,6 +6,8 @@ import java.util.List;
 import model.ChiTietHD;
 import util.DatabaseUtil;
 import javax.swing.JOptionPane;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 public class ChiTietHDDao {
 
@@ -365,6 +367,109 @@ public class ChiTietHDDao {
                 // KHÔNG đóng connection ở đây
             } catch (SQLException e) {
                 System.err.println("Error closing resources: " + e.getMessage());
+            }
+        }
+    }
+    public String kiemTraXeThueDuoc(String maXe, Date ngayBatDau, Date ngayKetThuc, String maHDHienTai) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getValidConnection();
+
+            // 1. Kiểm tra xe đang được thuê bởi hợp đồng khác
+            String sql = "SELECT COUNT(*) FROM CTHD c JOIN HOPDONG h ON c.MAHD = h.MAHD " +
+                         "WHERE c.MAXE = ? AND h.TRANGTHAI IN ('Chờ xác nhận', 'Đang thuê', 'Đã xác nhận') " +
+                         "AND (TRUNC(?) <= TRUNC(c.NGAYKETTHUC) AND TRUNC(?) >= TRUNC(c.NGAYBATDAU))";
+
+            // Loại trừ hợp đồng hiện tại (nếu đang chỉnh sửa)
+            if (maHDHienTai != null && !maHDHienTai.isEmpty()) {
+                sql += " AND c.MAHD <> ?";
+            }
+
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, maXe);
+            pstmt.setDate(2, new java.sql.Date(ngayBatDau.getTime()));
+            pstmt.setDate(3, new java.sql.Date(ngayKetThuc.getTime()));
+
+            if (maHDHienTai != null && !maHDHienTai.isEmpty()) {
+                pstmt.setString(4, maHDHienTai);
+            }
+
+            rs = pstmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return "Xe đã được thuê trong khoảng thời gian này";
+            }
+
+            // 2. Kiểm tra lịch bảo dưỡng
+            rs.close();
+            pstmt.close();
+
+            sql = "SELECT COUNT(*) FROM PHIEUBAODUONG " +
+                  "WHERE MaXe = ? AND TRUNC(NgayBD) BETWEEN TRUNC(?) AND TRUNC(?)";
+
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, maXe);
+            pstmt.setDate(2, new java.sql.Date(ngayBatDau.getTime()));
+            pstmt.setDate(3, new java.sql.Date(ngayKetThuc.getTime()));
+
+            rs = pstmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return "Xe có lịch bảo dưỡng trong khoảng thời gian này";
+            }
+
+            // 3. Kiểm tra trạng thái xe nếu thuê ngay
+            Date today = new Date();
+            // Chuyển sang định dạng chuẩn chỉ có ngày để so sánh
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String todayStr = sdf.format(today);
+            String ngayBDStr = sdf.format(ngayBatDau);
+
+            if (todayStr.equals(ngayBDStr)) { // Nếu thuê ngày hôm nay
+                rs.close();
+                pstmt.close();
+
+                // Chỉ kiểm tra trạng thái xe nếu đây là hợp đồng mới hoặc xe mới được thêm vào hợp đồng
+                // Nếu đang sửa thông tin xe đã có trong hợp đồng thì bỏ qua kiểm tra trạng thái
+                if (maHDHienTai != null && !maHDHienTai.isEmpty()) {
+                    sql = "SELECT COUNT(*) FROM CTHD WHERE MAHD = ? AND MAXE = ?";
+                    pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1, maHDHienTai);
+                    pstmt.setString(2, maXe);
+
+                    rs = pstmt.executeQuery();
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        // Xe này đã thuộc hợp đồng hiện tại, bỏ qua kiểm tra trạng thái
+                        return null;
+                    }
+                }
+
+                // Xe không thuộc hợp đồng hiện tại hoặc là hợp đồng mới, kiểm tra trạng thái
+                sql = "SELECT TrangThai FROM XE WHERE MaXe = ?";
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, maXe);
+
+                rs = pstmt.executeQuery();
+                if (rs.next() && !"Sẵn sàng".equals(rs.getString("TrangThai"))) {
+                    return "Xe không ở trạng thái 'Sẵn sàng' nên không thể thuê ngay";
+                }
+            }
+
+
+            // Nếu không có lỗi
+            return null;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Lỗi kiểm tra: " + e.getMessage();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }

@@ -10,6 +10,7 @@ import controller.NhanVienController;
 import controller.XeController;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Date;
 
 public class HopDongController {
     private HopDongDAO hopDongDAO;
@@ -300,4 +301,8 @@ public class HopDongController {
     public String getDefaultNhanVienMa() {
         return nhanVienController.getDefaultNhanVienMa();
     }
+    public String kiemTraXeThueDuoc(String maXe, Date ngayBatDau, Date ngayKetThuc, String maHDHienTai) {
+         return chiTietHDDAO.kiemTraXeThueDuoc(maXe, ngayBatDau, ngayKetThuc, maHDHienTai);
+    }
+
 }
