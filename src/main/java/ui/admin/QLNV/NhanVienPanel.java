@@ -13,12 +13,15 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.geom.AffineTransform;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -27,6 +30,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
 
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
@@ -106,7 +111,7 @@ public class NhanVienPanel extends JPanel {
 
         searchFilterPanel.addFilterActionListener(e -> filterNhanVien());
         searchFilterPanel.addRefreshActionListener(e -> loadDataToTable());
-        searchFilterPanel.addExportActionListener(e -> exportToExcel());
+        searchFilterPanel.addExportActionListener(e -> exportToCsv());
     }
 
     private void styleButton(JButton button, Color bgColor) {
@@ -457,5 +462,51 @@ public class NhanVienPanel extends JPanel {
     public void updateNhanVienTable(List<NhanVien> dsNV) {
 
         tablePanel.updateData(dsNV);
+    }
+
+    private void exportToCsv() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Chọn nơi lưu file CSV");
+        chooser.setFileFilter(new FileNameExtensionFilter("CSV file", "csv"));
+        chooser.setSelectedFile(new File("DanhSachNhanVien.csv"));
+
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            String path = file.getAbsolutePath();
+            if (!path.toLowerCase().endsWith(".csv")) {
+                path += ".csv";
+                file = new File(path);
+            }
+            try (FileWriter writer = new FileWriter(file)) {
+                DefaultTableModel model = (DefaultTableModel) tablePanel.getTable().getModel();
+                // header
+                for (int c = 0; c < model.getColumnCount(); c++) {
+                    writer.append(model.getColumnName(c));
+                    if (c < model.getColumnCount() - 1)
+                        writer.append(",");
+                }
+                writer.append("\n");
+                // rows
+                for (int r = 0; r < model.getRowCount(); r++) {
+                    for (int c = 0; c < model.getColumnCount(); c++) {
+                        Object val = model.getValueAt(r, c);
+                        writer.append(val == null ? "" : val.toString());
+                        if (c < model.getColumnCount() - 1)
+                            writer.append(",");
+                    }
+                    writer.append("\n");
+                }
+                JOptionPane.showMessageDialog(this,
+                        "Xuất danh sách thành công!\nFile được lưu tại: " + path,
+                        "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi khi xuất file: " + ex.getMessage(),
+                        "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
     }
 }
