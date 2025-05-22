@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 public class XeDAO {
     
@@ -234,6 +235,75 @@ public class XeDAO {
         
         return danhSachXe;
     }
-    
+    public List<Xe> getXeKhaDungTrongThoiGian(Date ngayBD, Date ngayKT) {
+        List<Xe> danhSachXe = new ArrayList<>();
+
+        System.out.println("DEBUG - getXeKhaDungTrongThoiGian: Ngày bắt đầu = " + ngayBD + ", Ngày kết thúc = " + ngayKT);
+
+        // Sửa truy vấn SQL để chỉ kiểm tra NGAYBD từ bảng PHIEUBAODUONG
+        String sql = "SELECT x.* FROM XE x " +
+                     "WHERE x.MAXE NOT IN (" +
+                     "  SELECT c.MAXE FROM CTHD c JOIN HOPDONG h ON c.MAHD = h.MAHD " +
+                     "  WHERE h.TRANGTHAI IN ('Chờ xác nhận', 'Đã xác nhận', 'Đang thuê') " +
+                     "  AND (? <= c.NGAYKETTHUC AND ? >= c.NGAYBATDAU)" +
+                     ") " +
+                     "AND x.MAXE NOT IN (" +
+                     "  SELECT p.MAXE FROM PHIEUBAODUONG p " +
+                     "  WHERE p.NgayBD BETWEEN ? AND ?" +  // Chỉ kiểm tra ngày bảo dưỡng nằm trong khoảng thời gian thuê
+                     ")";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setDate(1, new java.sql.Date(ngayBD.getTime()));
+            pstmt.setDate(2, new java.sql.Date(ngayKT.getTime()));
+            pstmt.setDate(3, new java.sql.Date(ngayBD.getTime()));
+            pstmt.setDate(4, new java.sql.Date(ngayKT.getTime()));
+
+            System.out.println("DEBUG - Executing SQL: " + sql);
+            System.out.println("DEBUG - Parameters: " + ngayBD + ", " + ngayKT + ", " + ngayBD + ", " + ngayKT);
+
+            ResultSet rs = pstmt.executeQuery();
+            int count = 0;
+
+            while (rs.next()) {
+                count++;
+                Xe xe = new Xe();
+                xe.setMaXe(rs.getString("MAXE"));
+                xe.setTenXe(rs.getString("TENXE"));
+                xe.setHangXe(rs.getString("HANGXE"));
+                xe.setBienSo(rs.getString("BIENSO"));
+                xe.setSoCho(rs.getInt("SOCHO"));
+                xe.setNamSX(rs.getInt("NAMSX"));
+
+                // Kiểm tra tên trường đúng
+                try {
+                    xe.setGiaThueNgay(rs.getDouble("GIATHUENGAY"));
+                } catch (SQLException e) {
+                    // Thử tên trường khác nếu trường trên không tồn tại
+                    xe.setGiaThueNgay(rs.getDouble("GIATHUE"));
+                }
+
+                xe.setTrangThai(rs.getString("TRANGTHAI"));
+
+                try {
+                    xe.setHinhAnh(rs.getString("HINHANH"));
+                } catch (SQLException e) {
+                    // Bỏ qua nếu không có trường này
+                }
+
+                danhSachXe.add(xe);
+            }
+
+            System.out.println("DEBUG - Found " + count + " available cars");
+
+        } catch (SQLException e) {
+            System.err.println("ERROR in getXeKhaDungTrongThoiGian: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return danhSachXe;
+    }
+
    
 }

@@ -234,6 +234,58 @@ public class ImageUtil {
     }
     
     // Phương thức hiển thị ảnh
+//    public static void displayImage(String imageName, JLabel label) {
+//        if (imageName == null || imageName.isEmpty()) {
+//            label.setIcon(null);
+//            label.setText("Không có ảnh");
+//            return;
+//        }
+//
+//        try {
+//            // In ra đường dẫn để debug
+//            String fullPath = getImageDirPath() + imageName;
+//            System.out.println("Đang tìm ảnh tại: " + fullPath);
+//
+//            // Tìm file ảnh từ filesystem
+//            File file = new File(fullPath);
+//            if (file.exists()) {
+//                System.out.println("Tìm thấy ảnh từ filesystem");
+//                ImageIcon icon = new ImageIcon(fullPath);
+//                Image scaledImg = icon.getImage().getScaledInstance(
+//                    label.getWidth() > 0 ? label.getWidth() : 250, 
+//                    label.getHeight() > 0 ? label.getHeight() : 200, 
+//                    Image.SCALE_SMOOTH);
+//                label.setIcon(new ImageIcon(scaledImg));
+//                label.setText("");
+//                return;
+//            }
+//
+//            // Nếu không tìm thấy từ filesystem, thử classpath
+//            System.out.println("Thử tìm ảnh từ classpath: " + getImageResourcePath() + imageName);
+//            java.net.URL url = ImageUtil.class.getResource(getImageResourcePath() + imageName);
+//            if (url != null) {
+//                System.out.println("Tìm thấy ảnh từ classpath");
+//                ImageIcon icon = new ImageIcon(url);
+//                Image img = icon.getImage();
+//                Image scaledImg = img.getScaledInstance(
+//                    label.getWidth() > 0 ? label.getWidth() : 250, 
+//                    label.getHeight() > 0 ? label.getHeight() : 200, 
+//                    Image.SCALE_SMOOTH);
+//                label.setIcon(new ImageIcon(scaledImg));
+//                label.setText("");
+//                return;
+//            }
+//
+//            // Không tìm thấy ảnh từ cả hai nguồn
+//            System.out.println("Không tìm thấy ảnh: " + imageName);
+//            label.setIcon(null);
+//            label.setText("Không tìm thấy ảnh");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            label.setIcon(null);
+//            label.setText("Lỗi hiển thị ảnh: " + e.getMessage());
+//        }
+//    }
     public static void displayImage(String imageName, JLabel label) {
         if (imageName == null || imageName.isEmpty()) {
             label.setIcon(null);
@@ -242,48 +294,148 @@ public class ImageUtil {
         }
 
         try {
-            // In ra đường dẫn để debug
+            Image image = null;
             String fullPath = getImageDirPath() + imageName;
-            System.out.println("Đang tìm ảnh tại: " + fullPath);
-
+            
             // Tìm file ảnh từ filesystem
             File file = new File(fullPath);
             if (file.exists()) {
-                System.out.println("Tìm thấy ảnh từ filesystem");
-                ImageIcon icon = new ImageIcon(fullPath);
-                Image scaledImg = icon.getImage().getScaledInstance(
-                    label.getWidth() > 0 ? label.getWidth() : 250, 
-                    label.getHeight() > 0 ? label.getHeight() : 200, 
-                    Image.SCALE_SMOOTH);
-                label.setIcon(new ImageIcon(scaledImg));
-                label.setText("");
-                return;
+                BufferedImage buffImg = ImageIO.read(file);
+                if (buffImg != null) {
+                    image = buffImg;
+                }
             }
 
             // Nếu không tìm thấy từ filesystem, thử classpath
-            System.out.println("Thử tìm ảnh từ classpath: " + getImageResourcePath() + imageName);
-            java.net.URL url = ImageUtil.class.getResource(getImageResourcePath() + imageName);
-            if (url != null) {
-                System.out.println("Tìm thấy ảnh từ classpath");
-                ImageIcon icon = new ImageIcon(url);
-                Image img = icon.getImage();
-                Image scaledImg = img.getScaledInstance(
-                    label.getWidth() > 0 ? label.getWidth() : 250, 
-                    label.getHeight() > 0 ? label.getHeight() : 200, 
-                    Image.SCALE_SMOOTH);
-                label.setIcon(new ImageIcon(scaledImg));
-                label.setText("");
-                return;
+            if (image == null) {
+                java.net.URL url = ImageUtil.class.getResource(getImageResourcePath() + imageName);
+                if (url != null) {
+                    BufferedImage buffImg = ImageIO.read(url);
+                    if (buffImg != null) {
+                        image = buffImg;
+                    }
+                }
             }
 
-            // Không tìm thấy ảnh từ cả hai nguồn
-            System.out.println("Không tìm thấy ảnh: " + imageName);
-            label.setIcon(null);
-            label.setText("Không tìm thấy ảnh");
+            if (image != null) {
+                // Lấy kích thước của container
+                int containerWidth = label.getParent() != null ? label.getParent().getWidth() : 380;
+                int containerHeight = label.getParent() != null ? label.getParent().getHeight() : 280;
+                
+                // Nếu container chưa được render, sử dụng kích thước mặc định của label hoặc giá trị cố định
+                if (containerWidth <= 10) containerWidth = label.getWidth() > 10 ? label.getWidth() : 380;
+                if (containerHeight <= 10) containerHeight = label.getHeight() > 10 ? label.getHeight() : 280;
+                
+                // Kích thước gốc của ảnh
+                int imgWidth = image.getWidth(null);
+                int imgHeight = image.getHeight(null);
+                
+                // Tính tỷ lệ để fit ảnh vào container (giữ nguyên tỷ lệ khung hình)
+                double widthRatio = (double) containerWidth / imgWidth;
+                double heightRatio = (double) containerHeight / imgHeight;
+                double ratio = Math.min(widthRatio, heightRatio) * 0.9; // Để lại một chút margin
+                
+                // Tính kích thước mới theo tỷ lệ
+                int newWidth = (int) (imgWidth * ratio);
+                int newHeight = (int) (imgHeight * ratio);
+                
+                // Tạo ảnh được scale với kích thước mới
+                Image scaledImg = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+                
+                // Đặt icon cho label
+                label.setIcon(new ImageIcon(scaledImg));
+                label.setText("");
+                
+                // Đảm bảo label căn giữa ảnh
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setVerticalAlignment(SwingConstants.CENTER);
+                
+                System.out.println("Đã hiển thị ảnh [" + imageName + "] với kích thước " + newWidth + "x" + newHeight);
+            } else {
+                // Không tìm thấy ảnh từ cả hai nguồn
+                System.out.println("Không tìm thấy ảnh: " + imageName);
+                label.setIcon(null);
+                label.setText("Không tìm thấy ảnh");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             label.setIcon(null);
-            label.setText("Lỗi hiển thị ảnh: " + e.getMessage());
+            label.setText("Lỗi hiển thị ảnh");
+        }
+    }
+    public static void displayImageWithFixedSize(String imageName, JLabel label, int width, int height) {
+        if (imageName == null || imageName.isEmpty()) {
+            label.setIcon(null);
+            label.setText("Không có ảnh");
+            return;
+        }
+
+        try {
+            Image image = null;
+            String fullPath = getImageDirPath() + imageName;
+            
+            // Tìm file ảnh từ filesystem
+            File file = new File(fullPath);
+            if (file.exists()) {
+                BufferedImage buffImg = ImageIO.read(file);
+                if (buffImg != null) {
+                    image = buffImg;
+                }
+            }
+
+            // Nếu không tìm thấy từ filesystem, thử classpath
+            if (image == null) {
+                java.net.URL url = ImageUtil.class.getResource(getImageResourcePath() + imageName);
+                if (url != null) {
+                    BufferedImage buffImg = ImageIO.read(url);
+                    if (buffImg != null) {
+                        image = buffImg;
+                    }
+                }
+            }
+
+            if (image != null) {
+                // Kích thước gốc của ảnh
+                int imgWidth = image.getWidth(null);
+                int imgHeight = image.getHeight(null);
+                
+                // Tính toán kích thước mới giữ nguyên tỷ lệ
+                int newWidth, newHeight;
+                double imgRatio = (double) imgWidth / imgHeight;
+                double targetRatio = (double) width / height;
+                
+                if (imgRatio > targetRatio) {
+                    // Ảnh rộng hơn
+                    newWidth = width;
+                    newHeight = (int) (width / imgRatio);
+                } else {
+                    // Ảnh cao hơn
+                    newHeight = height;
+                    newWidth = (int) (height * imgRatio);
+                }
+                
+                // Tạo ảnh được scale với kích thước mới
+                Image scaledImg = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+                
+                // Đặt icon cho label
+                label.setIcon(new ImageIcon(scaledImg));
+                label.setText("");
+                
+                // Đảm bảo label căn giữa ảnh
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setVerticalAlignment(SwingConstants.CENTER);
+                
+                System.out.println("Đã hiển thị ảnh [" + imageName + "] với kích thước " + newWidth + "x" + newHeight);
+            } else {
+                // Không tìm thấy ảnh từ cả hai nguồn
+                System.out.println("Không tìm thấy ảnh: " + imageName);
+                label.setIcon(null);
+                label.setText("Không tìm thấy ảnh");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            label.setIcon(null);
+            label.setText("Lỗi hiển thị ảnh");
         }
     }
 }

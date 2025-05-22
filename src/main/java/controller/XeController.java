@@ -3,6 +3,7 @@ package controller;
 import dao.XeDAO;
 import model.Xe;
 import java.util.List;
+import java.util.Date;
 
 public class XeController {
     private XeDAO xeDAO;
@@ -90,5 +91,8 @@ public class XeController {
             return getAllXe();
         }
         return xeDAO.getXeByTrangThai(trangThai);
+    }
+    public List<Xe> getXeKhaDungTrongThoiGian(Date ngayBD, Date ngayKT) {
+        return xeDAO.getXeKhaDungTrongThoiGian(ngayBD, ngayKT);
     }
 }

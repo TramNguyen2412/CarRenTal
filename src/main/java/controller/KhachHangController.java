@@ -56,7 +56,9 @@ public class KhachHangController {
     public boolean isCCCDExists(String cccd, String excludeMaKH) {
         return khachHangDAO.isCCCDExists(cccd, excludeMaKH);
     }
-    
+    public KhachHang getKhachHangByTaiKhoan(String maTK) {
+        return khachHangDAO.getKhachHangByMa(maTK);
+    }
     private boolean validateKhachHang(KhachHang kh) {
         // Kiểm tra họ tên
         if (kh.getHoTen() == null || kh.getHoTen().trim().isEmpty()) {
