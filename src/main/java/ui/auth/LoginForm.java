@@ -1,6 +1,6 @@
 package ui.auth;
 
-import dao.TaiKhoanDAO;
+import controller.TaiKhoanController;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -12,6 +12,8 @@ import ui.customer.CustomerDashboard;
 import java.io.File;
 import java.awt.Image;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import model.KhachHang;
+
 public class LoginForm extends javax.swing.JFrame {
     
     private JPanel mainPanel;
@@ -153,16 +155,26 @@ public class LoginForm extends javax.swing.JFrame {
             return;
         }
         
-        TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
-        TaiKhoan taiKhoan = taiKhoanDAO.checkLogin(username, password);
+     // 1. Tạo Controller thay vì gọi trực tiếp DAO
+        TaiKhoanController taiKhoanController = new TaiKhoanController();
+        TaiKhoan taiKhoan = taiKhoanController.dangNhap(username, password);
         
         if (taiKhoan != null) {
             // Kiểm tra vai trò
             switch (taiKhoan.getMaVaiTro()) {
                 case "VT001" -> {
-                    // Mở form dành cho khách hàng
+                    KhachHang khachHang = taiKhoanController.getKhachHangByMaTK(taiKhoan.getMaTK());
+                
+                    // In debug
+                    if (khachHang != null) {
+                        System.out.println("Tìm thấy khách hàng: " + khachHang.getHoTen());
+                    } else {
+                        System.out.println("Không tìm thấy thông tin khách hàng cho tài khoản này");
+                    }
+
+                    // 4. Truyền cả TaiKhoan và KhachHang vào CustomerDashboard
                     this.dispose();
-                    new CustomerDashboard(taiKhoan).setVisible(true);
+                    new CustomerDashboard(taiKhoan, khachHang).setVisible(true);
                 }
                 case "VT002" -> {
                     // Mở form dành cho quản lý

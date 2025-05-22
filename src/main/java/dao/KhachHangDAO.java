@@ -529,6 +529,57 @@ public class KhachHangDAO {
         
         return false;
     }
+    public KhachHang getKhachHangByTaiKhoan(String maTK) {
+        KhachHang kh = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getValidConnection();
+
+            String sql = "SELECT * FROM KHACHHANG WHERE MATK = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, maTK);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                kh = new KhachHang();
+                kh.setMaKH(rs.getString("MAKH"));
+                kh.setMaTK(rs.getString("MATK"));
+                kh.setTongTienNo(rs.getDouble("TONGTIENNO"));
+                kh.setHoTen(rs.getString("HOTEN"));
+                kh.setSdt(rs.getString("SDT"));
+                kh.setEmail(rs.getString("EMAIL"));
+                kh.setCccd(rs.getString("CCCD"));
+                kh.setDiaChi(rs.getString("DIACHI"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in getKhachHangByTaiKhoan: " + e.getMessage());
+            e.printStackTrace();
+
+            // Thử kết nối lại nếu bị lỗi kết nối đóng
+            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+                try {
+                    System.out.println("Attempting to reconnect in getKhachHangByTaiKhoan");
+                    DatabaseUtil.reconnect();
+                    return getKhachHangByTaiKhoan(maTK); // Gọi lại phương thức
+                } catch (SQLException ex) {
+                    System.err.println("Failed to reconnect: " + ex.getMessage());
+                }
+            }
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+            } catch (SQLException e) {
+                System.err.println("Error closing resources: " + e.getMessage());
+            }
+        }
+
+        return kh;
+    }
+
     
     
 }
