@@ -1,183 +1,266 @@
 package ui.admin.QLKH;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+
 import controller.KhachHangController;
 import model.KhachHang;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
-import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
-
+@SuppressWarnings("serial")
 public class SuaKhachHangDialog extends JDialog {
-    private final KhachHangController controller;
-    private final KhachHang khachHang;
+    private JTextField txtMaKH, txtHoTen, txtSDT, txtEmail, txtCCCD, txtDiaChi, txtTongTienNo;
+    private KhachHang khachHang; // The customer being edited
+    private KhachHangController controller;
+    private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+    private boolean successfullyUpdated = false;
 
-    private JTextField txtMaKH, txtMaTK, txtHoTen, txtSDT, txtEmail, txtCCCD, txtDiaChi, txtTongTienNo;
-    private final NumberFormat dinhDangTien = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-
-    public SuaKhachHangDialog(Window parent, KhachHangController controller, KhachHang khachHang) {
-        super(parent, "Sửa Thông Tin Khách Hàng", ModalityType.APPLICATION_MODAL);
-        this.controller = controller;
+    public SuaKhachHangDialog(Window owner, KhachHang khachHang, KhachHangController controller) {
+        super(owner, "Sửa Thông Tin Khách Hàng", ModalityType.APPLICATION_MODAL);
         this.khachHang = khachHang;
-
+        this.controller = controller;
         initComponents();
         loadKhachHangData();
+        setResizable(false);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(owner);
     }
 
     private void initComponents() {
-        setSize(450, 500);
-        setLocationRelativeTo(getOwner());
-        setResizable(false);
+        JPanel mainPanel = new JPanel(new BorderLayout(20, 20));
+        mainPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
+        mainPanel.setBackground(new Color(245, 245, 245));
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        mainPanel.setBackground(Color.WHITE);
-
-        // Tiêu đề
-        JLabel lblTitle = new JLabel("SỬA THÔNG TIN KHÁCH HÀNG", SwingConstants.CENTER);
-        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 16));
-        lblTitle.setForeground(new Color(0, 123, 255));
+        JLabel lblTitle = new JLabel("CHỈNH SỬA THÔNG TIN KHÁCH HÀNG", SwingConstants.CENTER);
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 20));
+        lblTitle.setForeground(new Color(33, 150, 243));
         mainPanel.add(lblTitle, BorderLayout.NORTH);
 
-        // Form thông tin
-        JPanel formPanel = new JPanel(new GridLayout(8, 2, 10, 10));
+        JPanel formPanel = new JPanel();
         formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin khách hàng"));
+        formPanel.setBorder(new CompoundBorder(
+                new LineBorder(new Color(220, 220, 220)),
+                new EmptyBorder(20, 20, 20, 20)));
 
-        formPanel.add(new JLabel("Mã KH:"));        txtMaKH = new JTextField(); txtMaKH.setEditable(false); formPanel.add(txtMaKH);
-        formPanel.add(new JLabel("Mã TK:"));        txtMaTK = new JTextField(); formPanel.add(txtMaTK);
-        formPanel.add(new JLabel("Họ Tên (*):"));   txtHoTen = new JTextField(); formPanel.add(txtHoTen);
-        formPanel.add(new JLabel("SĐT (*):"));      txtSDT = new JTextField(); formPanel.add(txtSDT);
-        formPanel.add(new JLabel("Email:"));        txtEmail = new JTextField(); formPanel.add(txtEmail);
-        formPanel.add(new JLabel("CCCD:"));         txtCCCD = new JTextField(); formPanel.add(txtCCCD);
-        formPanel.add(new JLabel("Địa Chỉ:"));      txtDiaChi = new JTextField(); formPanel.add(txtDiaChi);
-        formPanel.add(new JLabel("Tổng Tiền Nợ:")); txtTongTienNo = new JTextField(); formPanel.add(txtTongTienNo);
+        GroupLayout layout = new GroupLayout(formPanel);
+        formPanel.setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        JLabel lblMaKH = createLabel("Mã KH:");
+        JLabel lblHoTen = createLabel("Họ tên (*):");
+        JLabel lblSDT = createLabel("SĐT (*):");
+        JLabel lblEmail = createLabel("Email:");
+        JLabel lblCCCD = createLabel("CCCD:");
+        JLabel lblDiaChi = createLabel("Địa chỉ:");
+        JLabel lblTongTienNo = createLabel("Tổng nợ:");
+
+        txtMaKH = createStyledTextField();
+        txtMaKH.setEditable(false);
+        txtMaKH.setBackground(new Color(230, 230, 230));
+
+        txtHoTen = createStyledTextField();
+        txtSDT = createStyledTextField();
+        txtEmail = createStyledTextField();
+        txtCCCD = createStyledTextField();
+        txtDiaChi = createStyledTextField();
+
+        txtTongTienNo = createStyledTextField();
+        txtTongTienNo.setEditable(false);
+        txtTongTienNo.setBackground(new Color(230, 230, 230));
+
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                .addComponent(lblMaKH)
+                                .addComponent(lblHoTen)
+                                .addComponent(lblSDT)
+                                .addComponent(lblEmail)
+                                .addComponent(lblCCCD)
+                                .addComponent(lblDiaChi)
+                                .addComponent(lblTongTienNo))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(txtMaKH, GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                                .addComponent(txtHoTen)
+                                .addComponent(txtSDT)
+                                .addComponent(txtEmail)
+                                .addComponent(txtCCCD)
+                                .addComponent(txtDiaChi)
+                                .addComponent(txtTongTienNo))));
+
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblMaKH)
+                        .addComponent(txtMaKH))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblHoTen)
+                        .addComponent(txtHoTen))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblSDT)
+                        .addComponent(txtSDT))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblEmail)
+                        .addComponent(txtEmail))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblCCCD)
+                        .addComponent(txtCCCD))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblDiaChi)
+                        .addComponent(txtDiaChi))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblTongTienNo)
+                        .addComponent(txtTongTienNo)));
 
         mainPanel.add(formPanel, BorderLayout.CENTER);
 
-        // Nút chức năng
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton btnLuu = new JButton("Lưu");
-        JButton btnHuy = new JButton("Hủy");
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        buttonPanel.setBackground(new Color(245, 245, 245));
 
-        btnLuu.setBackground(new Color(40, 167, 69));
-        btnLuu.setForeground(Color.WHITE);
+        JButton btnLuu = createStyledButton("Lưu", new Color(33, 150, 243));
         btnLuu.addActionListener(this::luuKhachHang);
 
-        btnHuy.setBackground(new Color(108, 117, 125));
-        btnHuy.setForeground(Color.WHITE);
+        JButton btnHuy = createStyledButton("Hủy", new Color(120, 120, 120));
         btnHuy.addActionListener(e -> dispose());
 
-        buttonPanel.setBackground(Color.WHITE);
         buttonPanel.add(btnLuu);
         buttonPanel.add(btnHuy);
-
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        add(mainPanel);
+
+        setContentPane(mainPanel);
+    }
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        label.setForeground(new Color(70, 70, 70));
+        return label;
+    }
+
+    private JTextField createStyledTextField() {
+        JTextField textField = new JTextField();
+        textField.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        textField.setPreferredSize(new Dimension(250, 30));
+        textField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)));
+        return textField;
+    }
+
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        button.setForeground(Color.WHITE);
+        button.setBackground(bgColor);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(100, 35));
+        button.setFocusPainted(false);
+        return button;
     }
 
     private void loadKhachHangData() {
-        txtMaKH.setText(khachHang.getMaKH());
-        txtMaTK.setText(getSafeText(khachHang.getMaTK()));
-        txtHoTen.setText(getSafeText(khachHang.getHoTen()));
-        txtSDT.setText(getSafeText(khachHang.getSdt()));
-        txtEmail.setText(getSafeText(khachHang.getEmail()));
-        txtCCCD.setText(getSafeText(khachHang.getCccd()));
-        txtDiaChi.setText(getSafeText(khachHang.getDiaChi()));
-        txtTongTienNo.setText(String.valueOf(khachHang.getTongTienNo()));
-    }
-
-    private String getSafeText(String text) {
-        return text != null ? text : "";
+        if (khachHang != null) {
+            txtMaKH.setText(khachHang.getMaKH());
+            txtHoTen.setText(khachHang.getHoTen());
+            txtSDT.setText(khachHang.getSdt());
+            txtEmail.setText(khachHang.getEmail() != null ? khachHang.getEmail() : "");
+            txtCCCD.setText(khachHang.getCccd() != null ? khachHang.getCccd() : "");
+            txtDiaChi.setText(khachHang.getDiaChi() != null ? khachHang.getDiaChi() : "");
+            txtTongTienNo.setText(currencyFormatter.format(khachHang.getTongTienNo()));
+        }
     }
 
     private void luuKhachHang(ActionEvent e) {
-        try {
-            // Lấy dữ liệu
-            String maKH = txtMaKH.getText().trim();
-            String maTK = txtMaTK.getText().trim();
-            String hoTen = txtHoTen.getText().trim();
-            String sdt = txtSDT.getText().trim();
-            String email = txtEmail.getText().trim();
-            String cccd = txtCCCD.getText().trim();
-            String diaChi = txtDiaChi.getText().trim();
-            double tongTienNo = parseDouble(txtTongTienNo.getText().trim());
+        String hoTen = txtHoTen.getText().trim();
+        String sdt = txtSDT.getText().trim();
+        String email = txtEmail.getText().trim();
+        String cccd = txtCCCD.getText().trim();
+        String diaChi = txtDiaChi.getText().trim();
 
-            // Kiểm tra
-            if (hoTen.isEmpty()) {
-                showError("Họ tên không được để trống", txtHoTen);
-                return;
-            }
-            if (sdt.isEmpty()) {
-                showError("Số điện thoại không được để trống", txtSDT);
-                return;
-            }
-            if (!sdt.matches("^0[0-9]{9}$")) {
-                showError("SĐT không hợp lệ. Phải bắt đầu bằng 0 và đủ 10 chữ số.", txtSDT);
-                return;
-            }
-            if (!email.isEmpty() && !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-                showError("Email không hợp lệ", txtEmail);
-                return;
-            }
-            if (!cccd.isEmpty() && !cccd.matches("^\\d{12}$")) {
-                showError("CCCD không hợp lệ. Phải đúng 12 số.", txtCCCD);
-                return;
-            }
+        if (hoTen.isEmpty()) {
+            showError("Họ tên không được để trống.", txtHoTen);
+            return;
+        }
+        if (sdt.isEmpty()) {
+            showError("Số điện thoại không được để trống.", txtSDT);
+            return;
+        }
+        if (!sdt.matches("^0[0-9]{9}$")) {
+            showError("SĐT không hợp lệ (phải bắt đầu bằng 0 và có 10 chữ số).", txtSDT);
+            return;
+        }
+        if (!email.isEmpty() && !email.matches("^[A-Za-z0-9._%+-]+@[A-ZaZ0-9.-]+\\.[A-Za-z]{2,6}$")) {
+            showError("Email không hợp lệ.", txtEmail);
+            return;
+        }
+        if (!cccd.isEmpty() && !cccd.matches("^[0-9]{12}$")) {
+            showError("CCCD không hợp lệ (phải đủ 12 số).", txtCCCD);
+            return;
+        }
 
-            // Kiểm tra trùng lặp
-            if (!sdt.equals(khachHang.getSdt()) && controller.isPhoneNumberExists(sdt, maKH)) {
-                showError("SĐT đã tồn tại trong hệ thống", txtSDT);
-                return;
-            }
+        // Pass MaKH to check for duplicates excluding the current customer
+        if (!sdt.equals(khachHang.getSdt()) && controller.isPhoneNumberExists(sdt, khachHang.getMaKH())) {
+            showError("SĐT đã tồn tại cho khách hàng khác.", txtSDT);
+            return;
+        }
+        if (!email.isEmpty() && !email.equals(khachHang.getEmail())
+                && controller.isEmailExists(email, khachHang.getMaKH())) {
+            showError("Email đã tồn tại cho khách hàng khác.", txtEmail);
+            return;
+        }
+        if (!cccd.isEmpty() && !cccd.equals(khachHang.getCccd())
+                && controller.isCCCDExists(cccd, khachHang.getMaKH())) {
+            showError("CCCD đã tồn tại cho khách hàng khác.", txtCCCD);
+            return;
+        }
 
-            if (!email.isEmpty() && !email.equals(khachHang.getEmail()) && controller.isEmailExists(email, maKH)) {
-                showError("Email đã tồn tại trong hệ thống", txtEmail);
-                return;
-            }
+        khachHang.setHoTen(hoTen);
+        khachHang.setSdt(sdt);
+        khachHang.setEmail(email.isEmpty() ? null : email);
+        khachHang.setCccd(cccd.isEmpty() ? null : cccd);
+        khachHang.setDiaChi(diaChi.isEmpty() ? null : diaChi);
+        // TongTienNo is not typically edited here by admin, it's usually
+        // system-calculated
 
-            if (!cccd.isEmpty() && !cccd.equals(khachHang.getCccd()) && controller.isCCCDExists(cccd, maKH)) {
-                showError("CCCD đã tồn tại trong hệ thống", txtCCCD);
-                return;
-            }
-
-            // Cập nhật thông tin
-            khachHang.setMaTK(maTK);
-            khachHang.setHoTen(hoTen);
-            khachHang.setSdt(sdt);
-            khachHang.setEmail(email);
-            khachHang.setCccd(cccd);
-            khachHang.setDiaChi(diaChi);
-            khachHang.setTongTienNo(tongTienNo);
-
-            boolean result = controller.updateKhachHang(khachHang);
-            if (result) {
-                JOptionPane.showMessageDialog(this, "Cập nhật thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-            } else {
-                showError("Cập nhật thất bại: " + controller.getErrorMessage(), null);
-            }
-
-        } catch (Exception ex) {
-            showError("Tổng tiền nợ không hợp lệ", txtTongTienNo);
+        if (controller.updateKhachHang(khachHang)) {
+            successfullyUpdated = true;
+            JOptionPane.showMessageDialog(this, "Cập nhật thông tin khách hàng thành công!", "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE);
+            dispose();
+        } else {
+            String errorMsg = controller.getErrorMessage();
+            JOptionPane.showMessageDialog(this,
+                    "Cập nhật thông tin khách hàng thất bại!"
+                            + (errorMsg != null && !errorMsg.isEmpty() ? "\nLỗi: " + errorMsg : ""),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private double parseDouble(String value) throws ParseException {
-        if (value == null || value.isEmpty()) return 0;
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException ex) {
-            return dinhDangTien.parse(value).doubleValue();
+    private void showError(String message, JTextField field) {
+        JOptionPane.showMessageDialog(this, message, "Lỗi Nhập Liệu", JOptionPane.ERROR_MESSAGE);
+        if (field != null) {
+            field.requestFocus();
+            field.selectAll();
         }
     }
 
-    private void showError(String message, JTextField fieldToFocus) {
-        JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
-        if (fieldToFocus != null) fieldToFocus.requestFocus();
+    public boolean isSuccessfullyUpdated() {
+        return successfullyUpdated;
     }
 }

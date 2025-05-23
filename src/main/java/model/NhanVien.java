@@ -7,26 +7,17 @@ public class NhanVien {
     private String sdt;
     private String email;
     private String chucVu;
-    private String cccd;
-    private String diaChi;
-    private double luong;
-    private String ngayVaoLam;
 
     public NhanVien() {
     }
 
-    public NhanVien(String maNV, String maTK, String hoTen, String sdt, String email, String chucVu, 
-                    String cccd, String diaChi, double luong, String ngayVaoLam) {
+    public NhanVien(String maNV, String maTK, String hoTen, String sdt, String email, String chucVu) {
         this.maNV = maNV;
         this.maTK = maTK;
         this.hoTen = hoTen;
         this.sdt = sdt;
         this.email = email;
         this.chucVu = chucVu;
-        this.cccd = cccd;
-        this.diaChi = diaChi;
-        this.luong = luong;
-        this.ngayVaoLam = ngayVaoLam;
     }
 
     // Getters and Setters
@@ -77,38 +68,6 @@ public class NhanVien {
     public void setChucVu(String chucVu) {
         this.chucVu = chucVu;
     }
-    
-    public String getCccd() {
-        return cccd;
-    }
-
-    public void setCccd(String cccd) {
-        this.cccd = cccd;
-    }
-
-    public String getDiaChi() {
-        return diaChi;
-    }
-
-    public void setDiaChi(String diaChi) {
-        this.diaChi = diaChi;
-    }
-
-    public double getLuong() {
-        return luong;
-    }
-
-    public void setLuong(double luong) {
-        this.luong = luong;
-    }
-
-    public String getNgayVaoLam() {
-        return ngayVaoLam;
-    }
-
-    public void setNgayVaoLam(String ngayVaoLam) {
-        this.ngayVaoLam = ngayVaoLam;
-    }
 
     @Override
     public String toString() {
@@ -119,10 +78,6 @@ public class NhanVien {
                 ", sdt='" + sdt + '\'' +
                 ", email='" + email + '\'' +
                 ", chucVu='" + chucVu + '\'' +
-                ", cccd='" + cccd + '\'' +
-                ", diaChi='" + diaChi + '\'' +
-                ", luong=" + luong +
-                ", ngayVaoLam='" + ngayVaoLam + '\'' +
                 '}';
     }
 }

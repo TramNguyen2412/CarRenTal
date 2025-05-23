@@ -1,239 +1,244 @@
 package ui.admin.QLKH;
 
-import controller.KhachHangController;
-import model.KhachHang;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
+import controller.KhachHangController;
+import model.KhachHang;
+
+@SuppressWarnings("serial")
 public class ThemKhachHangDialog extends JDialog {
+    private JTextField txtMaKH, txtHoTen, txtSDT, txtEmail, txtCCCD, txtDiaChi;
     private KhachHangController controller;
-    private JTextField txtMaTK, txtHoTen, txtSDT, txtEmail, txtCCCD, txtDiaChi, txtTongTienNo;
-    private JButton btnThem, btnHuy;
-    private final NumberFormat dinhDangTien = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-    
-    public ThemKhachHangDialog(Window parent, KhachHangController controller) {
-        super(parent, "Thêm Khách Hàng Mới", ModalityType.APPLICATION_MODAL);
+    private boolean successfullyAdded = false;
+
+    public ThemKhachHangDialog(Window owner, KhachHangController controller) {
+        super(owner, "Thêm Khách Hàng Mới", ModalityType.APPLICATION_MODAL);
         this.controller = controller;
         initComponents();
-    }
-    
-    private void initComponents() {
-        setSize(450, 450);
-        setLocationRelativeTo(getOwner());
         setResizable(false);
-        
-        // Main panel
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        mainPanel.setBackground(Color.WHITE);
-        
-        // Title panel
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        titlePanel.setBackground(Color.WHITE);
-        JLabel lblTitle = new JLabel("THÊM KHÁCH HÀNG MỚI");
-        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 16));
-        lblTitle.setForeground(new Color(0, 123, 255));
-        titlePanel.add(lblTitle);
-        
-        // Form panel
-        JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 10));
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        pack(); // Pack after components are added
+        setLocationRelativeTo(owner); // Center relative to owner
+    }
+
+    private void initComponents() {
+        JPanel mainPanel = new JPanel(new BorderLayout(20, 20));
+        mainPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
+        mainPanel.setBackground(new Color(245, 245, 245));
+
+        JLabel lblTitle = new JLabel("THÊM KHÁCH HÀNG MỚI", SwingConstants.CENTER);
+        lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 20));
+        lblTitle.setForeground(new Color(33, 150, 243));
+        mainPanel.add(lblTitle, BorderLayout.NORTH);
+
+        JPanel formPanel = new JPanel();
         formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)), 
-                "Thông tin khách hàng", 
-                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, 
-                javax.swing.border.TitledBorder.DEFAULT_POSITION, 
-                new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14)),
-            new EmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JLabel lblMaTK = new JLabel("Mã TK:");
-        lblMaTK.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        formPanel.add(lblMaTK);
-        txtMaTK = new JTextField();
-        formPanel.add(txtMaTK);
-        
-        JLabel lblHoTen = new JLabel("Họ Tên (*):");
-        lblHoTen.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        formPanel.add(lblHoTen);
-        txtHoTen = new JTextField();
-        formPanel.add(txtHoTen);
-        
-        JLabel lblSDT = new JLabel("SĐT (*):");
-        lblSDT.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        formPanel.add(lblSDT);
-        txtSDT = new JTextField();
-        formPanel.add(txtSDT);
-        
-        JLabel lblEmail = new JLabel("Email:");
-        lblEmail.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        formPanel.add(lblEmail);
-        txtEmail = new JTextField();
-        formPanel.add(txtEmail);
-        
-        JLabel lblCCCD = new JLabel("CCCD:");
-        lblCCCD.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        formPanel.add(lblCCCD);
-        txtCCCD = new JTextField();
-        formPanel.add(txtCCCD);
-        
-        JLabel lblDiaChi = new JLabel("Địa Chỉ:");
-        lblDiaChi.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        formPanel.add(lblDiaChi);
-        txtDiaChi = new JTextField();
-        formPanel.add(txtDiaChi);
-        
-        JLabel lblTongTienNo = new JLabel("Tổng Tiền Nợ:");
-        lblTongTienNo.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        formPanel.add(lblTongTienNo);
-        txtTongTienNo = new JTextField("0");
-        formPanel.add(txtTongTienNo);
-        
-        // Button panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        buttonPanel.setBackground(Color.WHITE);
-        
-        btnThem = new JButton("Thêm");
-        btnThem.setBackground(new Color(40, 167, 69));
-        btnThem.setForeground(Color.WHITE);
-        btnThem.setFocusPainted(false);
-        btnThem.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
-        btnThem.addActionListener(e -> themKhachHang());
-        
-        btnHuy = new JButton("Hủy");
-        btnHuy.setBackground(new Color(108, 117, 125));
-        btnHuy.setForeground(Color.WHITE);
-        btnHuy.setFocusPainted(false);
-        btnHuy.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        formPanel.setBorder(new CompoundBorder(
+                new LineBorder(new Color(220, 220, 220)),
+                new EmptyBorder(20, 20, 20, 20)));
+
+        GroupLayout layout = new GroupLayout(formPanel);
+        formPanel.setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
+
+        JLabel lblMaKH = createLabel("Mã KH:");
+        JLabel lblHoTen = createLabel("Họ tên (*):");
+        JLabel lblSDT = createLabel("SĐT (*):");
+        JLabel lblEmail = createLabel("Email:");
+        JLabel lblCCCD = createLabel("CCCD:");
+        JLabel lblDiaChi = createLabel("Địa chỉ:");
+
+        txtMaKH = createStyledTextField();
+        txtMaKH.setText("Tự động tạo");
+        txtMaKH.setEditable(false);
+        txtMaKH.setBackground(new Color(230, 230, 230));
+
+        txtHoTen = createStyledTextField();
+        txtSDT = createStyledTextField();
+        txtEmail = createStyledTextField();
+        txtCCCD = createStyledTextField();
+        txtDiaChi = createStyledTextField();
+
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                .addComponent(lblMaKH)
+                                .addComponent(lblHoTen)
+                                .addComponent(lblSDT)
+                                .addComponent(lblEmail)
+                                .addComponent(lblCCCD)
+                                .addComponent(lblDiaChi))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(txtMaKH, GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                                .addComponent(txtHoTen)
+                                .addComponent(txtSDT)
+                                .addComponent(txtEmail)
+                                .addComponent(txtCCCD)
+                                .addComponent(txtDiaChi))));
+
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblMaKH)
+                        .addComponent(txtMaKH))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblHoTen)
+                        .addComponent(txtHoTen))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblSDT)
+                        .addComponent(txtSDT))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblEmail)
+                        .addComponent(txtEmail))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblCCCD)
+                        .addComponent(txtCCCD))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblDiaChi)
+                        .addComponent(txtDiaChi)));
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        buttonPanel.setBackground(new Color(245, 245, 245));
+
+        JButton btnThem = createStyledButton("Thêm", new Color(33, 150, 243));
+        btnThem.addActionListener(this::themKhachHang);
+
+        JButton btnHuy = createStyledButton("Hủy", new Color(120, 120, 120));
         btnHuy.addActionListener(e -> dispose());
-        
+
         buttonPanel.add(btnThem);
         buttonPanel.add(btnHuy);
-        
-        // Add to main panel
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        mainPanel.add(formPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        
-        // Add to dialog
-        add(mainPanel);
+
+        setContentPane(mainPanel);
     }
-    
-    private void themKhachHang() {
-        try {
-            // Get data from form
-            String maTK = txtMaTK.getText().trim();
-            String hoTen = txtHoTen.getText().trim();
-            String sdt = txtSDT.getText().trim();
-            String email = txtEmail.getText().trim();
-            String cccd = txtCCCD.getText().trim();
-            String diaChi = txtDiaChi.getText().trim();
-            double tongTienNo = parseDouble(txtTongTienNo.getText().trim());
-            
-            // Validate data
-            if (hoTen.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Họ tên không được để trống", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtHoTen.requestFocus();
-                return;
-            }
-            
-            if (sdt.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtSDT.requestFocus();
-                return;
-            }
-            
-            if (!sdt.matches("^0[0-9]{9}$")) {
-                JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và đủ 10 số)", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtSDT.requestFocus();
-                return;
-            }
-            
-            if (!email.isEmpty() && !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-                JOptionPane.showMessageDialog(this, "Email không hợp lệ", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtEmail.requestFocus();
-                return;
-            }
-            
-            if (!cccd.isEmpty() && !cccd.matches("^[0-9]{12}$")) {
-                JOptionPane.showMessageDialog(this, "CCCD không hợp lệ (phải đủ 12 số)", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtCCCD.requestFocus();
-                return;
-            }
-            
-            // Check for duplicates
-            if (controller.isPhoneNumberExists(sdt, null)) {
-                JOptionPane.showMessageDialog(this, "Số điện thoại đã tồn tại trong hệ thống", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtSDT.requestFocus();
-                return;
-            }
-            
-            if (!email.isEmpty() && controller.isEmailExists(email, null)) {
-                JOptionPane.showMessageDialog(this, "Email đã tồn tại trong hệ thống", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtEmail.requestFocus();
-                return;
-            }
-            
-            if (!cccd.isEmpty() && controller.isCCCDExists(cccd, null)) {
-                JOptionPane.showMessageDialog(this, "CCCD đã tồn tại trong hệ thống", 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-                txtCCCD.requestFocus();
-                return;
-            }
-            
-            // Create customer object
-            KhachHang kh = new KhachHang();
-            kh.setMaTK(maTK);
-            kh.setHoTen(hoTen);
-            kh.setSdt(sdt);
-            kh.setEmail(email);
-            kh.setCccd(cccd);
-            kh.setDiaChi(diaChi);
-            kh.setTongTienNo(tongTienNo);
-            
-            // Add customer
-            String maKH = controller.addKhachHang(kh);
-            
-            if (maKH != null) {
-                JOptionPane.showMessageDialog(this, "Thêm khách hàng thành công với mã " + maKH, 
-                                             "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, controller.getErrorMessage(), 
-                                             "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (NumberFormatException | ParseException e) {
-            JOptionPane.showMessageDialog(this, "Tổng tiền nợ không hợp lệ!", 
-                                         "Lỗi", JOptionPane.ERROR_MESSAGE);
-            txtTongTienNo.requestFocus();
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        label.setForeground(new Color(70, 70, 70));
+        return label;
+    }
+
+    private JTextField createStyledTextField() {
+        JTextField textField = new JTextField();
+        textField.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
+        textField.setPreferredSize(new Dimension(250, 30));
+        textField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)));
+        return textField;
+    }
+
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        button.setForeground(Color.WHITE);
+        button.setBackground(bgColor);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(100, 35));
+        button.setFocusPainted(false);
+        return button;
+    }
+
+    private void themKhachHang(ActionEvent e) {
+        String hoTen = txtHoTen.getText().trim();
+        String sdt = txtSDT.getText().trim();
+        String email = txtEmail.getText().trim();
+        String cccd = txtCCCD.getText().trim();
+        String diaChi = txtDiaChi.getText().trim();
+
+        if (hoTen.isEmpty()) {
+            showError("Họ tên không được để trống.", txtHoTen);
+            return;
+        }
+        if (sdt.isEmpty()) {
+            showError("Số điện thoại không được để trống.", txtSDT);
+            return;
+        }
+        if (!sdt.matches("^0[0-9]{9}$")) {
+            showError("SĐT không hợp lệ (phải bắt đầu bằng 0 và có 10 chữ số).", txtSDT);
+            return;
+        }
+        if (!email.isEmpty() && !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
+            showError("Email không hợp lệ.", txtEmail);
+            return;
+        }
+        if (!cccd.isEmpty() && !cccd.matches("^[0-9]{12}$")) {
+            showError("CCCD không hợp lệ (phải đủ 12 số).", txtCCCD);
+            return;
+        }
+
+        if (controller.isPhoneNumberExists(sdt, null)) {
+            showError("Số điện thoại đã tồn tại trong hệ thống.", txtSDT);
+            return;
+        }
+        if (!email.isEmpty() && controller.isEmailExists(email, null)) {
+            showError("Email đã tồn tại trong hệ thống.", txtEmail);
+            return;
+        }
+        if (!cccd.isEmpty() && controller.isCCCDExists(cccd, null)) {
+            showError("CCCD đã tồn tại trong hệ thống.", txtCCCD);
+            return;
+        }
+
+        KhachHang newKhachHang = new KhachHang();
+        newKhachHang.setHoTen(hoTen);
+        newKhachHang.setSdt(sdt);
+        newKhachHang.setEmail(email.isEmpty() ? null : email);
+        newKhachHang.setCccd(cccd.isEmpty() ? null : cccd);
+        newKhachHang.setDiaChi(diaChi.isEmpty() ? null : diaChi);
+        newKhachHang.setTongTienNo(0);
+        // MaTK is not set here as TaiKhoanUtils is removed.
+        // newKhachHang.setMaTK(null); // maTK will be null by default for a new String
+        // field
+
+        // Call the controller method that takes only KhachHang object
+        String generatedMaKH = controller.addKhachHang(newKhachHang);
+
+        if (generatedMaKH != null) {
+            successfullyAdded = true;
+            JOptionPane.showMessageDialog(this,
+                    "Thêm khách hàng mới thành công!\nMã KH: " + generatedMaKH,
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            dispose();
+        } else {
+            String errorMsg = controller.getErrorMessage();
+            JOptionPane.showMessageDialog(this,
+                    "Thêm khách hàng mới thất bại!"
+                            + (errorMsg != null && !errorMsg.isEmpty() ? "\nLỗi: " + errorMsg : ""),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    private double parseDouble(String value) throws ParseException {
-        if (value == null || value.trim().isEmpty()) {
-            return 0;
+
+    private void showError(String message, JTextField field) {
+        JOptionPane.showMessageDialog(this, message, "Lỗi Nhập Liệu", JOptionPane.ERROR_MESSAGE);
+        if (field != null) {
+            field.requestFocus();
+            field.selectAll();
         }
-        
-        try {
-            // Try to parse as a simple number first
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            // If that fails, try to parse as a currency format
-            return dinhDangTien.parse(value).doubleValue();
-        }
+    }
+
+    public boolean isSuccessfullyAdded() {
+        return successfullyAdded;
     }
 }
