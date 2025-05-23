@@ -99,7 +99,7 @@ public class NhanVienPanel extends JPanel {
         styleButton(btnAdd, new Color(41, 121, 255));
 
         btnStats = new JButton("Thống kê");
-        styleButton(btnStats, new Color(76, 175, 80));
+        styleButton(btnStats, new Color(23, 162, 184));
 
         pnlActions.add(btnAdd);
         pnlActions.add(btnStats);
