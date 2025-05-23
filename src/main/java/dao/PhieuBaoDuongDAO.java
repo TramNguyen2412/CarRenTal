@@ -376,17 +376,25 @@ public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> ch
         psSeq = conn.prepareStatement(sqlGetSeq);
         rs = psSeq.executeQuery();
         String maBD = null;
-        if (rs.next()) maBD = rs.getString(1);
+        // Sau khi lấy số từ sequence:
+        if (rs.next()) {
+            int soTuSeq = rs.getInt(1);
+            maBD = String.format("BD%03d", soTuSeq);
+        }
         if (maBD == null) throw new SQLException("Không lấy được mã phiếu!");
         // Insert phiếu
         psPhieu = conn.prepareStatement(sqlInsertPhieu);
         psPhieu.setString(1, maBD);
         psPhieu.setString(2, phieu.getMaXe());
-        psPhieu.setString(3, phieu.getMaKH());
+        if ("Định Kỳ".equals(phieu.getLoaiBD())) {
+            psPhieu.setNull(3, java.sql.Types.VARCHAR); // MaKH phải null nếu là Định Kỳ
+        } else {
+            psPhieu.setString(3, phieu.getMaKH());
+        }
         psPhieu.setDate(4, new java.sql.Date(phieu.getNgayBD().getTime()));
         psPhieu.setString(5, phieu.getMaNV());
         psPhieu.setString(6, phieu.getLoaiBD());
-        psPhieu.setDouble(7, phieu.getTongTienBD());
+        psPhieu.setDouble(7, 0);
         psPhieu.executeUpdate();
         // Insert chi tiết
         psCT = conn.prepareStatement(sqlInsertCT);
@@ -407,6 +415,54 @@ public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> ch
         if (psSeq != null) psSeq.close();
         if (psPhieu != null) psPhieu.close();
         if (psCT != null) psCT.close();
+        if (conn != null) conn.setAutoCommit(true);
+        if (conn != null) conn.close();
+    }
+}
+public String updatePhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> chiTietList) throws SQLException {
+    Connection conn = null;
+    try {
+        conn = DatabaseUtil.getConnection();
+        conn.setAutoCommit(false);
+
+        // Update phiếu
+        String sqlUpdatePhieu = "UPDATE PhieuBaoDuong SET MaXe=?, MaKH=?, NgayBD=?, MaNV=?, LoaiBD=?, TongTienBD=? WHERE MaBD=?";
+        try (PreparedStatement psPhieu = conn.prepareStatement(sqlUpdatePhieu)) {
+            psPhieu.setString(1, phieu.getMaXe());
+            psPhieu.setString(2, phieu.getMaKH());
+            psPhieu.setDate(3, new java.sql.Date(phieu.getNgayBD().getTime()));
+            psPhieu.setString(4, phieu.getMaNV());
+            psPhieu.setString(5, phieu.getLoaiBD());
+            psPhieu.setDouble(6, phieu.getTongTienBD());
+            psPhieu.setString(7, phieu.getMaBD());
+            psPhieu.executeUpdate();
+        }
+
+        // Xóa chi tiết cũ
+        String sqlDeleteCT = "DELETE FROM CHITIETBAODUONG WHERE MaBD=?";
+        try (PreparedStatement psDel = conn.prepareStatement(sqlDeleteCT)) {
+            psDel.setString(1, phieu.getMaBD());
+            psDel.executeUpdate();
+        }
+
+        // Thêm lại chi tiết mới
+        String sqlInsertCT = "INSERT INTO CHITIETBAODUONG (MaBD, MaDV, SoLuong) VALUES (?, ?, ?)";
+        try (PreparedStatement psCT = conn.prepareStatement(sqlInsertCT)) {
+            for (ChiTietBaoDuong ct : chiTietList) {
+                psCT.setString(1, phieu.getMaBD());
+                psCT.setString(2, ct.getMaDV());
+                psCT.setInt(3, ct.getSoLuong());
+                psCT.addBatch();
+            }
+            psCT.executeBatch();
+        }
+
+        conn.commit();
+        return "Cập nhật phiếu bảo dưỡng thành công";
+    } catch (Exception e) {
+        if (conn != null) conn.rollback();
+        throw e;
+    } finally {
         if (conn != null) conn.setAutoCommit(true);
         if (conn != null) conn.close();
     }

@@ -73,49 +73,34 @@ public class CongNoDAO {
         return list;
     }
     
-    public boolean addLichSuCongNo(LichSuCongNo ls) {
-        // The trigger trg_Update_ins_del_LSCN will handle updating customer debt
-        // The trigger trg_kiem_tra_thanhtoan will validate payment amount
-        String sql = "INSERT INTO LICHSUCONGNO (MaKH, NgayGiaoDich, LoaiGiaoDich, SoTien, GhiChu) " +
-                     "VALUES (?, ?, ?, ?, ?)";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, ls.getMaKH());
-            pstmt.setDate(2, new java.sql.Date(ls.getNgayGiaoDich().getTime()));
-            pstmt.setString(3, ls.getLoaiGiaoDich());
-            pstmt.setDouble(4, ls.getSoTien());
-            pstmt.setString(5, ls.getGhiChu());
-            
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("Error adding debt history: " + e.getMessage());
-            return false;
-        }
+    public boolean addLichSuCongNo(LichSuCongNo ls) throws SQLException {
+    String sql = "INSERT INTO LICHSUCONGNO (MaKH, NgayGiaoDich, LoaiGiaoDich, SoTien, GhiChu) VALUES (?, ?, ?, ?, ?)";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, ls.getMaKH());
+        pstmt.setDate(2, new java.sql.Date(ls.getNgayGiaoDich().getTime()));
+        pstmt.setString(3, ls.getLoaiGiaoDich());
+        pstmt.setDouble(4, ls.getSoTien());
+        pstmt.setString(5, ls.getGhiChu());
+        int rowsAffected = pstmt.executeUpdate();
+        return rowsAffected > 0;
     }
+}
     
-    public boolean updateLichSuCongNo(LichSuCongNo ls) {
-        // The trigger trg_Update_ins_del_LSCN will handle updating customer debt
-        String sql = "UPDATE LICHSUCONGNO SET MaKH = ?, NgayGiaoDich = ?, LoaiGiaoDich = ?, " +
-                     "SoTien = ?, GhiChu = ? WHERE MaLichSu = ?";
-        
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, ls.getMaKH());
-            pstmt.setDate(2, new java.sql.Date(ls.getNgayGiaoDich().getTime()));
-            pstmt.setString(3, ls.getLoaiGiaoDich());
-            pstmt.setDouble(4, ls.getSoTien());
-            pstmt.setString(5, ls.getGhiChu());
-            pstmt.setString(6, ls.getMaLichSu());
-            
-            int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating debt history: " + e.getMessage());
-            return false;
-        }
+public boolean updateLichSuCongNo(LichSuCongNo ls) throws SQLException {
+    String sql = "UPDATE LICHSUCONGNO SET MaKH = ?, NgayGiaoDich = ?, LoaiGiaoDich = ?, SoTien = ?, GhiChu = ? WHERE MaLichSu = ?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, ls.getMaKH());
+        pstmt.setDate(2, new java.sql.Date(ls.getNgayGiaoDich().getTime()));
+        pstmt.setString(3, ls.getLoaiGiaoDich());
+        pstmt.setDouble(4, ls.getSoTien());
+        pstmt.setString(5, ls.getGhiChu());
+        pstmt.setString(6, ls.getMaLichSu());
+        int rowsAffected = pstmt.executeUpdate();
+        return rowsAffected > 0;
     }
+}
     
     public boolean deleteLichSuCongNo(String maLichSu) {
         // The trigger trg_Update_ins_del_LSCN will handle updating customer debt

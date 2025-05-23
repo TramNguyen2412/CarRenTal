@@ -6,7 +6,6 @@
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/controller/HopDongController.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/controller/KhachHangController.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/controller/NhanVienController.java
-/Users/lallan_khann/Documents/CarRenTal/src/main/java/controller/ThongKeController.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/controller/XeController.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/dao/ChiTietBaoDuongDAO.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/dao/ChiTietHDDao.java
@@ -17,7 +16,6 @@
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/dao/NhanVienDAO.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/dao/PhieuBaoDuongDAO.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/dao/TaiKhoanDAO.java
-/Users/lallan_khann/Documents/CarRenTal/src/main/java/dao/ThongKeDAO.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/dao/XeDAO.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/model/ChiTietBaoDuong.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/model/ChiTietHD.java
@@ -34,7 +32,6 @@
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/service/BaoDuongService.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/service/CongNoService.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/service/DichVuBDService.java
-/Users/lallan_khann/Documents/CarRenTal/src/main/java/service/ThongKeService.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/ui/admin/AdminDashboard.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/ui/admin/BaoCaoPanel.java
 /Users/lallan_khann/Documents/CarRenTal/src/main/java/ui/admin/BaoDuongDialog.java

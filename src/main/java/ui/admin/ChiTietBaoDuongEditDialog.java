@@ -1,11 +1,23 @@
+
 package ui.admin;
+
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import model.ChiTietBaoDuong;
 import model.DichVuBD;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.List;
 
 public class ChiTietBaoDuongEditDialog extends JDialog {
     private JComboBox<String> cboDichVu;
@@ -13,16 +25,24 @@ public class ChiTietBaoDuongEditDialog extends JDialog {
     private JButton btnOK, btnCancel;
     private ChiTietBaoDuong chiTiet;
     private List<DichVuBD> dichVuList;
+    private boolean saved = false;
 
-    public ChiTietBaoDuongEditDialog(Window owner, ChiTietBaoDuong chiTiet, List<DichVuBD> dichVuList) {
-        super(owner, chiTiet == null ? "Thêm chi tiết" : "Sửa chi tiết", ModalityType.APPLICATION_MODAL);
-        this.chiTiet = chiTiet;
-        this.dichVuList = dichVuList;
-        initComponents();
-        if (chiTiet != null) loadData();
-        setSize(500, 250);
-        setLocationRelativeTo(owner);
+public ChiTietBaoDuongEditDialog(Window owner, ChiTietBaoDuong chiTiet, List<DichVuBD> dichVuList) {
+    super(owner, chiTiet == null ? "Thêm chi tiết" : "Sửa chi tiết", ModalityType.APPLICATION_MODAL);
+    if (chiTiet == null) {
+        this.chiTiet = null;
+    } else {
+        this.chiTiet = new ChiTietBaoDuong();
+        this.chiTiet.setMaDV(chiTiet.getMaDV());
+        this.chiTiet.setSoLuong(chiTiet.getSoLuong());
+        // Thêm các thuộc tính khác nếu có
     }
+    this.dichVuList = dichVuList;
+    initComponents();
+    if (chiTiet != null) loadData();
+    setSize(500, 250);
+    setLocationRelativeTo(owner);
+}
 
     private void initComponents() {
         setLayout(new GridBagLayout());
@@ -81,13 +101,18 @@ public class ChiTietBaoDuongEditDialog extends JDialog {
             return;
         }
         DichVuBD dv = dichVuList.get(idx);
-        chiTiet = new ChiTietBaoDuong();
+        if (chiTiet == null) chiTiet = new ChiTietBaoDuong();
         chiTiet.setMaDV(dv.getMaDV());
         chiTiet.setSoLuong(soLuong);
+        saved = true;
         dispose();
     }
 
     public ChiTietBaoDuong getChiTietBaoDuong() {
         return chiTiet;
+    }
+
+    public boolean isSaved() {
+        return saved;
     }
 }

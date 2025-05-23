@@ -18,7 +18,7 @@ public class ChiTietBaoDuongTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return data.size();
+        return data != null ? data.size() : 0;
     }
 
     @Override

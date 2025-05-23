@@ -89,7 +89,7 @@ public class BaoDuongPanel extends JPanel {
         add(pnlTitle, BorderLayout.NORTH);
 
         // Bảng dữ liệu
-        String[] columns = {"Mã BD", "Xe", "Khách hàng", "Ngày BD", "Nhân viên", "Loại BD", "Tổng tiền"};
+        String[] columns = {"Mã BD", "Mã Xe", "Mã Khách hàng", "Ngày BD", "Nhân viên", "Loại BD", "Tổng tiền"};
         modelBaoDuong = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -219,10 +219,10 @@ public class BaoDuongPanel extends JPanel {
                 NhanVien nv = baoDuongController.getNhanVienByMa(phieu.getMaNV());
                 modelBaoDuong.addRow(new Object[]{
                         phieu.getMaBD(),
-                        xe != null ? xe.getBienSo() : phieu.getMaXe(),
-                        kh != null ? kh.getHoTen() : "Không có",
+                        xe != null ? phieu.getMaXe() : xe.getBienSo(),
+                        kh != null ? kh.getMaKH() : "Không có",
                         dateFormat.format(phieu.getNgayBD()),
-                        nv != null ? nv.getHoTen() : phieu.getMaNV(),
+                        nv != null ? phieu.getMaNV() : nv.getHoTen(),
                         phieu.getLoaiBD(),
                         currencyFormat.format(phieu.getTongTienBD()) + " VNĐ"
                 });

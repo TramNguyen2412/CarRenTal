@@ -242,8 +242,24 @@ public class BaoDuongService {
 
     public void deleteAllChiTietBaoDuong(String maBD) {
     chiTietBaoDuongDAO.deleteAllChiTietBaoDuong(maBD);
+
 }
-    public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> chiTietList) throws SQLException {
-    return phieuBaoDuongDAO.addPhieuBaoDuongFull(phieu, chiTietList);
+public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> chiTietList) {
+    try {
+        return phieuBaoDuongDAO.addPhieuBaoDuongFull(phieu, chiTietList);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
+}
+
+public String updatePhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> chiTietList) {
+    try {
+        chiTietBaoDuongDAO.deleteAllChiTietBaoDuong(phieu.getMaBD());
+        return phieuBaoDuongDAO.updatePhieuBaoDuongFull(phieu, chiTietList);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
 }
 }

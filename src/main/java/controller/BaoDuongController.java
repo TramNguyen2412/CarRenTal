@@ -236,4 +236,23 @@ public String addPhieuBaoDuongFull(String maXe, String maKH, Date ngayBD, String
     public void deleteAllChiTietBaoDuong(String maBD) {
     baoDuongService.deleteAllChiTietBaoDuong(maBD);
 }
+
+
+    // Cập nhật phiếu + chi tiết trong 1 transaction
+    public String updatePhieuBaoDuongFull(String maBD, String maXe, String maKH, java.util.Date ngayBD, String maNV, String loaiBD, double tongTien, List<ChiTietBaoDuong> chiTietList) {
+        try {
+            PhieuBaoDuong phieu = new PhieuBaoDuong();
+            phieu.setMaBD(maBD);
+            phieu.setMaXe(maXe);
+            phieu.setMaKH(maKH);
+            phieu.setNgayBD(ngayBD);
+            phieu.setMaNV(maNV);
+            phieu.setLoaiBD(loaiBD);
+            phieu.setTongTienBD(tongTien);
+            return baoDuongService.updatePhieuBaoDuongFull(phieu, chiTietList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Lỗi hệ thống: " + e.getMessage();
+        }
+    }
 }

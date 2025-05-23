@@ -675,12 +675,11 @@ double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
         }
         
         private void loadComboBoxData() {
-            // Load khách hàng
             cboKhachHang.removeAllItems();
-
             KhachHangController khachHangController = new KhachHangController();
             List<KhachHang> danhSachKH = khachHangController.getAllKhachHang();
             for (KhachHang kh : danhSachKH) {
+                // Chỉ add mã khách hàng
                 cboKhachHang.addItem(kh.getMaKH());
             }
         }
@@ -738,8 +737,7 @@ double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
                 return;
             }
             
-            String khachHangStr = cboKhachHang.getSelectedItem().toString();
-            String maKH = khachHangStr.substring(0, khachHangStr.indexOf(" -"));
+            String maKH = cboKhachHang.getSelectedItem().toString();
             
             String loaiGD = cboLoaiGD.getSelectedItem().toString();
             Date ngayGD = dateNgayGD.getDate();
