@@ -23,35 +23,28 @@ public class ChiTietBaoDuongDAO {
         dichVuBDDAO = new DichVuBDDAO();
     }
     
-    public List<ChiTietBaoDuong> getChiTietBaoDuongByPhieuBD(String maBD) {
-        List<ChiTietBaoDuong> chiTietBaoDuongs = new ArrayList<>();
-        String sql = "SELECT * FROM CHITIETBAODUONG WHERE MaBD = ?";
-        
-        try ( Connection conn = DatabaseUtil.getConnection();
-              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, maBD);
-            ResultSet rs = stmt.executeQuery();
-            
+public List<ChiTietBaoDuong> getChiTietBaoDuongByPhieuBD(String maBD) {
+    List<ChiTietBaoDuong> chiTietBaoDuongs = new ArrayList<>();
+    String sql = "SELECT * FROM CHITIETBAODUONG WHERE MaBD = ?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setString(1, maBD);
+        try (ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 ChiTietBaoDuong ctbd = new ChiTietBaoDuong();
                 ctbd.setMaBD(rs.getString("MaBD"));
                 ctbd.setMaDV(rs.getString("MaDV"));
                 ctbd.setSoLuong(rs.getInt("SoLuong"));
-                
                 // Load phiếu bảo dưỡng và dịch vụ
-                PhieuBaoDuong pbd = phieuBaoDuongDAO.getPhieuBaoDuongByMaBD(ctbd.getMaBD());
-                DichVuBD dv = dichVuBDDAO.getDichVuBDByMaDV(ctbd.getMaDV());
-                ctbd.setPhieuBaoDuong(pbd);
-                ctbd.setDichVuBD(dv);
-                
+
                 chiTietBaoDuongs.add(ctbd);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        
-        return chiTietBaoDuongs;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return chiTietBaoDuongs;
+}
     
     public boolean addChiTietBaoDuong(ChiTietBaoDuong chiTietBaoDuong) {
         String sql = "INSERT INTO CHITIETBAODUONG (MaBD, MaDV, SoLuong) VALUES (?, ?, ?)";
@@ -135,4 +128,15 @@ public class ChiTietBaoDuongDAO {
         
         return false;
     }
+    public void deleteAllChiTietBaoDuong(String maBD) {
+    String sql = "DELETE FROM ChiTietBaoDuong WHERE MaBD = ?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, maBD);
+        ps.executeUpdate();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+    
 }

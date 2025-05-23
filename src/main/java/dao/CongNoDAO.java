@@ -1,10 +1,15 @@
 package dao;
 
-import model.LichSuCongNo;
-import model.KhachHang;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import model.KhachHang;
+import model.LichSuCongNo;
 import util.DatabaseUtil;
 public class CongNoDAO {
 
@@ -173,4 +178,26 @@ public class CongNoDAO {
         
         return 0;
     }
+    public LichSuCongNo getLichSuCongNoByMa(String maLichSu) {
+    String sql = "SELECT * FROM LICHSUCONGNO WHERE MaLichSu = ?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, maLichSu);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                LichSuCongNo ls = new LichSuCongNo();
+                ls.setMaLichSu(rs.getString("MaLichSu"));
+                ls.setMaKH(rs.getString("MaKH"));
+                ls.setNgayGiaoDich(rs.getDate("NgayGiaoDich"));
+                ls.setLoaiGiaoDich(rs.getString("LoaiGiaoDich"));
+                ls.setSoTien(rs.getDouble("SoTien"));
+                ls.setGhiChu(rs.getString("GhiChu"));
+                return ls;
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error retrieving debt history by id: " + e.getMessage());
+    }
+    return null;
+}
 }

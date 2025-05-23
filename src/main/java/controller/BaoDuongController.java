@@ -1,11 +1,14 @@
 package controller;
-
-import service.BaoDuongService;
-import model.PhieuBaoDuong;
-import model.ChiTietBaoDuong;
 import java.util.Date;
 import java.util.List;
+
+import model.ChiTietBaoDuong;
 import model.DichVuBD;
+import model.KhachHang;
+import model.NhanVien;
+import model.PhieuBaoDuong;
+import model.Xe;
+import service.BaoDuongService;
 
 public class BaoDuongController {
     private BaoDuongService baoDuongService;
@@ -26,7 +29,7 @@ public class BaoDuongController {
         return baoDuongService.getChiTietByMaBD(maBD);
     }
     
-    public String addPhieuBaoDuong(String maXe, String maKH, Date ngayBD, String maNV, String loaiBD) {
+    public String addPhieuBaoDuong(String maXe, String maKH, Date ngayBD, String maNV, String loaiBD,Double tongTien) {
         try {
             PhieuBaoDuong phieu = new PhieuBaoDuong();
             phieu.setMaXe(maXe);
@@ -34,7 +37,7 @@ public class BaoDuongController {
             phieu.setNgayBD(ngayBD);
             phieu.setMaNV(maNV);
             phieu.setLoaiBD(loaiBD);
-            
+            phieu.setTongTienBD(tongTien);
             boolean success = baoDuongService.addPhieuBaoDuong(phieu);
             
             if (success) {
@@ -45,7 +48,6 @@ public class BaoDuongController {
         } catch (IllegalArgumentException e) {
             return "Lỗi: " + e.getMessage();
         } catch (Exception e) {
-            // Extract Oracle error message if available
             String message = e.getMessage();
             if (message.contains("ORA-20017")) {
                 return "Lỗi: Xe đã được thuê trong thời gian này";
@@ -61,7 +63,7 @@ public class BaoDuongController {
         }
     }
     
-    public String updatePhieuBaoDuong(String maBD, String maXe, String maKH, Date ngayBD, String maNV, String loaiBD) {
+    public String updatePhieuBaoDuong(String maBD, String maXe, String maKH, Date ngayBD, String maNV, String loaiBD,Double tongTien) {
         try {
             PhieuBaoDuong phieu = new PhieuBaoDuong();
             phieu.setMaBD(maBD);
@@ -70,6 +72,7 @@ public class BaoDuongController {
             phieu.setNgayBD(ngayBD);
             phieu.setMaNV(maNV);
             phieu.setLoaiBD(loaiBD);
+            phieu.setTongTienBD(tongTien);
             
             boolean success = baoDuongService.updatePhieuBaoDuong(phieu);
             
@@ -81,7 +84,6 @@ public class BaoDuongController {
         } catch (IllegalArgumentException e) {
             return "Lỗi: " + e.getMessage();
         } catch (Exception e) {
-            // Extract Oracle error message if available
             String message = e.getMessage();
             if (message.contains("ORA-20017")) {
                 return "Lỗi: Xe đã được thuê trong thời gian này";
@@ -175,7 +177,63 @@ public class BaoDuongController {
         return baoDuongService.getPhieuBaoDuongByKhachHang(maKH);
     }
 
-    public List<DichVuBD> getAllDichVuBD() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public List<Xe> getAllXe() {
+        return baoDuongService.getAllXe();
     }
+
+    public Xe getXeByMa(String maXe) {
+        return baoDuongService.getXeByMa(maXe);
+    }
+
+    public List<KhachHang> getAllKhachHang() {
+        return baoDuongService.getAllKhachHang();
+    }
+
+    public KhachHang getKhachHangByMa(String maKH) {
+        return baoDuongService.getKhachHangByMa(maKH);
+    }
+
+    public List<NhanVien> getAllNhanVien() {
+        return baoDuongService.getAllNhanVien();
+    }
+
+    public NhanVien getNhanVienByMa(String maNV) {
+        return baoDuongService.getNhanVienByMa(maNV);
+    }
+
+    public List<DichVuBD> getAllDichVuBD() {
+        return baoDuongService.getAllDichVuBD();
+    }
+
+    public DichVuBD getDichVuBDById(String maDV) {
+        return baoDuongService.getDichVuBDById(maDV);
+    }
+
+    public List<PhieuBaoDuong> searchPhieuBaoDuong(String keyword, String loaiBD) {
+        return baoDuongService.searchPhieuBaoDuong(keyword, loaiBD);
+    }
+    
+    public void updateTongTienPhieuBaoDuong(String maBD, double tongTien) {
+    baoDuongService.updateTongTienPhieuBaoDuong(maBD, tongTien);
+}
+    
+public String addPhieuBaoDuongFull(String maXe, String maKH, Date ngayBD, String maNV, String loaiBD, double tongTien, List<ChiTietBaoDuong> chiTietList) {
+    try {
+        PhieuBaoDuong phieu = new PhieuBaoDuong();
+        phieu.setMaXe(maXe);
+        phieu.setMaKH(maKH);
+        phieu.setNgayBD(ngayBD);
+        phieu.setMaNV(maNV);
+        phieu.setLoaiBD(loaiBD);
+        phieu.setTongTienBD(tongTien);
+        return baoDuongService.addPhieuBaoDuongFull(phieu, chiTietList);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;
+    }
+}
+
+    public void deleteAllChiTietBaoDuong(String maBD) {
+    baoDuongService.deleteAllChiTietBaoDuong(maBD);
+}
 }

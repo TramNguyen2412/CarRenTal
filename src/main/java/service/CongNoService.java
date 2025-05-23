@@ -1,11 +1,11 @@
 package service;
 
+import java.util.List;
+
 import dao.CongNoDAO;
 import dao.KhachHangDAO;
-import model.LichSuCongNo;
 import model.KhachHang;
-import java.util.Date;
-import java.util.List;
+import model.LichSuCongNo;
 
 public class CongNoService {
     private CongNoDAO congNoDAO;
@@ -122,4 +122,7 @@ public class CongNoService {
     public double getTongCongNoKhachHang(String maKH) {
         return congNoDAO.getTongCongNoKhachHang(maKH);
     }
+    public LichSuCongNo getLichSuCongNoByMa(String maLichSu) {
+    return congNoDAO.getLichSuCongNoByMa(maLichSu);
+}
 }

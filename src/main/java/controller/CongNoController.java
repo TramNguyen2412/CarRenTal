@@ -1,10 +1,11 @@
 package controller;
 
-import service.CongNoService;
-import model.LichSuCongNo;
-import model.KhachHang;
 import java.util.Date;
 import java.util.List;
+
+import model.KhachHang;
+import model.LichSuCongNo;
+import service.CongNoService;
 
 public class CongNoController {
     private CongNoService congNoService;
@@ -115,4 +116,7 @@ public class CongNoController {
     public double getTongCongNoKhachHang(String maKH) {
         return congNoService.getTongCongNoKhachHang(maKH);
     }
+   public LichSuCongNo getLichSuCongNoByMa(String maLichSu) {
+    return congNoService.getLichSuCongNoByMa(maLichSu);
+} 
 }

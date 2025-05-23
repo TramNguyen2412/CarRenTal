@@ -63,4 +63,11 @@ public class ChiTietBaoDuong {
         }
         return 0;
     }
+    public boolean isHuHaiKhachGayRa() {
+    if (dichVuBD != null && dichVuBD.getTenDV() != null) {
+        String ten = dichVuBD.getTenDV().toLowerCase();
+        return ten.contains("hư hại") || ten.contains("khách gây hư hại") || ten.contains("khách làm hư");
+    }
+    return false;
+}
 }

@@ -12,23 +12,33 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.MaskFormatter;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import controller.HopDongController;
 
 public class ChiTietThueDialog extends JDialog {
     private ChiTietHD chiTietHD;
     private boolean confirmed = false;
+    private HopDongController hopDongController;
+    private String maHDHienTai;
     
     // UI Components
     private JTextField txtMaXe, txtTenXe, txtBienSo, txtHangXe, txtSoCho, txtGiaThue;
     private JFormattedTextField txtNgayBatDau, txtNgayKetThuc;
     private JLabel lblSoNgay, lblThanhTien;
     
-    public ChiTietThueDialog(Window owner, ChiTietHD chiTietHD) {
+//    public ChiTietThueDialog(Window owner, ChiTietHD chiTietHD) {
+//        super(owner, "Thông tin thuê xe", ModalityType.APPLICATION_MODAL);
+//        this.chiTietHD = chiTietHD;
+//        this.hopDongController = new HopDongController();
+//        initComponents();
+//    }
+    public ChiTietThueDialog(Window owner, ChiTietHD chiTietHD, String maHD) {
         super(owner, "Thông tin thuê xe", ModalityType.APPLICATION_MODAL);
         this.chiTietHD = chiTietHD;
-        
+        this.maHDHienTai = maHD;
+        this.hopDongController = new HopDongController();
+
         initComponents();
     }
-    
     private void initComponents() {
         setSize(600, 400);
         setLocationRelativeTo(getOwner());
@@ -265,12 +275,48 @@ public class ChiTietThueDialog extends JDialog {
         }
     }
     
+//    private void saveChiTietThue() {
+//        try {
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+//            Date ngayBatDau = dateFormat.parse(txtNgayBatDau.getText());
+//            Date ngayKetThuc = dateFormat.parse(txtNgayKetThuc.getText());
+//
+//            if (ngayKetThuc.before(ngayBatDau)) {
+//                JOptionPane.showMessageDialog(this, 
+//                        "Ngày kết thúc phải sau ngày bắt đầu!", 
+//                        "Lỗi", 
+//                        JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//
+//            // Kiểm tra xe có thể thuê được không
+//            String errorMessage = hopDongController.kiemTraXeThueDuoc(
+//                chiTietHD.getMaXe(), ngayBatDau, ngayKetThuc, null);
+//
+//            if (errorMessage != null) {
+//                JOptionPane.showMessageDialog(this, errorMessage, "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//
+//            // Nếu không có lỗi, cập nhật thông tin thuê
+//            chiTietHD.setNgayBatDau(ngayBatDau);
+//            chiTietHD.setNgayKetThuc(ngayKetThuc);
+//            confirmed = true;
+//            dispose();
+//
+//        } catch (ParseException e) {
+//            JOptionPane.showMessageDialog(this, 
+//                    "Vui lòng nhập đúng định dạng ngày (dd/MM/yyyy)!", 
+//                    "Lỗi", 
+//                    JOptionPane.ERROR_MESSAGE);
+//        }
+//    }
     private void saveChiTietThue() {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
             Date ngayBatDau = dateFormat.parse(txtNgayBatDau.getText());
             Date ngayKetThuc = dateFormat.parse(txtNgayKetThuc.getText());
-            
+
             if (ngayKetThuc.before(ngayBatDau)) {
                 JOptionPane.showMessageDialog(this, 
                         "Ngày kết thúc phải sau ngày bắt đầu!", 
@@ -278,21 +324,22 @@ public class ChiTietThueDialog extends JDialog {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
-            // Kiểm tra xe có được sử dụng trong khoảng thời gian này không
-            Date today = new Date();
-            if (!ngayBatDau.after(today)) {
-                // Nếu ngày bắt đầu là hôm nay hoặc trước đây, kiểm tra trạng thái xe
-                // Lưu ý: Đây chỉ là kiểm tra cơ bản, trigger sẽ xử lý chi tiết hơn
-                // Trigger sẽ được bật ở database nên không cần làm kiểm tra quá phức tạp ở đây
+
+            // Kiểm tra xe có thể thuê được không
+            String errorMessage = hopDongController.kiemTraXeThueDuoc(
+                chiTietHD.getMaXe(), ngayBatDau, ngayKetThuc, maHDHienTai);
+
+            if (errorMessage != null) {
+                JOptionPane.showMessageDialog(this, errorMessage, "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-            
-            // Cập nhật thông tin thuê
+
+            // Nếu không có lỗi, cập nhật thông tin thuê
             chiTietHD.setNgayBatDau(ngayBatDau);
             chiTietHD.setNgayKetThuc(ngayKetThuc);
             confirmed = true;
             dispose();
-            
+
         } catch (ParseException e) {
             JOptionPane.showMessageDialog(this, 
                     "Vui lòng nhập đúng định dạng ngày (dd/MM/yyyy)!", 
@@ -300,6 +347,7 @@ public class ChiTietThueDialog extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+
     
     public boolean isConfirmed() {
         return confirmed;

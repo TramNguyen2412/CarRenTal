@@ -7,11 +7,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import util.DatabaseUtil;
+import model.ChiTietBaoDuong;
+
 import model.KhachHang;
 import model.NhanVien;
 import model.PhieuBaoDuong;
 import model.Xe;
+import util.DatabaseUtil;
 
 public class PhieuBaoDuongDAO {
 
@@ -172,7 +174,7 @@ public class PhieuBaoDuongDAO {
 
 public boolean addPhieuBaoDuong(PhieuBaoDuong phieuBaoDuong) {
     String sql = "INSERT INTO PHIEUBAODUONG (MaBD, MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) " +
-                 "VALUES (?, ?, ?, ?, ?, ?, 0)";
+                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     try (Connection conn = DatabaseUtil.getConnection()) {
         conn.setAutoCommit(false);  // Tắt tự động commit để chủ động quản lý giao dịch
@@ -184,7 +186,7 @@ public boolean addPhieuBaoDuong(PhieuBaoDuong phieuBaoDuong) {
             stmt.setDate(4, new java.sql.Date(phieuBaoDuong.getNgayBD().getTime()));
             stmt.setString(5, phieuBaoDuong.getMaNV());
             stmt.setString(6, phieuBaoDuong.getLoaiBD());
-
+            stmt.setDouble(7, phieuBaoDuong.getTongTienBD());           
 
             int rowsAffected = stmt.executeUpdate();
 
@@ -307,4 +309,106 @@ public boolean addPhieuBaoDuong(PhieuBaoDuong phieuBaoDuong) {
         
         return false;
     }
+    public List<PhieuBaoDuong> searchPhieuBaoDuong(String keyword, String loaiBD) {
+    List<PhieuBaoDuong> list = new ArrayList<>();
+    String sql = "SELECT p.*, x.TenXe, x.BienSo, k.HoTen as TenKH, n.HoTen as TenNV " +
+                 "FROM PHIEUBAODUONG p " +
+                 "JOIN XE x ON p.MaXe = x.MaXe " +
+                 "LEFT JOIN KHACHHANG k ON p.MaKH = k.MaKH " +
+                 "JOIN NHANVIEN n ON p.MaNV = n.MaNV " +
+                 "WHERE (UPPER(x.TenXe) LIKE UPPER(?) OR UPPER(x.BienSo) LIKE UPPER(?) " +
+                 "OR UPPER(k.HoTen) LIKE UPPER(?) OR UPPER(p.MaBD) LIKE UPPER(?)) " +
+                 (loaiBD != null && !loaiBD.trim().isEmpty() ? "AND UPPER(p.LoaiBD) = UPPER(?) " : "") +
+                 "ORDER BY p.NgayBD DESC";
+
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        String searchPattern = "%" + keyword + "%";
+        pstmt.setString(1, searchPattern);
+        pstmt.setString(2, searchPattern);
+        pstmt.setString(3, searchPattern);
+        pstmt.setString(4, searchPattern);
+        if (loaiBD != null && !loaiBD.trim().isEmpty()) {
+            pstmt.setString(5, loaiBD);
+        }
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                PhieuBaoDuong phieu = new PhieuBaoDuong();
+                phieu.setMaBD(rs.getString("MaBD"));
+                phieu.setMaXe(rs.getString("MaXe"));
+                phieu.setMaKH(rs.getString("MaKH"));
+                phieu.setNgayBD(rs.getDate("NgayBD"));
+                phieu.setMaNV(rs.getString("MaNV"));
+                phieu.setLoaiBD(rs.getString("LoaiBD"));
+                phieu.setTongTienBD(rs.getDouble("TongTienBD"));
+                // ... có thể set thêm các thông tin khác nếu cần
+                list.add(phieu);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error searching maintenance records: " + e.getMessage());
+    }
+    return list;
+}
+    public void updateTongTienPhieuBaoDuong(String maBD, double tongTien) {
+    String sql = "UPDATE PhieuBaoDuong SET TongTienBD = ? WHERE MaBD = ?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setDouble(1, tongTien);
+        ps.setString(2, maBD);
+        ps.executeUpdate();
+    } catch (Exception e) {
+        e.printStackTrace();
+        // Có thể throw RuntimeException hoặc xử lý theo ý bạn
+    }
+}
+public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> chiTietList) throws SQLException {
+    String sqlGetSeq = "SELECT SEQ_PHIEUBAODUONG.NEXTVAL FROM DUAL";
+    String sqlInsertPhieu = "INSERT INTO PhieuBaoDuong (MaBD, MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    String sqlInsertCT = "INSERT INTO CHITIETBAODUONG (MaBD, MaDV, SoLuong) VALUES (?, ?, ?)";
+    Connection conn = null;
+    PreparedStatement psSeq = null, psPhieu = null, psCT = null;
+    ResultSet rs = null;
+    try {
+        conn = DatabaseUtil.getConnection();
+        conn.setAutoCommit(false);
+        // Lấy mã mới
+        psSeq = conn.prepareStatement(sqlGetSeq);
+        rs = psSeq.executeQuery();
+        String maBD = null;
+        if (rs.next()) maBD = rs.getString(1);
+        if (maBD == null) throw new SQLException("Không lấy được mã phiếu!");
+        // Insert phiếu
+        psPhieu = conn.prepareStatement(sqlInsertPhieu);
+        psPhieu.setString(1, maBD);
+        psPhieu.setString(2, phieu.getMaXe());
+        psPhieu.setString(3, phieu.getMaKH());
+        psPhieu.setDate(4, new java.sql.Date(phieu.getNgayBD().getTime()));
+        psPhieu.setString(5, phieu.getMaNV());
+        psPhieu.setString(6, phieu.getLoaiBD());
+        psPhieu.setDouble(7, phieu.getTongTienBD());
+        psPhieu.executeUpdate();
+        // Insert chi tiết
+        psCT = conn.prepareStatement(sqlInsertCT);
+        for (ChiTietBaoDuong ct : chiTietList) {
+            psCT.setString(1, maBD);
+            psCT.setString(2, ct.getMaDV());
+            psCT.setInt(3, ct.getSoLuong());
+            psCT.addBatch();
+        }
+        psCT.executeBatch();
+        conn.commit();
+        return maBD;
+    } catch (Exception e) {
+        if (conn != null) conn.rollback();
+        throw e;
+    } finally {
+        if (rs != null) rs.close();
+        if (psSeq != null) psSeq.close();
+        if (psPhieu != null) psPhieu.close();
+        if (psCT != null) psCT.close();
+        if (conn != null) conn.setAutoCommit(true);
+        if (conn != null) conn.close();
+    }
+}
 }

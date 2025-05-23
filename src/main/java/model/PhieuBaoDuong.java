@@ -117,4 +117,5 @@ public class PhieuBaoDuong {
     public void setChiTietBaoDuong(List<ChiTietBaoDuong> chiTietBaoDuong) {
         this.chiTietBaoDuong = chiTietBaoDuong;
     }
+
 }

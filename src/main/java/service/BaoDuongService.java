@@ -1,14 +1,15 @@
 package service;
 
-import dao.PhieuBaoDuongDAO;
-import dao.ChiTietBaoDuongDAO;
-import dao.XeDAO;
-import dao.KhachHangDAO;
-import model.PhieuBaoDuong;
-import model.ChiTietBaoDuong;
-import model.Xe;
-import java.util.Date;
 import java.util.List;
+
+import dao.ChiTietBaoDuongDAO;
+import dao.KhachHangDAO;
+import dao.PhieuBaoDuongDAO;
+import dao.XeDAO;
+import java.sql.SQLException;
+import model.ChiTietBaoDuong;
+import model.PhieuBaoDuong;
+import model.Xe;
 
 public class BaoDuongService {
     private PhieuBaoDuongDAO phieuBaoDuongDAO;
@@ -187,4 +188,62 @@ public class BaoDuongService {
     public List<PhieuBaoDuong> getPhieuBaoDuongByKhachHang(String maKH) {
         return phieuBaoDuongDAO.getPhieuBaoDuongByMaKhachHang(maKH);
     }
+    // Lấy tất cả xe
+    public List<Xe> getAllXe() {
+        return xeDAO.getAllXe();
+    }
+
+    // Lấy xe theo mã
+    public Xe getXeByMa(String maXe) {
+        return xeDAO.getXeByMa(maXe);
+    }
+
+    // Lấy tất cả khách hàng
+    public List<model.KhachHang> getAllKhachHang() {
+        return khachHangDAO.getAllKhachHang();
+    }
+
+    // Lấy khách hàng theo mã
+    public model.KhachHang getKhachHangByMa(String maKH) {
+        return khachHangDAO.getKhachHangByMa(maKH);
+    }
+
+    // Lấy tất cả nhân viên
+    public List<model.NhanVien> getAllNhanVien() {
+        dao.NhanVienDAO nhanVienDAO = new dao.NhanVienDAO();
+        return nhanVienDAO.getAllNhanVien();
+    }
+
+    // Lấy nhân viên theo mã
+    public model.NhanVien getNhanVienByMa(String maNV) {
+        dao.NhanVienDAO nhanVienDAO = new dao.NhanVienDAO();
+        return nhanVienDAO.getNhanVienByMa(maNV);
+    }
+
+    // Lấy tất cả dịch vụ bảo dưỡng
+    public List<model.DichVuBD> getAllDichVuBD() {
+        dao.DichVuBDDAO dichVuBDDAO = new dao.DichVuBDDAO();
+        return dichVuBDDAO.getAllDichVuBD();
+    }
+
+    // Lấy dịch vụ bảo dưỡng theo mã
+    public model.DichVuBD getDichVuBDById(String maDV) {
+        dao.DichVuBDDAO dichVuBDDAO = new dao.DichVuBDDAO();
+        return dichVuBDDAO.getDichVuBDByMaDV(maDV);
+    }
+
+    // Tìm kiếm phiếu bảo dưỡng theo keyword và loại bảo dưỡng
+    public List<PhieuBaoDuong> searchPhieuBaoDuong(String keyword, String loaiBD) {
+        return phieuBaoDuongDAO.searchPhieuBaoDuong(keyword, loaiBD);
+    }
+    public void updateTongTienPhieuBaoDuong(String maBD, double tongTien) {
+    phieuBaoDuongDAO.updateTongTienPhieuBaoDuong(maBD, tongTien);
+}
+
+    public void deleteAllChiTietBaoDuong(String maBD) {
+    chiTietBaoDuongDAO.deleteAllChiTietBaoDuong(maBD);
+}
+    public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> chiTietList) throws SQLException {
+    return phieuBaoDuongDAO.addPhieuBaoDuongFull(phieu, chiTietList);
+}
 }
