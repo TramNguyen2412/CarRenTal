@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import model.ChiTietBaoDuong;
 
+import model.ChiTietBaoDuong;
 import model.KhachHang;
 import model.NhanVien;
 import model.PhieuBaoDuong;
@@ -233,21 +233,34 @@ public boolean addPhieuBaoDuong(PhieuBaoDuong phieuBaoDuong) {
 }
 
 
-    public boolean deletePhieuBaoDuong(String maBD) {
-        // The TRG_PHIEUBAODUONG_DELETE_COMPOUND trigger will handle updating car status
-        String sql = "DELETE FROM PHIEUBAODUONG WHERE MaBD = ?";
+public boolean deletePhieuBaoDuong(String maBD) {
+    String sqlDeleteCT = "DELETE FROM CHITIETBAODUONG WHERE MaBD = ?";
+    String sqlDeletePhieu = "DELETE FROM PHIEUBAODUONG WHERE MaBD = ?";
+    try (Connection conn = DatabaseUtil.getConnection()) {
+        conn.setAutoCommit(false);
+        try (
+            PreparedStatement psCT = conn.prepareStatement(sqlDeleteCT);
+            PreparedStatement psPhieu = conn.prepareStatement(sqlDeletePhieu)
+        ) {
+            psCT.setString(1, maBD);
+            psCT.executeUpdate();
 
-        try (Connection conn = DatabaseUtil.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, maBD);
+            psPhieu.setString(1, maBD);
+            int rowsAffected = psPhieu.executeUpdate();
 
-            int rowsAffected = stmt.executeUpdate();
+            conn.commit();
             return rowsAffected > 0;
         } catch (SQLException e) {
-           System.err.println("Error deleting maintenance record: " + e.getMessage());
-            return false;
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
         }
+    } catch (SQLException e) {
+        System.err.println("Error deleting maintenance record: " + e.getMessage());
+        return false;
     }
+}
     public List<PhieuBaoDuong> searchPhieuBaoDuong(String keyword) {
         List<PhieuBaoDuong> list = new ArrayList<>();
         String sql = "SELECT p.*, x.TenXe, x.BienSo, k.HoTen as TenKH, n.HoTen as TenNV " +
