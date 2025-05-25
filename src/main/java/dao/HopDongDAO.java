@@ -2,7 +2,9 @@ package dao;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import model.HopDong;
 import model.ChiTietHD;
 import util.DatabaseUtil;
@@ -643,4 +645,41 @@ public class HopDongDAO {
         
         return danhSachHD;
     }
+    public static List<Map<String, Object>> getTop5HopDong(int year) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        try {
+            Connection conn = DatabaseUtil.getConnection();
+
+            // Câu truy vấn đã điều chỉnh - tên cột phải đúng với schema trong database
+            String sql = "SELECT hd.MaHD, kh.HoTen, hd.NgayLap, hd.TongTien " +
+                         "FROM HOPDONG hd " +  // Đảm bảo tên bảng viết hoa nếu Oracle yêu cầu
+                         "JOIN KHACHHANG kh ON hd.MaKH = kh.MaKH " + // MaKhachHang -> MaKH theo schema
+                         "WHERE EXTRACT(YEAR FROM hd.NgayLap) = ? " +
+                         "ORDER BY hd.TongTien DESC " +
+                         "FETCH FIRST 5 ROWS ONLY";
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, year);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> row = new HashMap<>();
+                        // Điều chỉnh tên cột
+                        row.put("maHD", rs.getString("MaHD"));  // MaHopDong -> MaHD
+                        row.put("tenKH", rs.getString("HoTen"));
+                        row.put("ngayLap", rs.getDate("NgayLap"));
+                        row.put("tongTien", rs.getDouble("TongTien"));
+                        result.add(row);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi SQL: " + e.getMessage());  // In thêm thông báo lỗi chi tiết
+        }
+
+        return result;
+    }
+    
 }

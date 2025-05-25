@@ -8,6 +8,8 @@ import model.Xe;
 import java.util.Date;
 import java.util.List;
 
+
+
 public class GioXeController {
     private GioXeDAO gioXeDAO;
     private ChiTietHDDao chiTietHDDao;
@@ -29,48 +31,61 @@ public class GioXeController {
     // Thêm xe vào giỏ hàng
     public boolean themXeVaoGio(String maXe, String maKH, Date ngayBatDau, Date ngayKetThuc) {
         errorMessage = new StringBuilder();
-        
+
         // Kiểm tra dữ liệu đầu vào
         if (maXe == null || maXe.trim().isEmpty()) {
             errorMessage.append("Mã xe không hợp lệ");
             return false;
         }
-        
+
         if (maKH == null || maKH.trim().isEmpty()) {
             errorMessage.append("Mã khách hàng không hợp lệ");
             return false;
         }
-        
+
         if (ngayBatDau == null || ngayKetThuc == null) {
             errorMessage.append("Ngày thuê không hợp lệ");
             return false;
         }
-        
+
         // Kiểm tra ngày bắt đầu và ngày kết thúc
         Date today = new Date();
         if (ngayBatDau.before(today)) {
             errorMessage.append("Ngày bắt đầu không được là ngày trong quá khứ");
             return false;
         }
-        
+
         if (ngayKetThuc.before(ngayBatDau)) {
             errorMessage.append("Ngày kết thúc phải sau ngày bắt đầu");
             return false;
         }
-        
+
+        // Kiểm tra số lượng xe trong giỏ đã đạt giới hạn chưa
+        if (demSoXeTrongGio(maKH) >= 3) {
+            errorMessage.append("Giỏ hàng đã có đủ 3 xe, không thể thêm nữa!");
+            return false;
+        }
+
+        // Kiểm tra xe đã có trong giỏ chưa
+        if (kiemTraXeTrungTrongGio(maXe, maKH)) {
+            errorMessage.append("Xe này đã có trong giỏ hàng!");
+            return false;
+        }
+
         // Kiểm tra xe có khả dụng trong khoảng thời gian này không
         String checkResult = chiTietHDDao.kiemTraXeThueDuoc(maXe, ngayBatDau, ngayKetThuc, null);
         if (checkResult != null) {
             errorMessage.append(checkResult);
             return false;
         }
-        
+
         // Tạo đối tượng GioXe
         GioXe gioXe = new GioXe(maKH, maXe, ngayBatDau, ngayKetThuc);
-        
+
         // Thêm vào giỏ hàng
         return gioXeDAO.themXeVaoGio(gioXe);
     }
+
     
     // Xóa xe khỏi giỏ hàng
     public boolean xoaXeKhoiGio(String maGH) {
@@ -151,7 +166,11 @@ public class GioXeController {
         
         return tongTien;
     }
-    
+    public boolean kiemTraXeTrungTrongGio(String maXe, String maKH) {
+        return gioXeDAO.kiemTraXeTrungTrongGio(maXe, maKH);
+    }
+
+
     public String getErrorMessage() {
         return errorMessage.toString();
     }

@@ -9,10 +9,11 @@ public class Xe {
     private int namSX;
     private String trangThai;
     private double giaThueNgay;
-    private String hinhAnh; 
+    private String hinhAnh;
+
     public Xe() {
     }
-    
+
     public Xe(String maXe, String tenXe, String bienSo, int soCho, String hangXe, int namSX, String trangThai, double giaThueNgay, String hinhAnh) {
         this.maXe = maXe;
         this.tenXe = tenXe;
@@ -24,7 +25,7 @@ public class Xe {
         this.giaThueNgay = giaThueNgay;
         this.hinhAnh = hinhAnh;
     }
-    
+
     // Getters và Setters
     public String getMaXe() {
         return maXe;
@@ -33,7 +34,7 @@ public class Xe {
     public void setMaXe(String maXe) {
         this.maXe = maXe;
     }
-   
+
     public String getHinhAnh() {
         return hinhAnh;
     }
@@ -41,6 +42,7 @@ public class Xe {
     public void setHinhAnh(String hinhAnh) {
         this.hinhAnh = hinhAnh;
     }
+
     public String getTenXe() {
         return tenXe;
     }

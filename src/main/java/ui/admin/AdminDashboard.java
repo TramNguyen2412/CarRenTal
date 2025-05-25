@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import ui.admin.QLXe.XePanel;
 import ui.admin.QLHD.HopDongPanel;
+import ui.admin.ThongKePanel;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 
@@ -24,11 +25,11 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
     private JPanel nhanVienPanel;
     private XePanel xePanel;
     private JPanel dichVuBDPanel;
-    private JPanel hopDongPanel;
+    private HopDongPanel hopDongPanel;
     private JPanel baoDuongPanel;
     private JPanel congNoPanel;
     private JPanel giaoNhanXePanel;
-    private JPanel baoCaoPanel;
+    private ThongKePanel tkPanel;
     
     public AdminDashboard(TaiKhoan taiKhoan) {
         this.taiKhoan = taiKhoan;
@@ -78,7 +79,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         baoDuongPanel = createSimplePanel("Quản Lý Bảo Dưỡng");
         congNoPanel = createSimplePanel("Quản Lý Công Nợ");
         giaoNhanXePanel = createSimplePanel("Quản Lý Giao Nhận Xe");
-        baoCaoPanel = createDashboardPanel();
+        tkPanel = new ThongKePanel();
         
         // Thêm các panel vào cardLayout
         contentPanel.add(trangChuPanel, "trangChu");
@@ -90,7 +91,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         contentPanel.add(baoDuongPanel, "baoDuong");
         contentPanel.add(congNoPanel, "congNo");
         contentPanel.add(giaoNhanXePanel, "giaoNhanXe");
-        contentPanel.add(baoCaoPanel, "baoCao");
+        contentPanel.add(tkPanel, "baoCao");
         
         // Hiển thị panel mặc định
         cardLayout.show(contentPanel, "trangChu");

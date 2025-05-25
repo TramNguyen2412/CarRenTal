@@ -186,4 +186,34 @@ public class GioXeDAO {
         
         return 0;
     }
+    public boolean kiemTraXeTrungTrongGio(String maXe, String maKH) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseUtil.getConnection();
+
+            String query = "SELECT COUNT(*) FROM GioHang WHERE MaXe=? AND MaKH=?";
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, maXe);
+            stmt.setString(2, maKH);
+
+            rs = stmt.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            // Đóng kết nối
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

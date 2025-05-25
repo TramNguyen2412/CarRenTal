@@ -1,5 +1,3 @@
-
-
 package ui.admin;
 
 import ui.admin.QLXe.XePanel;

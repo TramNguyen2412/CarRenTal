@@ -22,7 +22,7 @@ public class SearchFilterPanel extends JPanel {
         txtSearch = new JTextField(20);
         cboFilter = new JComboBox<>(new String[]{"Tất cả", "Đang thuê", "Sẵn sàng", "Bảo dưỡng"});
         btnRefresh = new JButton("Làm mới");
-        btnExport = new JButton("Xuất Excel");
+   
         
         // Style các components
         txtSearch.setPreferredSize(new Dimension(200, 30));
@@ -34,15 +34,13 @@ public class SearchFilterPanel extends JPanel {
         cboFilter.setPreferredSize(new Dimension(150, 30));
         
         styleButton(btnRefresh, new Color(0, 150, 136));
-        styleButton(btnExport, new Color(113, 85, 156));
-        
         // Thêm components vào panel
         add(new JLabel("Tìm kiếm:"));
         add(txtSearch);
         add(new JLabel("Lọc:"));
         add(cboFilter);
         add(btnRefresh);
-        add(btnExport);
+   
     }
     
     private void styleButton(JButton button, Color bgColor) {
@@ -77,9 +75,7 @@ public class SearchFilterPanel extends JPanel {
         btnRefresh.addActionListener(listener);
     }
     
-    public void addExportActionListener(ActionListener listener) {
-        btnExport.addActionListener(listener);
-    }
+
     
     public void resetFilter() {
         txtSearch.setText("");
