@@ -1,6 +1,7 @@
 
-package ui.admin;
+package ui.admin.BaoDuong;
 
+import ui.admin.BaoDuong.BaoDuongDialog;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;

@@ -1,4 +1,4 @@
-package ui.admin;
+package ui.admin.CongNo;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

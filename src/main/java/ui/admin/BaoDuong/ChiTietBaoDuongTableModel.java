@@ -1,4 +1,4 @@
-package ui.admin;
+package ui.admin.BaoDuong;
 
 import model.ChiTietBaoDuong;
 import model.DichVuBD;

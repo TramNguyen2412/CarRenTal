@@ -1,5 +1,5 @@
 
-package ui.admin;
+package ui.admin.BaoDuong;
 
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;

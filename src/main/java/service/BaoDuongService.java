@@ -6,7 +6,6 @@ import dao.ChiTietBaoDuongDAO;
 import dao.KhachHangDAO;
 import dao.PhieuBaoDuongDAO;
 import dao.XeDAO;
-import java.sql.SQLException;
 import model.ChiTietBaoDuong;
 import model.PhieuBaoDuong;
 import model.Xe;
@@ -248,8 +247,22 @@ public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> ch
     try {
         return phieuBaoDuongDAO.addPhieuBaoDuongFull(phieu, chiTietList);
     } catch (Exception e) {
-        e.printStackTrace();
-        return null;
+        String msg = e.getMessage();
+        if (msg != null && msg.contains("ORA-200")) {
+            // Lấy dòng chứa ORA-200xx: ...
+            String[] lines = msg.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.contains("ORA-200")) {
+                    int idx = line.indexOf(":");
+                    if (idx > 0 && idx < line.length() - 1) {
+                        return line.substring(idx + 1).trim();
+                    }
+                    return line.trim();
+                }
+            }
+            return msg;
+        }
+        return "Lỗi hệ thống: " + msg;
     }
 }
 
@@ -258,8 +271,22 @@ public String updatePhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong>
         chiTietBaoDuongDAO.deleteAllChiTietBaoDuong(phieu.getMaBD());
         return phieuBaoDuongDAO.updatePhieuBaoDuongFull(phieu, chiTietList);
     } catch (Exception e) {
-        e.printStackTrace();
-        return null;
+        String msg = e.getMessage();
+        if (msg != null && msg.contains("ORA-200")) {
+            // Lấy dòng chứa ORA-200xx: ...
+            String[] lines = msg.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.contains("ORA-200")) {
+                    int idx = line.indexOf(":");
+                    if (idx > 0 && idx < line.length() - 1) {
+                        return line.substring(idx + 1).trim();
+                    }
+                    return line.trim();
+                }
+            }
+            return msg;
+        }
+        return "Lỗi hệ thống: " + msg;
     }
 }
 }

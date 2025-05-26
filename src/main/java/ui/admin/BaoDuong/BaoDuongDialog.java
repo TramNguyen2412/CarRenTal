@@ -1,4 +1,4 @@
-package ui.admin;
+package ui.admin.BaoDuong;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -244,27 +244,32 @@ private void updateTongTien() {
                 return;
             }
 
-            boolean success;
-            if (phieu == null) {
-                // Thêm mới phiếu + chi tiết
-                String result = baoDuongController.addPhieuBaoDuongFull(
-                    maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
-                );
-                success = result != null && !result.trim().isEmpty();
-            } else {
-                // Cập nhật phiếu + chi tiết
-                String result = baoDuongController.updatePhieuBaoDuongFull(
-                    maBD, maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
-                );
-                success = result != null && result.toLowerCase().contains("thành công");
-            }
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thành công!");
-                parentPanel.loadDataToTable();
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
+        boolean success = false;
+        String result = null;
+        if (phieu == null) {
+            // Thêm mới phiếu + chi tiết
+            result = baoDuongController.addPhieuBaoDuongFull(
+                maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
+            );
+        } else {
+            // Cập nhật phiếu + chi tiết
+            result = baoDuongController.updatePhieuBaoDuongFull(
+                maBD, maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
+            );
+        }
+        // Chỉ thành công nếu result là mã phiếu (bắt đầu bằng "BD") hoặc chứa "thành công"
+        if (result != null && (result.trim().startsWith("BD") || result.toLowerCase().contains("thành công"))) {
+            success = true;
+        }
+        if (success) {
+            JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thành công!");
+            parentPanel.loadDataToTable();
+            dispose();
+        } else if (result != null && !result.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, result, "Lỗi nghiệp vụ", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
         }
 
 }

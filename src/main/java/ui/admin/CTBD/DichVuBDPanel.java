@@ -1,4 +1,4 @@
-package ui.admin;
+package ui.admin.CTBD;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -33,6 +33,7 @@ import javax.swing.table.TableColumnModel;
 
 import controller.DichVuBDController;
 import model.DichVuBD;
+import ui.admin.BaoDuong.ButtonEditorDichVuBD;
 
 public class DichVuBDPanel extends JPanel {
     private JTable tableDichVu;
