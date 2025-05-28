@@ -62,7 +62,7 @@ public class SidebarMenuPanel extends JPanel {
         setupLogo();
         setupUserInfo();
         addDefaultMenuItems();
-        selectMenuItem("trangChu");
+        selectMenuItem("taikhoan");
     }
     
     // Override để vẽ gradient cho toàn bộ sidebar
@@ -219,7 +219,7 @@ public class SidebarMenuPanel extends JPanel {
     
     // Phương thức thêm các menu item mặc định
     private void addDefaultMenuItems() {
-        addMenuItem("Trang chủ", "home3.svg", "trangChu");
+        addMenuItem("Tài khoản", "account.svg", "taikhoan");
         addMenuItem("Khách Hàng", "customer.svg", "khachHang");
         addMenuItem("Nhân Viên", "staff.svg", "nhanVien");
         addMenuItem("Quản Lý Xe", "Car.svg", "xe");

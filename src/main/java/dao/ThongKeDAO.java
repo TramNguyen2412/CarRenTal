@@ -9,7 +9,8 @@ import oracle.jdbc.OracleTypes;
 import util.DatabaseUtil;
 public class ThongKeDAO {
     // Lấy số liệu tổng quan
-    
+   private static boolean reportViewLocked = false;
+    private static Connection lockedConnection = null; 
     public Map<String, Number> getTongQuan() {
         Map<String, Number> result = new HashMap<>();
         Connection conn = null;
@@ -185,9 +186,58 @@ public class ThongKeDAO {
     }
     
 
-    // Phương thức lấy connection hợp lệ
+     //Phương thức lấy connection hợp lệ
     private Connection getValidConnection() throws SQLException {
       
         return DatabaseUtil.getConnection();
     }
+//    
+//    private Connection getValidConnection() throws SQLException {
+//        if (reportViewLocked && lockedConnection != null && !lockedConnection.isClosed()) {
+//            // Nếu đang trong chế độ "xem báo cáo", trả về connection cũ
+//            return lockedConnection;
+//        }
+//
+//        // Ngược lại lấy connection mới
+//        Connection conn = DatabaseUtil.getConnection();
+//
+//        // Thiết lập TRANSACTION_READ_COMMITTED để cho phép phantom read
+//        if (reportViewLocked) {
+//            conn.setAutoCommit(false);
+//            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//            lockedConnection = conn;
+//        }
+//
+//        return conn;
+//    }
+//
+//    // Phương thức bắt đầu "xem báo cáo" - gọi khi vào tab thống kê
+//    public static void startReportView() {
+//        reportViewLocked = true;
+//        try {
+//            // Đảm bảo connection cũ được đóng
+//            if (lockedConnection != null) {
+//                try { lockedConnection.close(); } catch (Exception e) {}
+//                lockedConnection = null;
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("Đã bắt đầu chế độ xem báo cáo - phantom read có thể xảy ra");
+//    }
+//
+//    // Phương thức kết thúc "xem báo cáo" - gọi khi thoát tab thống kê
+//    public static void endReportView() {
+//        reportViewLocked = false;
+//        try {
+//            if (lockedConnection != null) {
+//                lockedConnection.close();
+//                lockedConnection = null;
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("Đã kết thúc chế độ xem báo cáo");
+//    }
+
 }

@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import ui.customer.GioXePanel;
+import ui.customer.DanhGiaPanel;
 
 public class CustomerDashboard extends JFrame implements CustomerSidebarMenuPanel.MenuClickListener {
     private JPanel mainPanel;

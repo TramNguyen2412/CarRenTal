@@ -24,6 +24,17 @@ public class ChiTietHDDao {
         
         return conn;
     }
+//    private Connection getValidConnection() throws SQLException {
+//    Connection conn = DatabaseUtil.getConnection();
+//    
+//    // Kiểm tra kết nối còn hợp lệ không
+//    if (!conn.isValid(2)) { // timeout 2 giây
+//        System.out.println("Connection invalidated, reconnecting...");
+//        conn = DatabaseUtil.reconnect(conn); // Truyền conn hiện tại và nhận conn mới
+//    }
+//    
+//    return conn;
+//}
     
     public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
         List<ChiTietHD> danhSachCT = new ArrayList<>();
@@ -60,16 +71,16 @@ public class ChiTietHDDao {
             System.err.println("Error in getChiTietHDByMaHD: " + e.getMessage());
             e.printStackTrace();
             
-            // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in getChiTietHDByMaHD");
-                    DatabaseUtil.reconnect();
-                    return getChiTietHDByMaHD(maHD); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            // Thử kết nối lại nếu bị lỗi kết nối đóng
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in getChiTietHDByMaHD");
+//                    DatabaseUtil.reconnect();
+//                    return getChiTietHDByMaHD(maHD); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -111,15 +122,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in addChiTietHD");
-                    DatabaseUtil.reconnect();
-                    return addChiTietHD(ct); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in addChiTietHD");
+//                    DatabaseUtil.reconnect();
+//                    return addChiTietHD(ct); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -160,15 +171,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in updateChiTietHD");
-                    DatabaseUtil.reconnect();
-                    return updateChiTietHD(ct); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in updateChiTietHD");
+//                    DatabaseUtil.reconnect();
+//                    return updateChiTietHD(ct); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -205,15 +216,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in deleteChiTietHD");
-                    DatabaseUtil.reconnect();
-                    return deleteChiTietHD(maHD, maXe); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in deleteChiTietHD");
+//                    DatabaseUtil.reconnect();
+//                    return deleteChiTietHD(maHD, maXe); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -249,15 +260,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in deleteChiTietHDByMaHD");
-                    DatabaseUtil.reconnect();
-                    return deleteChiTietHDByMaHD(maHD); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in deleteChiTietHDByMaHD");
+//                    DatabaseUtil.reconnect();
+//                    return deleteChiTietHDByMaHD(maHD); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -300,15 +311,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in isXeDangThueTrongThoiGian");
-                    DatabaseUtil.reconnect();
-                    return isXeDangThueTrongThoiGian(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in isXeDangThueTrongThoiGian");
+//                    DatabaseUtil.reconnect();
+//                    return isXeDangThueTrongThoiGian(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             return false;
         } finally {
             try {
@@ -350,15 +361,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in hasMaintenanceSchedule");
-                    DatabaseUtil.reconnect();
-                    return hasMaintenanceSchedule(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in hasMaintenanceSchedule");
+//                    DatabaseUtil.reconnect();
+//                    return hasMaintenanceSchedule(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             return false;
         } finally {
             try {
@@ -500,15 +511,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in getXeTrangThai");
-                    DatabaseUtil.reconnect();
-                    return getXeTrangThai(maXe); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in getXeTrangThai");
+//                    DatabaseUtil.reconnect();
+//                    return getXeTrangThai(maXe); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             return null;
         } finally {
             try {

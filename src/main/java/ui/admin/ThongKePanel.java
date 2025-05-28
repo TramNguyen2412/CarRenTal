@@ -84,6 +84,7 @@ public class ThongKePanel extends JPanel {
     private final Color ACCENT_COLOR = new Color(0, 150, 136);
     private final Color BACKGROUND_COLOR = new Color(245, 245, 250);
     private final Color HEADER_COLOR = new Color(33, 150, 243);
+    private boolean isBarChart = true;
     
     public ThongKePanel() {
         controller = new ThongKeController();
@@ -92,6 +93,21 @@ public class ThongKePanel extends JPanel {
         
         initComponents();
         loadData();
+//            controller = new ThongKeController();
+//        controller.startReportView(); // Bắt đầu chế độ xem báo cáo khi mở panel
+//
+//        currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+//
+//        initComponents();
+//        loadData();
+
+//        // Đăng ký sự kiện khi panel bị hủy
+//        addComponentListener(new ComponentAdapter() {
+//            @Override
+//            public void componentHidden(ComponentEvent e) {
+//                controller.endReportView();
+//            }
+//        });
     }
     
     private void initComponents() {
@@ -213,6 +229,44 @@ public class ThongKePanel extends JPanel {
         } finally {
             setCursor(Cursor.getDefaultCursor());
         }
+//        try {
+//            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//
+//            // Kết thúc chế độ xem báo cáo trước khi làm mới dữ liệu
+//            controller.endReportView();
+//
+//            // Lấy năm thống kê hiện tại
+//            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
+//
+//            // Cập nhật dữ liệu thống kê tổng quan
+//            Map<String, Number> tongQuan = controller.getTongQuan();
+//            lblTongSoXe.setText(String.valueOf(tongQuan.getOrDefault("tongSoXe", 0)));
+//            lblTongSoKhachHang.setText(String.valueOf(tongQuan.getOrDefault("tongSoKhachHang", 0)));
+//            lblTongSoHopDong.setText(String.valueOf(tongQuan.getOrDefault("tongSoHopDong", 0)));
+//            lblTongDoanhThu.setText(currencyFormat.format(tongQuan.getOrDefault("tongDoanhThu", 0)));
+//
+//            // Cập nhật bảng top 5 hợp đồng
+//            updateTopContractsTable(selectedYear);
+//
+//            // Cập nhật dữ liệu thống kê theo tháng, khách hàng, xe
+//            loadDataByYear(selectedYear);
+//
+//            // Bắt đầu lại chế độ xem báo cáo sau khi làm mới
+//            controller.startReportView();
+//
+//            JOptionPane.showMessageDialog(this, 
+//                "Đã cập nhật dữ liệu thống kê thành công!", 
+//                "Thông báo", 
+//                JOptionPane.INFORMATION_MESSAGE);
+//        } catch (Exception e) {
+//            JOptionPane.showMessageDialog(this, 
+//                "Lỗi khi làm mới dữ liệu: " + e.getMessage(), 
+//                "Lỗi", JOptionPane.ERROR_MESSAGE);
+//            e.printStackTrace();
+//        } finally {
+//            setCursor(Cursor.getDefaultCursor());
+//        }
+
     }
 
     private void addExportButtons() {
@@ -534,36 +588,126 @@ public class ThongKePanel extends JPanel {
 
 
     
+//    private JPanel createStatBoxPanel(String title, String value, Color color) {
+//        JPanel panel = new JPanel();
+//        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+//        panel.setBackground(Color.WHITE);
+//        panel.setBorder(BorderFactory.createLineBorder(color, 2));
+//        
+//        // Tiêu đề
+//        JLabel lblTitle = new JLabel(title);
+//        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+//        lblTitle.setForeground(color);
+//        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        lblTitle.setBorder(BorderFactory.createEmptyBorder(15, 10, 5, 10));
+//        
+//        // Giá trị
+//        JLabel lblValue = new JLabel(value);
+//        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 28));
+//        lblValue.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        lblValue.setBorder(BorderFactory.createEmptyBorder(10, 10, 15, 10));
+//        
+//        panel.add(lblTitle);
+//        panel.add(lblValue);
+//        
+//        return panel;
+//    }
+    
     private JPanel createStatBoxPanel(String title, String value, Color color) {
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Vẽ hình chữ nhật với góc bo tròn
+                g2.setColor(color);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                g2.dispose();
+            }
+        };
+
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createLineBorder(color, 2));
-        
+        // Đặt panel thành trong suốt để hiển thị phần vẽ tùy chỉnh
+        panel.setOpaque(false);
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
         // Tiêu đề
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTitle.setForeground(color);
+        lblTitle.setForeground(Color.WHITE);
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblTitle.setBorder(BorderFactory.createEmptyBorder(15, 10, 5, 10));
-        
+
         // Giá trị
         JLabel lblValue = new JLabel(value);
         lblValue.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblValue.setForeground(Color.WHITE);
         lblValue.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblValue.setBorder(BorderFactory.createEmptyBorder(10, 10, 15, 10));
-        
+
         panel.add(lblTitle);
         panel.add(lblValue);
-        
+
         return panel;
     }
+
     
+//    private JPanel createDoanhThuThangPanel() {
+//        JPanel panel = new JPanel(new BorderLayout(10, 10));
+//        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+//        panel.setBackground(BACKGROUND_COLOR);
+//        
+//        // Panel tiêu đề
+//        JPanel titlePanel = new JPanel(new BorderLayout());
+//        titlePanel.setBackground(Color.WHITE);
+//        titlePanel.setBorder(new CompoundBorder(
+//            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
+//            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+//        ));
+//        
+//        JLabel lblTitle = new JLabel("Doanh thu theo tháng");
+//        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+//        lblTitle.setForeground(HEADER_COLOR);
+//        titlePanel.add(lblTitle, BorderLayout.CENTER);
+//        
+//        panel.add(titlePanel, BorderLayout.NORTH);
+//        
+//        // Panel biểu đồ
+//        JPanel chartPanel = new JPanel(new BorderLayout());
+//        chartPanel.setBackground(Color.WHITE);
+//        chartPanel.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
+//        
+//        // Tạo biểu đồ trống
+//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+//        JFreeChart chart = ChartFactory.createBarChart(
+//                "Biểu đồ doanh thu theo tháng", 
+//                "Tháng", 
+//                "Doanh thu (VNĐ)", 
+//                dataset,
+//                PlotOrientation.VERTICAL, 
+//                true, 
+//                true, 
+//                false);
+//        
+//        CategoryPlot plot = chart.getCategoryPlot();
+//        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+//        renderer.setSeriesPaint(0, PRIMARY_COLOR);
+//        renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
+//        
+//        chartPanelDoanhThuThang = new ChartPanel(chart);
+//        chartPanelDoanhThuThang.setPreferredSize(new Dimension(700, 500));
+//        chartPanel.add(chartPanelDoanhThuThang, BorderLayout.CENTER);
+//        
+//        panel.add(chartPanel, BorderLayout.CENTER);
+//        
+//        return panel;
+//    }
     private JPanel createDoanhThuThangPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel.setBackground(BACKGROUND_COLOR);
-        
+
         // Panel tiêu đề
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(Color.WHITE);
@@ -571,19 +715,60 @@ public class ThongKePanel extends JPanel {
             BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
             BorderFactory.createEmptyBorder(15, 20, 15, 20)
         ));
-        
+
         JLabel lblTitle = new JLabel("Doanh thu theo tháng");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(HEADER_COLOR);
-        titlePanel.add(lblTitle, BorderLayout.CENTER);
-        
+
+        // Thêm panel chứa radio buttons để chọn loại biểu đồ
+        JPanel chartTypePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        chartTypePanel.setOpaque(false);
+
+        JRadioButton rbBarChart = new JRadioButton("Biểu đồ cột");
+        JRadioButton rbLineChart = new JRadioButton("Biểu đồ đường");
+        rbBarChart.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        rbLineChart.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        rbBarChart.setOpaque(false);
+        rbLineChart.setOpaque(false);
+
+        // Group các radio buttons
+        ButtonGroup chartTypeGroup = new ButtonGroup();
+        chartTypeGroup.add(rbBarChart);
+        chartTypeGroup.add(rbLineChart);
+        rbBarChart.setSelected(true); // Mặc định chọn biểu đồ cột
+
+        chartTypePanel.add(rbBarChart);
+        chartTypePanel.add(rbLineChart);
+
+        // Xử lý sự kiện khi chọn loại biểu đồ
+        rbBarChart.addActionListener(e -> {
+            isBarChart = true;
+            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
+            Map<Integer, Double> doanhThuThang = controller.getDoanhThuTheoThang(selectedYear);
+            updateDoanhThuThangChart(doanhThuThang, selectedYear, true);
+        });
+
+        rbLineChart.addActionListener(e -> {
+            isBarChart = false;
+            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
+            Map<Integer, Double> doanhThuThang = controller.getDoanhThuTheoThang(selectedYear);
+            updateDoanhThuThangChart(doanhThuThang, selectedYear, false);
+        });
+
+        // Kết hợp title và panel chọn loại biểu đồ
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+        headerPanel.add(lblTitle, BorderLayout.WEST);
+        headerPanel.add(chartTypePanel, BorderLayout.EAST);
+
+        titlePanel.add(headerPanel, BorderLayout.CENTER);
         panel.add(titlePanel, BorderLayout.NORTH);
-        
+
         // Panel biểu đồ
         JPanel chartPanel = new JPanel(new BorderLayout());
         chartPanel.setBackground(Color.WHITE);
         chartPanel.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
-        
+
         // Tạo biểu đồ trống
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         JFreeChart chart = ChartFactory.createBarChart(
@@ -595,20 +780,21 @@ public class ThongKePanel extends JPanel {
                 true, 
                 true, 
                 false);
-        
+
         CategoryPlot plot = chart.getCategoryPlot();
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
         renderer.setSeriesPaint(0, PRIMARY_COLOR);
         renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
-        
+
         chartPanelDoanhThuThang = new ChartPanel(chart);
         chartPanelDoanhThuThang.setPreferredSize(new Dimension(700, 500));
         chartPanel.add(chartPanelDoanhThuThang, BorderLayout.CENTER);
-        
+
         panel.add(chartPanel, BorderLayout.CENTER);
-        
+
         return panel;
     }
+
     
     private JPanel createDoanhThuKhachHangPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
@@ -806,7 +992,98 @@ public class ThongKePanel extends JPanel {
     }
 
     
-    private void updateDoanhThuThangChart(Map<Integer, Double> data, int year) {
+//    private void updateDoanhThuThangChart(Map<Integer, Double> data, int year) {
+//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+//
+//        // Thêm dữ liệu vào dataset
+//        for (int i = 1; i <= 12; i++) {
+//            Double value = data.getOrDefault(i, 0.0);
+//            dataset.addValue(value, "Doanh thu", "Tháng " + i);
+//        }
+//
+//        JFreeChart chart = ChartFactory.createBarChart(
+//                "Biểu đồ doanh thu theo tháng năm " + year, 
+//                "Tháng", 
+//                "Doanh thu (VNĐ)", 
+//                dataset,
+//                PlotOrientation.VERTICAL, 
+//                true, 
+//                true, 
+//                false);
+//
+//        // Tùy chỉnh màu sắc và style
+//        CategoryPlot plot = chart.getCategoryPlot();
+//
+//        // Đổi màu nền plot thành màu xám nhạt
+//        plot.setBackgroundPaint(new Color(240, 240, 240));
+//
+//        // Đổi màu lưới thành trắng để tăng độ tương phản
+//        plot.setDomainGridlinePaint(Color.WHITE);
+//        plot.setRangeGridlinePaint(Color.WHITE);
+//
+//        // Đổi độ dày của lưới
+//        plot.setDomainGridlineStroke(new BasicStroke(1.0f));
+//        plot.setRangeGridlineStroke(new BasicStroke(1.0f));
+//
+//        // Tùy chỉnh renderer để làm đẹp các cột
+//        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+//
+//        // Đổi màu cột thành gradient từ xanh đậm đến xanh nhạt
+//        GradientPaint gradientPaint = new GradientPaint(
+//                0, 0, new Color(30, 144, 255),  // Xanh đậm
+//                0, 500, new Color(135, 206, 250) // Xanh nhạt
+//        );
+//
+//        renderer.setSeriesPaint(0, gradientPaint);
+//
+//        // Bỏ đường viền đen xung quanh cột
+//        renderer.setDrawBarOutline(false);
+//
+//        // Làm tròn góc cột
+//        renderer.setBarPainter(new StandardBarPainter());
+//
+//        // Shadow effect cho các cột (tùy chọn)
+//        renderer.setShadowVisible(true);
+//        renderer.setShadowPaint(new Color(0, 0, 0, 50));
+//        renderer.setShadowXOffset(2.0);
+//        renderer.setShadowYOffset(2.0);
+//
+//        // THÊM CODE: Hiển thị giá trị bên trong các cột
+//        renderer.setDefaultItemLabelsVisible(true);
+//
+//        // Format số với dấu phân cách hàng nghìn
+//        NumberFormat formatter = NumberFormat.getIntegerInstance();
+//
+//        // Định dạng nhãn hiển thị trong cột
+//        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator(
+//                "{2}", formatter));
+//        renderer.setDefaultItemLabelFont(new Font("Segoe UI", Font.BOLD, 11));
+//
+//        // Đặt vị trí của nhãn ở GIỮA mỗi cột
+//        renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(
+//                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+//
+//        // Đặt màu chữ trắng để nhìn rõ trên nền xanh
+//        renderer.setDefaultItemLabelPaint(Color.WHITE);
+//
+//        // Làm đẹp legend
+//        LegendTitle legend = chart.getLegend();
+//        legend.setBackgroundPaint(new Color(250, 250, 250));
+//        legend.setItemFont(new Font("Segoe UI", Font.PLAIN, 12));
+//
+//        // Làm đẹp tiêu đề biểu đồ
+//        chart.getTitle().setFont(new Font("Segoe UI", Font.BOLD, 16));
+//        chart.getTitle().setPaint(new Color(51, 51, 51));
+//
+//        // Làm đẹp font chữ cho các trục
+//        plot.getDomainAxis().setLabelFont(new Font("Segoe UI", Font.BOLD, 12));
+//        plot.getRangeAxis().setLabelFont(new Font("Segoe UI", Font.BOLD, 12));
+//        plot.getDomainAxis().setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
+//        plot.getRangeAxis().setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
+//
+//        chartPanelDoanhThuThang.setChart(chart);
+//    }
+    private void updateDoanhThuThangChart(Map<Integer, Double> data, int year, boolean isBarChart) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
         // Thêm dữ liệu vào dataset
@@ -815,70 +1092,144 @@ public class ThongKePanel extends JPanel {
             dataset.addValue(value, "Doanh thu", "Tháng " + i);
         }
 
-        JFreeChart chart = ChartFactory.createBarChart(
-                "Biểu đồ doanh thu theo tháng năm " + year, 
-                "Tháng", 
-                "Doanh thu (VNĐ)", 
-                dataset,
-                PlotOrientation.VERTICAL, 
-                true, 
-                true, 
-                false);
+        JFreeChart chart;
 
-        // Tùy chỉnh màu sắc và style
-        CategoryPlot plot = chart.getCategoryPlot();
+        if (isBarChart) {
+            // Tạo biểu đồ cột
+            chart = ChartFactory.createBarChart(
+                    "Biểu đồ doanh thu theo tháng năm " + year, 
+                    "Tháng", 
+                    "Doanh thu (VNĐ)", 
+                    dataset,
+                    PlotOrientation.VERTICAL, 
+                    true, 
+                    true, 
+                    false);
 
-        // Đổi màu nền plot thành màu xám nhạt
-        plot.setBackgroundPaint(new Color(240, 240, 240));
+            // Tùy chỉnh màu sắc và style cho biểu đồ cột
+            CategoryPlot plot = chart.getCategoryPlot();
 
-        // Đổi màu lưới thành trắng để tăng độ tương phản
-        plot.setDomainGridlinePaint(Color.WHITE);
-        plot.setRangeGridlinePaint(Color.WHITE);
+            // Đổi màu nền plot thành màu xám nhạt
+            plot.setBackgroundPaint(new Color(240, 240, 240));
 
-        // Đổi độ dày của lưới
-        plot.setDomainGridlineStroke(new BasicStroke(1.0f));
-        plot.setRangeGridlineStroke(new BasicStroke(1.0f));
+            // Đổi màu lưới thành trắng để tăng độ tương phản
+            plot.setDomainGridlinePaint(Color.WHITE);
+            plot.setRangeGridlinePaint(Color.WHITE);
 
-        // Tùy chỉnh renderer để làm đẹp các cột
-        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+            // Đổi độ dày của lưới
+            plot.setDomainGridlineStroke(new BasicStroke(1.0f));
+            plot.setRangeGridlineStroke(new BasicStroke(1.0f));
 
-        // Đổi màu cột thành gradient từ xanh đậm đến xanh nhạt
-        GradientPaint gradientPaint = new GradientPaint(
-                0, 0, new Color(30, 144, 255),  // Xanh đậm
-                0, 500, new Color(135, 206, 250) // Xanh nhạt
-        );
+            // Tùy chỉnh renderer để làm đẹp các cột
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
 
-        renderer.setSeriesPaint(0, gradientPaint);
+            // Đổi màu cột thành gradient từ xanh đậm đến xanh nhạt
+            GradientPaint gradientPaint = new GradientPaint(
+                    0, 0, new Color(30, 144, 255),  // Xanh đậm
+                    0, 500, new Color(135, 206, 250) // Xanh nhạt
+            );
 
-        // Bỏ đường viền đen xung quanh cột
-        renderer.setDrawBarOutline(false);
+            renderer.setSeriesPaint(0, gradientPaint);
 
-        // Làm tròn góc cột
-        renderer.setBarPainter(new StandardBarPainter());
+            // Bỏ đường viền đen xung quanh cột
+            renderer.setDrawBarOutline(false);
 
-        // Shadow effect cho các cột (tùy chọn)
-        renderer.setShadowVisible(true);
-        renderer.setShadowPaint(new Color(0, 0, 0, 50));
-        renderer.setShadowXOffset(2.0);
-        renderer.setShadowYOffset(2.0);
+            // Làm tròn góc cột
+            renderer.setBarPainter(new StandardBarPainter());
 
-        // THÊM CODE: Hiển thị giá trị bên trong các cột
-        renderer.setDefaultItemLabelsVisible(true);
+            // Shadow effect cho các cột (tùy chọn)
+            renderer.setShadowVisible(true);
+            renderer.setShadowPaint(new Color(0, 0, 0, 50));
+            renderer.setShadowXOffset(2.0);
+            renderer.setShadowYOffset(2.0);
 
-        // Format số với dấu phân cách hàng nghìn
-        NumberFormat formatter = NumberFormat.getIntegerInstance();
+            // Hiển thị giá trị bên trong các cột
+            renderer.setDefaultItemLabelsVisible(true);
 
-        // Định dạng nhãn hiển thị trong cột
-        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator(
-                "{2}", formatter));
-        renderer.setDefaultItemLabelFont(new Font("Segoe UI", Font.BOLD, 11));
+            // Format số với dấu phân cách hàng nghìn
+            NumberFormat formatter = NumberFormat.getIntegerInstance();
 
-        // Đặt vị trí của nhãn ở GIỮA mỗi cột
-        renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(
-                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+            // Định dạng nhãn hiển thị trong cột
+            renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator(
+                    "{2}", formatter));
+            renderer.setDefaultItemLabelFont(new Font("Segoe UI", Font.BOLD, 11));
 
-        // Đặt màu chữ trắng để nhìn rõ trên nền xanh
-        renderer.setDefaultItemLabelPaint(Color.WHITE);
+            // Đặt vị trí của nhãn ở GIỮA mỗi cột
+            renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(
+                    ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+
+            // Đặt màu chữ trắng để nhìn rõ trên nền xanh
+            renderer.setDefaultItemLabelPaint(Color.WHITE);
+        } else {
+            // Tạo biểu đồ đường
+            chart = ChartFactory.createLineChart(
+                    "Biểu đồ doanh thu theo tháng năm " + year, 
+                    "Tháng", 
+                    "Doanh thu (VNĐ)", 
+                    dataset,
+                    PlotOrientation.VERTICAL, 
+                    true, 
+                    true, 
+                    false);
+
+            // Tùy chỉnh màu sắc và style cho biểu đồ đường
+            CategoryPlot plot = chart.getCategoryPlot();
+
+            // Đổi màu nền plot thành màu xám nhạt
+            plot.setBackgroundPaint(new Color(240, 240, 240));
+
+            // Đổi màu lưới thành trắng để tăng độ tương phản
+            plot.setDomainGridlinePaint(Color.WHITE);
+            plot.setRangeGridlinePaint(Color.WHITE);
+
+            // Đổi độ dày của lưới
+            plot.setDomainGridlineStroke(new BasicStroke(1.0f));
+            plot.setRangeGridlineStroke(new BasicStroke(1.0f));
+
+            // Tùy chỉnh renderer cho đường
+            org.jfree.chart.renderer.category.LineAndShapeRenderer renderer = 
+                    (org.jfree.chart.renderer.category.LineAndShapeRenderer) plot.getRenderer();
+
+            // Đặt màu đường là xanh dương đậm
+            renderer.setSeriesPaint(0, new Color(30, 144, 255));
+
+            // Làm đường dày hơn
+            renderer.setSeriesStroke(0, new BasicStroke(3.0f));
+
+            // Hiển thị các điểm dữ liệu
+            renderer.setSeriesShapesVisible(0, true);
+
+            // Đặt kích thước của các điểm dữ liệu
+            renderer.setSeriesShape(0, new java.awt.geom.Ellipse2D.Double(-5.0, -5.0, 10.0, 10.0));
+
+            // Đặt màu fill cho các điểm
+            renderer.setSeriesShapesFilled(0, true);
+            renderer.setSeriesFillPaint(0, Color.WHITE);
+
+            // Đặt màu outline cho các điểm
+            renderer.setUseFillPaint(true);
+            renderer.setUseOutlinePaint(true);
+            renderer.setSeriesOutlinePaint(0, new Color(30, 144, 255));
+            renderer.setSeriesOutlineStroke(0, new BasicStroke(2.0f));
+
+            // Hiển thị giá trị trên mỗi điểm
+            renderer.setDefaultItemLabelsVisible(true);
+
+            // Format số với dấu phân cách hàng nghìn
+            NumberFormat formatter = NumberFormat.getIntegerInstance();
+
+            // Định dạng nhãn hiển thị
+            renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator(
+                    "{2}", formatter));
+            renderer.setDefaultItemLabelFont(new Font("Segoe UI", Font.BOLD, 11));
+
+            // Đặt vị trí của nhãn phía trên mỗi điểm
+            renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(
+                    ItemLabelAnchor.OUTSIDE12, TextAnchor.BOTTOM_CENTER));
+
+            // Đặt màu chữ
+            renderer.setDefaultItemLabelPaint(new Color(50, 50, 50));
+        }
 
         // Làm đẹp legend
         LegendTitle legend = chart.getLegend();
@@ -890,6 +1241,7 @@ public class ThongKePanel extends JPanel {
         chart.getTitle().setPaint(new Color(51, 51, 51));
 
         // Làm đẹp font chữ cho các trục
+        CategoryPlot plot = chart.getCategoryPlot();
         plot.getDomainAxis().setLabelFont(new Font("Segoe UI", Font.BOLD, 12));
         plot.getRangeAxis().setLabelFont(new Font("Segoe UI", Font.BOLD, 12));
         plot.getDomainAxis().setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
@@ -898,7 +1250,9 @@ public class ThongKePanel extends JPanel {
         chartPanelDoanhThuThang.setChart(chart);
     }
 
-
+    private void updateDoanhThuThangChart(Map<Integer, Double> data, int year) {
+        updateDoanhThuThangChart(data, year, isBarChart); // Sử dụng biến isBarChart của lớp
+    }
     private void updateDoanhThuKhachHangChart(List<KhachHangDoanhThu> data, int year) {
         DefaultPieDataset dataset = new DefaultPieDataset();
 

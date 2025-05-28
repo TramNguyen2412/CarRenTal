@@ -89,4 +89,39 @@ public class KhachHangController {
         
         return true;
     }
+    public String dangKyKhachHang(String hoTen, String sdt, String email, String cccd, 
+                                  String diaChi, String tenDangNhap, String matKhau) {
+        // Kiểm tra dữ liệu đầu vào
+        if (hoTen == null || hoTen.trim().isEmpty()) {
+            return "Họ tên không được để trống";
+        }
+        
+        if (sdt == null || sdt.trim().isEmpty()) {
+            return "Số điện thoại không được để trống";
+        }
+        
+        if (email == null || email.trim().isEmpty()) {
+            return "Email không được để trống";
+        }
+        
+        if (cccd == null || cccd.trim().isEmpty()) {
+            return "CCCD không được để trống";
+        }
+        
+        if (diaChi == null || diaChi.trim().isEmpty()) {
+            return "Địa chỉ không được để trống";
+        }
+        
+        if (tenDangNhap == null || tenDangNhap.trim().isEmpty()) {
+            return "Tên đăng nhập không được để trống";
+        }
+        
+        if (matKhau == null || matKhau.trim().isEmpty()) {
+            return "Mật khẩu không được để trống";
+        }
+        
+        // Gọi DAO để thực hiện stored procedure
+        return khachHangDAO.dangKyKhachHang(hoTen, sdt, email, cccd, diaChi, tenDangNhap, matKhau);
+    }
+    
 }

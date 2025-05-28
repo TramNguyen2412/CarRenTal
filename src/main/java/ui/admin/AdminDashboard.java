@@ -11,7 +11,7 @@ import ui.admin.QLXe.XePanel;
 import ui.admin.QLHD.HopDongPanel;
 import ui.admin.ThongKePanel;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
-
+import ui.admin.QLTK.TaiKhoanPanel;
 
 public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClickListener {
     private JPanel mainPanel;
@@ -20,7 +20,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
     private TaiKhoan taiKhoan;
     
     // Các panel quản lý
-    private JPanel trangChuPanel;
+    private TaiKhoanPanel taikhoanPanel;
     private JPanel khachHangPanel;
     private JPanel nhanVienPanel;
     private XePanel xePanel;
@@ -70,7 +70,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         contentPanel.setLayout(cardLayout);
         
         // Tạo các panel chức năng
-        trangChuPanel = createWelcomePanel();
+        taikhoanPanel = new TaiKhoanPanel();
         khachHangPanel = createSimplePanel("Quản Lý Khách Hàng");
         nhanVienPanel = createSimplePanel("Quản Lý Nhân Viên");
         xePanel = new XePanel(); // Panel riêng cho Xe
@@ -82,7 +82,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         tkPanel = new ThongKePanel();
         
         // Thêm các panel vào cardLayout
-        contentPanel.add(trangChuPanel, "trangChu");
+        contentPanel.add(taikhoanPanel, "taikhoan");
         contentPanel.add(khachHangPanel, "khachHang");
         contentPanel.add(nhanVienPanel, "nhanVien");
         contentPanel.add(xePanel, "xe");
@@ -94,7 +94,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         contentPanel.add(tkPanel, "baoCao");
         
         // Hiển thị panel mặc định
-        cardLayout.show(contentPanel, "trangChu");
+        cardLayout.show(contentPanel, "taikhoan");
     }
     
     // Xử lý khi click vào menu item
