@@ -26,7 +26,7 @@ public class LoginForm extends javax.swing.JFrame {
     private JPasswordField txtPassword;
     private JButton btnLogin;
     private JLabel lblImage;
-    
+     private JButton btnRegister; 
     public LoginForm() {
         initComponents();
         this.setLocationRelativeTo(null); // Center window
@@ -138,6 +138,21 @@ public class LoginForm extends javax.swing.JFrame {
         gbc.insets = new Insets(20, 0, 0, 0);
         rightPanel.add(btnLogin, gbc);
         
+        // Register Button - THÊM MỚI
+        btnRegister = new JButton("ĐĂNG KÝ TÀI KHOẢN");
+        btnRegister.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        btnRegister.setPreferredSize(new Dimension(300, 40));
+        btnRegister.setBackground(new Color(240, 240, 240));
+        btnRegister.setForeground(Color.BLACK);
+        btnRegister.setFocusPainted(false);
+        btnRegister.setBorderPainted(false);
+        btnRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRegister.addActionListener(e -> btnRegisterActionPerformed());
+        gbc.gridy = 7;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        rightPanel.add(btnRegister, gbc);
+        
+        
         // Add panels to main panel
         mainPanel.add(leftPanel);
         mainPanel.add(rightPanel);
@@ -188,5 +203,9 @@ public class LoginForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, 
                 "Đăng nhập thất bại! Kiểm tra lại thông tin đăng nhập");
         }
+    }
+     private void btnRegisterActionPerformed() {
+        this.dispose(); // Đóng form đăng nhập
+        new RegisterForm().setVisible(true); // Mở form đăng ký
     }
 }

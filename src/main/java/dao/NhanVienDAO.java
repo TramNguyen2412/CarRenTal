@@ -13,7 +13,7 @@ public class NhanVienDAO {
         
         // Kiểm tra kết nối còn hợp lệ không
         if (!conn.isValid(2)) { // timeout 2 giây
-            DatabaseUtil.reconnect();
+          //  DatabaseUtil.reconnect();
             conn = DatabaseUtil.getConnection();
         }
         
@@ -49,13 +49,13 @@ public class NhanVienDAO {
             e.printStackTrace();
             
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return getAllNhanVien(); // Thử lại một lần
-                } catch (SQLException ex) {
-                    // Chỉ ghi log khi không thể kết nối lại
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return getAllNhanVien(); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    // Chỉ ghi log khi không thể kết nối lại
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -98,12 +98,12 @@ public class NhanVienDAO {
             e.printStackTrace();
             
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return getNhanVienByMa(maNV); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return getNhanVienByMa(maNV); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -146,12 +146,12 @@ public class NhanVienDAO {
             e.printStackTrace();
             
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return getNhanVienByMaTK(maTK); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return getNhanVienByMaTK(maTK); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -188,12 +188,12 @@ public class NhanVienDAO {
             e.printStackTrace();
             
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return existsNhanVien(maNV); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return existsNhanVien(maNV); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {

@@ -15,7 +15,7 @@ public class KhachHangDAO {
         // Kiểm tra kết nối còn hợp lệ không
         if (!conn.isValid(2)) { // timeout 2 giây
             System.out.println("Connection invalidated, reconnecting...");
-            DatabaseUtil.reconnect();
+          //  DatabaseUtil.reconnect();
             conn = DatabaseUtil.getConnection();
         }
         
@@ -54,13 +54,13 @@ public class KhachHangDAO {
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in getAllKhachHang");
-                    DatabaseUtil.reconnect();
-                    return getAllKhachHang(); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in getAllKhachHang");
+//               //     DatabaseUtil.reconnect();
+//                    return getAllKhachHang(); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             // Đóng các tài nguyên nhưng KHÔNG đóng kết nối
@@ -105,15 +105,15 @@ public class KhachHangDAO {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in getKhachHangByMa");
-                    DatabaseUtil.reconnect();
-                    return getKhachHangByMa(maKH); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in getKhachHangByMa");
+//                    DatabaseUtil.reconnect();
+//                    return getKhachHangByMa(maKH); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -194,13 +194,13 @@ public class KhachHangDAO {
 
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in addKhachHang");
-                    DatabaseUtil.reconnect();
-                    return addKhachHang(kh); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in addKhachHang");
+//                    DatabaseUtil.reconnect();
+//                    return addKhachHang(kh); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
 
             System.err.println("Error in addKhachHang: " + e.getMessage());
@@ -246,13 +246,13 @@ public class KhachHangDAO {
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in updateKhachHang");
-                    DatabaseUtil.reconnect();
-                    return updateKhachHang(kh); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in updateKhachHang");
+//                    DatabaseUtil.reconnect();
+//                    return updateKhachHang(kh); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
             return false;
         } finally {
@@ -284,13 +284,13 @@ public class KhachHangDAO {
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in deleteKhachHang");
-                    DatabaseUtil.reconnect();
-                    return deleteKhachHang(maKH); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in deleteKhachHang");
+//                    DatabaseUtil.reconnect();
+//                    return deleteKhachHang(maKH); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
             return false;
         } finally {
@@ -343,13 +343,13 @@ public class KhachHangDAO {
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in searchKhachHang");
-                    DatabaseUtil.reconnect();
-                    return searchKhachHang(keyword); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in searchKhachHang");
+//                    DatabaseUtil.reconnect();
+//                    return searchKhachHang(keyword); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -396,13 +396,13 @@ public class KhachHangDAO {
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in isPhoneNumberExists");
-                    DatabaseUtil.reconnect();
-                    return isPhoneNumberExists(sdt, excludeMaKH); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in isPhoneNumberExists");
+//                    DatabaseUtil.reconnect();
+//                    return isPhoneNumberExists(sdt, excludeMaKH); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -453,13 +453,13 @@ public class KhachHangDAO {
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in isEmailExists");
-                    DatabaseUtil.reconnect();
-                    return isEmailExists(email, excludeMaKH); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in isEmailExists");
+//                    DatabaseUtil.reconnect();
+//                    return isEmailExists(email, excludeMaKH); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -510,13 +510,13 @@ public class KhachHangDAO {
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in isCCCDExists");
-                    DatabaseUtil.reconnect();
-                    return isCCCDExists(cccd, excludeMaKH); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in isCCCDExists");
+//                    DatabaseUtil.reconnect();
+//                    return isCCCDExists(cccd, excludeMaKH); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -560,13 +560,13 @@ public class KhachHangDAO {
 
             // Thử kết nối lại nếu bị lỗi kết nối đóng
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in getKhachHangByTaiKhoan");
-                    DatabaseUtil.reconnect();
-                    return getKhachHangByTaiKhoan(maTK); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    System.out.println("Attempting to reconnect in getKhachHangByTaiKhoan");
+//                    DatabaseUtil.reconnect();
+//                    return getKhachHangByTaiKhoan(maTK); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {
@@ -579,7 +579,49 @@ public class KhachHangDAO {
 
         return kh;
     }
-
+    public String dangKyKhachHang(String hoTen, String sdt, String email, String cccd, 
+                                  String diaChi, String tenDangNhap, String matKhau) {
+        Connection conn = null;
+        CallableStatement cstmt = null;
+        String message = "";
+        
+        try {
+            conn = DatabaseUtil.getConnection();
+            
+            // Gọi stored procedure sp_DangKyKhachHang
+            cstmt = conn.prepareCall("{call sp_DangKyKhachHang(?, ?, ?, ?, ?, ?, ?, ?)}");
+            
+            // Thiết lập các tham số đầu vào
+            cstmt.setString(1, hoTen);
+            cstmt.setString(2, sdt);
+            cstmt.setString(3, email);
+            cstmt.setString(4, cccd);
+            cstmt.setString(5, diaChi);
+            cstmt.setString(6, tenDangNhap);
+            cstmt.setString(7, matKhau);
+            
+            // Đăng ký tham số đầu ra
+            cstmt.registerOutParameter(8, Types.VARCHAR);
+            
+            // Thực thi procedure
+            cstmt.execute();
+            
+            // Lấy thông báo từ tham số đầu ra
+            message = cstmt.getString(8);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            message = "Lỗi đăng ký: " + e.getMessage();
+        } finally {
+            try {
+                if (cstmt != null) cstmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        return message;
+    }
     
     
 }

@@ -15,12 +15,12 @@ public class HopDongDAO {
         Connection conn = DatabaseUtil.getConnection();
         
         // Kiểm tra kết nối còn hợp lệ không
-        if (!conn.isValid(2)) { // timeout 2 giây
-            DatabaseUtil.reconnect();
-            conn = DatabaseUtil.getConnection();
-        }
-        
-        return conn;
+//        if (!conn.isValid(2)) { // timeout 2 giây
+//            DatabaseUtil.reconnect();
+//            conn = DatabaseUtil.getConnection();
+//        }
+
+    return conn;
     }
     
     public List<HopDong> getAllHopDong() {
@@ -63,14 +63,14 @@ public class HopDongDAO {
             System.err.println("Error in getAllHopDong: " + e.getMessage());
             e.printStackTrace();
             
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return getAllHopDong(); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return getAllHopDong(); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
         }
 
         return danhSachHD;
@@ -121,14 +121,14 @@ public class HopDongDAO {
             System.err.println("Error in getHopDongByMa: " + e.getMessage());
             e.printStackTrace();
             
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return getHopDongByMa(maHD); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return getHopDongByMa(maHD); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
         }
 
         return hd;
@@ -284,12 +284,12 @@ public class HopDongDAO {
             String errorMsg = e.getMessage();
             
             if (errorMsg != null && errorMsg.contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return addHopDong(hd, errorMessage); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return addHopDong(hd, errorMessage); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             } else {
                 // Phân tích thông báo lỗi nếu là từ Oracle
                 if (errorMsg.contains("ORA-20002")) {
@@ -442,12 +442,12 @@ public class HopDongDAO {
             String errorMsg = e.getMessage();
             
             if (errorMsg != null && errorMsg.contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return updateHopDong(hd, errorMessage); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return updateHopDong(hd, errorMessage); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             } else {
                 errorMessage.append("Lỗi cập nhật hợp đồng: " + errorMsg);
             }
@@ -538,12 +538,12 @@ public class HopDongDAO {
             String errorMsg = e.getMessage();
             
             if (errorMsg != null && errorMsg.contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return deleteHopDong(maHD, errorMessage); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return deleteHopDong(maHD, errorMessage); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             } else {
                 errorMessage.append("Lỗi xóa hợp đồng: " + errorMsg);
             }
@@ -627,12 +627,12 @@ public class HopDongDAO {
             e.printStackTrace();
             
             if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    DatabaseUtil.reconnect();
-                    return searchHopDong(keyword, trangThai); // Thử lại một lần
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
+//                try {
+//                    DatabaseUtil.reconnect();
+//                    return searchHopDong(keyword, trangThai); // Thử lại một lần
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
             }
         } finally {
             try {

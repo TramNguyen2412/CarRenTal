@@ -26,5 +26,9 @@ public class VaiTro {
 
     public void setTenVaiTro(String tenVaiTro) {
         this.tenVaiTro = tenVaiTro;
+    }// Ghi đè phương thức toString để hiển thị tên vai trò trong combobox
+    @Override
+    public String toString() {
+        return this.tenVaiTro;
     }
 }
