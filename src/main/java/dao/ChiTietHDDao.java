@@ -11,30 +11,30 @@ import java.text.SimpleDateFormat;
 
 public class ChiTietHDDao {
 
-    // Thay thế phương thức checkConnection bằng getValidConnection
-    private Connection getValidConnection() throws SQLException {
-        Connection conn = DatabaseUtil.getConnection();
-        
-        // Kiểm tra kết nối còn hợp lệ không
-        if (!conn.isValid(2)) { // timeout 2 giây
-            System.out.println("Connection invalidated, reconnecting...");
-            DatabaseUtil.reconnect();
-            conn = DatabaseUtil.getConnection();
-        }
-        
-        return conn;
-    }
+   //  Thay thế phương thức checkConnection bằng getValidConnection
 //    private Connection getValidConnection() throws SQLException {
-//    Connection conn = DatabaseUtil.getConnection();
-//    
-//    // Kiểm tra kết nối còn hợp lệ không
-//    if (!conn.isValid(2)) { // timeout 2 giây
-//        System.out.println("Connection invalidated, reconnecting...");
-//        conn = DatabaseUtil.reconnect(conn); // Truyền conn hiện tại và nhận conn mới
+//        Connection conn = DatabaseUtil.getConnection();
+//        
+//        // Kiểm tra kết nối còn hợp lệ không
+//        if (!conn.isValid(2)) { // timeout 2 giây
+//            System.out.println("Connection invalidated, reconnecting...");
+//            DatabaseUtil.reconnect();
+//            conn = DatabaseUtil.getConnection();
+//        }
+//        
+//        return conn;
 //    }
-//    
-//    return conn;
-//}
+    private Connection getValidConnection() throws SQLException {
+    Connection conn = DatabaseUtil.getConnection();
+    
+    // Kiểm tra kết nối còn hợp lệ không
+    if (!conn.isValid(2)) { // timeout 2 giây
+        System.out.println("Connection invalidated, reconnecting...");
+        conn = DatabaseUtil.reconnect(conn); // Truyền conn hiện tại và nhận conn mới
+    }
+    
+    return conn;
+  }
     
     public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
         List<ChiTietHD> danhSachCT = new ArrayList<>();
