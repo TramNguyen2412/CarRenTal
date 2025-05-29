@@ -57,6 +57,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
 public class ThongKePanel extends JPanel {
     private ThongKeController controller;
     private JTabbedPane tabbedPane;
@@ -87,27 +90,28 @@ public class ThongKePanel extends JPanel {
     private boolean isBarChart = true;
     
     public ThongKePanel() {
-        controller = new ThongKeController();
-        
-        currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-        
-        initComponents();
-        loadData();
-//            controller = new ThongKeController();
-//        controller.startReportView(); // Bắt đầu chế độ xem báo cáo khi mở panel
-//
+//        controller = new ThongKeController();
+//        
 //        currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-//
+//        
 //        initComponents();
 //        loadData();
 
-//        // Đăng ký sự kiện khi panel bị hủy
-//        addComponentListener(new ComponentAdapter() {
-//            @Override
-//            public void componentHidden(ComponentEvent e) {
-//                controller.endReportView();
-//            }
-//        });
+            controller = new ThongKeController();
+        controller.startReportView(); // Bắt đầu chế độ xem báo cáo khi mở panel
+
+        currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+
+        initComponents();
+        loadData();
+
+        // Đăng ký sự kiện khi panel bị hủy
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                controller.endReportView();
+            }
+        });
     }
     
     private void initComponents() {
@@ -198,42 +202,8 @@ public class ThongKePanel extends JPanel {
         return panel;
     }
      public void refreshData() {
-        try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-            // Lấy năm thống kê hiện tại
-            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
-
-            // Cập nhật dữ liệu thống kê tổng quan
-            Map<String, Number> tongQuan = controller.getTongQuan();
-            lblTongSoXe.setText(String.valueOf(tongQuan.getOrDefault("tongSoXe", 0)));
-            lblTongSoKhachHang.setText(String.valueOf(tongQuan.getOrDefault("tongSoKhachHang", 0)));
-            lblTongSoHopDong.setText(String.valueOf(tongQuan.getOrDefault("tongSoHopDong", 0)));
-            lblTongDoanhThu.setText(currencyFormat.format(tongQuan.getOrDefault("tongDoanhThu", 0)));
-
-            // Cập nhật bảng top 5 hợp đồng
-            updateTopContractsTable(selectedYear);
-
-            // Cập nhật dữ liệu thống kê theo tháng, khách hàng, xe
-            loadDataByYear(selectedYear);
-
-            JOptionPane.showMessageDialog(this, 
-                "Đã cập nhật dữ liệu thống kê thành công!", 
-                "Thông báo", 
-                JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Lỗi khi làm mới dữ liệu: " + e.getMessage(), 
-                "Lỗi", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        } finally {
-            setCursor(Cursor.getDefaultCursor());
-        }
 //        try {
 //            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//
-//            // Kết thúc chế độ xem báo cáo trước khi làm mới dữ liệu
-//            controller.endReportView();
 //
 //            // Lấy năm thống kê hiện tại
 //            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
@@ -251,9 +221,6 @@ public class ThongKePanel extends JPanel {
 //            // Cập nhật dữ liệu thống kê theo tháng, khách hàng, xe
 //            loadDataByYear(selectedYear);
 //
-//            // Bắt đầu lại chế độ xem báo cáo sau khi làm mới
-//            controller.startReportView();
-//
 //            JOptionPane.showMessageDialog(this, 
 //                "Đã cập nhật dữ liệu thống kê thành công!", 
 //                "Thông báo", 
@@ -266,6 +233,43 @@ public class ThongKePanel extends JPanel {
 //        } finally {
 //            setCursor(Cursor.getDefaultCursor());
 //        }
+        try {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+            // Kết thúc chế độ xem báo cáo trước khi làm mới dữ liệu
+            controller.endReportView();
+
+            // Lấy năm thống kê hiện tại
+            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
+
+            // Cập nhật dữ liệu thống kê tổng quan
+            Map<String, Number> tongQuan = controller.getTongQuan();
+            lblTongSoXe.setText(String.valueOf(tongQuan.getOrDefault("tongSoXe", 0)));
+            lblTongSoKhachHang.setText(String.valueOf(tongQuan.getOrDefault("tongSoKhachHang", 0)));
+            lblTongSoHopDong.setText(String.valueOf(tongQuan.getOrDefault("tongSoHopDong", 0)));
+            lblTongDoanhThu.setText(currencyFormat.format(tongQuan.getOrDefault("tongDoanhThu", 0)));
+
+            // Cập nhật bảng top 5 hợp đồng
+            updateTopContractsTable(selectedYear);
+
+            // Cập nhật dữ liệu thống kê theo tháng, khách hàng, xe
+            loadDataByYear(selectedYear);
+
+            // Bắt đầu lại chế độ xem báo cáo sau khi làm mới
+            controller.startReportView();
+
+            JOptionPane.showMessageDialog(this, 
+                "Đã cập nhật dữ liệu thống kê thành công!", 
+                "Thông báo", 
+                JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Lỗi khi làm mới dữ liệu: " + e.getMessage(), 
+                "Lỗi", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        } finally {
+            setCursor(Cursor.getDefaultCursor());
+        }
 
     }
 
@@ -828,7 +832,7 @@ public class ThongKePanel extends JPanel {
         // Tạo biểu đồ trống
         DefaultPieDataset dataset = new DefaultPieDataset();
         JFreeChart chart = ChartFactory.createPieChart(
-                "Top 10 khách hàng có doanh thu cao nhất", 
+                "Doanh thu theo khách hàng", 
                 dataset, 
                 true, 
                 true, 
@@ -1278,7 +1282,8 @@ public class ThongKePanel extends JPanel {
         }
 
         JFreeChart chart = ChartFactory.createPieChart(
-                "Top 10 khách hàng có doanh thu cao nhất năm " + year, 
+               // "Top 10 khách hàng có doanh thu cao nhất năm " + year, 
+                "Doanh thu theo khách hàng",
                 dataset, 
                 true, 
                 true, 
