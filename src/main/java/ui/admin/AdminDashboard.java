@@ -1,4 +1,7 @@
 package ui.admin;
+import ui.admin.BaoDuong.BaoDuongPanel;
+import ui.admin.CTBD.DichVuBDPanel;
+import ui.admin.CongNo.CongNoPanel;
 import java.net.URL;
 import model.TaiKhoan;
 import javax.swing.*;
@@ -73,11 +76,13 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         taikhoanPanel = new TaiKhoanPanel();
         khachHangPanel = createSimplePanel("Quản Lý Khách Hàng");
         nhanVienPanel = createSimplePanel("Quản Lý Nhân Viên");
-        xePanel = new XePanel(); // Panel riêng cho Xe
-        dichVuBDPanel = createSimplePanel("Quản Lý Dịch Vụ Bảo Dưỡng");
-        hopDongPanel = new HopDongPanel(); // Panel riêng cho Hợp đồng
-        baoDuongPanel = createSimplePanel("Quản Lý Bảo Dưỡng");
-        congNoPanel = createSimplePanel("Quản Lý Công Nợ");
+
+        xePanel = new XePanel();
+        dichVuBDPanel = new DichVuBDPanel();
+        hopDongPanel = new HopDongPanel();
+        baoDuongPanel = new BaoDuongPanel();
+        congNoPanel = new CongNoPanel();
+
         giaoNhanXePanel = createSimplePanel("Quản Lý Giao Nhận Xe");
         tkPanel = new ThongKePanel();
         
