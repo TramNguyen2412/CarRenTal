@@ -480,4 +480,62 @@ public String updatePhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong>
         if (conn != null) conn.close();
     }
 }
+// Thêm vào PhieuBaoDuongDAO
+public boolean updatePhieuBaoDuongThongTinChung(PhieuBaoDuong phieu) {
+    String sql = "UPDATE PhieuBaoDuong SET MaXe=?, MaKH=?, NgayBD=?, MaNV=?, LoaiBD=? WHERE MaBD=?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, phieu.getMaXe());
+        ps.setString(2, phieu.getMaKH());
+        ps.setDate(3, new java.sql.Date(phieu.getNgayBD().getTime()));
+        ps.setString(4, phieu.getMaNV());
+        ps.setString(5, phieu.getLoaiBD());
+        ps.setString(6, phieu.getMaBD());
+        int rows = ps.executeUpdate();
+        return rows > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+    public List<PhieuBaoDuong> getPhieuBaoDuongByKhachHangAndLoai(String maKH, String loaiBD) {
+        System.out.println("Truy vấn phiếu BD: MaKH=" + maKH + ", LoaiBD=" + loaiBD);
+        List<PhieuBaoDuong> phieuBaoDuongs = new ArrayList<>();
+        List<PhieuBaoDuong> tempList = new ArrayList<>();
+        String sql = "SELECT * FROM PHIEUBAODUONG WHERE MaKH = ? AND LoaiBD = ? ORDER BY NgayBD DESC";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, maKH);
+            pstmt.setString(2, loaiBD);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    PhieuBaoDuong pbd = new PhieuBaoDuong();
+                    pbd.setMaBD(rs.getString("MaBD"));
+                    pbd.setMaXe(rs.getString("MaXe"));
+                    pbd.setMaKH(rs.getString("MaKH"));
+                    pbd.setNgayBD(new Date(rs.getDate("NgayBD").getTime()));
+                    pbd.setMaNV(rs.getString("MaNV"));
+                    pbd.setLoaiBD(rs.getString("LoaiBD"));
+                    pbd.setTongTienBD(rs.getDouble("TongTienBD"));
+                    tempList.add(pbd); // chỉ lấy dữ liệu cơ bản
+                }
+            }
+            // Sau khi đã đóng rs và conn, mới gọi các DAO phụ
+            for (PhieuBaoDuong pbd : tempList) {
+                Xe xe = xeDAO.getXeByMa(pbd.getMaXe());
+                pbd.setXe(xe);
+                if (pbd.getMaKH() != null) {
+                    KhachHang kh = khachHangDAO.getKhachHangByMa(pbd.getMaKH());
+                    pbd.setKhachHang(kh);
+                }
+                NhanVien nv = nhanVienDAO.getNhanVienByMa(pbd.getMaNV());
+                pbd.setNhanVien(nv);
+                phieuBaoDuongs.add(pbd);
+            }
+           
+        } catch (SQLException e) {
+            System.err.println("Error retrieving maintenance records by customer and type: " + e.getMessage());
+        }
+        return phieuBaoDuongs;
+    }
 }

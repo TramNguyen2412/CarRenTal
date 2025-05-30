@@ -104,7 +104,22 @@ public class CongNoController {
             if (message.contains("ORA-20011")) {
                 return "Lỗi: Không thể xóa giao dịch vì công nợ sau sẽ âm";
             } else {
-                return "Lỗi hệ thống: " + e.getMessage();
+        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
+        String msg = e.getMessage();
+        if (msg != null && msg.contains("ORA-200")) {
+            String[] lines = msg.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.contains("ORA-200")) {
+                    int idx = line.indexOf(":");
+                    if (idx > 0 && idx < line.length() - 1) {
+                        return line.substring(idx + 1).trim();
+                    }
+                    return line.trim();
+                }
+            }
+            return msg;
+        }
+        return "Lỗi hệ thống: " + msg;
             }
         }
     }
@@ -119,4 +134,36 @@ public class CongNoController {
    public LichSuCongNo getLichSuCongNoByMa(String maLichSu) {
     return congNoService.getLichSuCongNoByMa(maLichSu);
 } 
+   // CongNoController.java
+public String updateLichSuCongNoThongTinChung(String maLS, String maKH, Date ngayGD, String ghiChu) {
+    try {
+        LichSuCongNo ls = new LichSuCongNo();
+        ls.setMaLichSu(maLS);
+        ls.setMaKH(maKH);
+        ls.setNgayGiaoDich(ngayGD);
+        ls.setGhiChu(ghiChu);
+        boolean success = congNoService.updateLichSuCongNoThongTinChung(ls);
+        return success ? "Cập nhật giao dịch thành công" : "Cập nhật giao dịch thất bại";
+    } catch (Exception e) {
+        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
+        String msg = e.getMessage();
+        if (msg != null && msg.contains("ORA-200")) {
+            String[] lines = msg.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.contains("ORA-200")) {
+                    int idx = line.indexOf(":");
+                    if (idx > 0 && idx < line.length() - 1) {
+                        return line.substring(idx + 1).trim();
+                    }
+                    return line.trim();
+                }
+            }
+            return msg;
+        }
+        return "Lỗi hệ thống: " + msg;
+    }
+}
+public List<LichSuCongNo> searchLichSuCongNo(String keyword) {
+    return congNoService.searchLichSuCongNo(keyword);
+}
 }

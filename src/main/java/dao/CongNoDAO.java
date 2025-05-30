@@ -185,4 +185,45 @@ public boolean updateLichSuCongNo(LichSuCongNo ls) throws SQLException {
     }
     return null;
 }
+    // LichSuCongNoDAO.java
+public boolean updateLichSuCongNoThongTinChung(LichSuCongNo ls) {
+    String sql = "UPDATE LichSuCongNo SET MaKH=?, NgayGiaoDich=?, GhiChu=? WHERE MaLichSu=?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, ls.getMaKH());
+        ps.setDate(2, new java.sql.Date(ls.getNgayGiaoDich().getTime()));
+        ps.setString(3, ls.getGhiChu());
+        ps.setString(4, ls.getMaLichSu());
+        int rows = ps.executeUpdate();
+        return rows > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+public List<LichSuCongNo> searchLichSuCongNo(String keyword) {
+    List<LichSuCongNo> list = new ArrayList<>();
+    String sql = "SELECT * FROM LICHSUCONGNO WHERE " +
+                 "UPPER(MaLichSu) LIKE ? OR UPPER(MaKH) LIKE ? OR UPPER(LoaiGiaoDich) LIKE ? OR UPPER(GhiChu) LIKE ?";
+    try (Connection conn = DatabaseUtil.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        String search = "%" + keyword.toUpperCase() + "%";
+        for (int i = 1; i <= 4; i++) pstmt.setString(i, search);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                LichSuCongNo ls = new LichSuCongNo();
+                ls.setMaLichSu(rs.getString("MaLichSu"));
+                ls.setMaKH(rs.getString("MaKH"));
+                ls.setNgayGiaoDich(rs.getDate("NgayGiaoDich"));
+                ls.setLoaiGiaoDich(rs.getString("LoaiGiaoDich"));
+                ls.setSoTien(rs.getDouble("SoTien"));
+                ls.setGhiChu(rs.getString("GhiChu"));
+                list.add(ls);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return list;
+}
 }

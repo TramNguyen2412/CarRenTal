@@ -35,7 +35,22 @@ public class DichVuBDController {
         } catch (IllegalArgumentException e) {
             return "Lỗi: " + e.getMessage();
         } catch (Exception e) {
-            return "Lỗi hệ thống: " + e.getMessage();
+        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
+        String msg = e.getMessage();
+        if (msg != null && msg.contains("ORA-200")) {
+            String[] lines = msg.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.contains("ORA-200")) {
+                    int idx = line.indexOf(":");
+                    if (idx > 0 && idx < line.length() - 1) {
+                        return line.substring(idx + 1).trim();
+                    }
+                    return line.trim();
+                }
+            }
+            return msg;
+        }
+        return "Lỗi hệ thống: " + msg;
         }
     }
     
@@ -56,7 +71,22 @@ public class DichVuBDController {
         } catch (IllegalArgumentException e) {
             return "Lỗi: " + e.getMessage();
         } catch (Exception e) {
-            return "Lỗi hệ thống: " + e.getMessage();
+        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
+        String msg = e.getMessage();
+        if (msg != null && msg.contains("ORA-200")) {
+            String[] lines = msg.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.contains("ORA-200")) {
+                    int idx = line.indexOf(":");
+                    if (idx > 0 && idx < line.length() - 1) {
+                        return line.substring(idx + 1).trim();
+                    }
+                    return line.trim();
+                }
+            }
+            return msg;
+        }
+        return "Lỗi hệ thống: " + msg;
         }
     }
     
@@ -72,7 +102,22 @@ public class DichVuBDController {
         } catch (IllegalStateException e) {
             return "Lỗi: " + e.getMessage();
         } catch (Exception e) {
-            return "Lỗi hệ thống: " + e.getMessage();
+        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
+        String msg = e.getMessage();
+        if (msg != null && msg.contains("ORA-200")) {
+            String[] lines = msg.split("\\r?\\n");
+            for (String line : lines) {
+                if (line.contains("ORA-200")) {
+                    int idx = line.indexOf(":");
+                    if (idx > 0 && idx < line.length() - 1) {
+                        return line.substring(idx + 1).trim();
+                    }
+                    return line.trim();
+                }
+            }
+            return msg;
+        }
+        return "Lỗi hệ thống: " + msg;
         }
     }
     

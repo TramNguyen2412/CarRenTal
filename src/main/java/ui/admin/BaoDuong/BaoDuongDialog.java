@@ -148,15 +148,17 @@ private void loadXeToComboBox() {
     cboXe.removeAllItems();
     List<model.Xe> xeList = baoDuongController.getAllXe();
     for (model.Xe xe : xeList) {
-        cboXe.addItem(xe.getMaXe());
+        cboXe.addItem(xe.getMaXe()+"-"+xe.getTenXe());
     }
 }
 
 private void loadKhachHangToComboBox() {
     cboKhachHang.removeAllItems();
+    // Thêm lựa chọn rỗng/null đầu tiên
+    cboKhachHang.addItem("Không có"); // hoặc cboKhachHang.addItem("Không chọn");
     List<model.KhachHang> khList = baoDuongController.getAllKhachHang();
     for (model.KhachHang kh : khList) {
-        cboKhachHang.addItem(kh.getMaKH());
+        cboKhachHang.addItem(kh.getMaKH() + " - " + kh.getHoTen());
     }
 }
 
@@ -164,7 +166,7 @@ private void loadNhanVienToComboBox() {
     cboNhanVien.removeAllItems();
     List<model.NhanVien> nvList = baoDuongController.getAllNhanVien();
     for (model.NhanVien nv : nvList) {
-        cboNhanVien.addItem(nv.getMaNV());
+        cboNhanVien.addItem(nv.getMaNV()+ " - " + nv.getHoTen());
     }
 }
 
@@ -212,9 +214,29 @@ private void updateTongTien() {
         private void savePhieuBaoDuong() {
             // Lấy dữ liệu từ form
             String maBD = txtMaBD.getText().trim();
-            String maXe = cboXe.getSelectedItem() != null ? cboXe.getSelectedItem().toString() : null;
-            String maKH = cboKhachHang.getSelectedItem() != null ? cboKhachHang.getSelectedItem().toString() : null;
-            String maNV = cboNhanVien.getSelectedItem() != null ? cboNhanVien.getSelectedItem().toString() : null;
+            String maXe = null;
+            if (cboXe.getSelectedItem() != null) {
+                String xeItem = cboXe.getSelectedItem().toString();
+                if (xeItem.contains("-")) {
+                    maXe = xeItem.split("-")[0].trim();
+                } else {
+                    maXe = xeItem.trim();
+                }
+            }
+            String khachHangItem = cboKhachHang.getSelectedItem() != null ? cboKhachHang.getSelectedItem().toString() : null;
+            String maKH = null;
+            if (khachHangItem != null && khachHangItem.contains(" - ")) {
+                maKH = khachHangItem.split(" - ")[0].trim();
+            } else {
+                maKH = khachHangItem;
+            }
+            String nhanVienItem = cboNhanVien.getSelectedItem() != null ? cboNhanVien.getSelectedItem().toString() : null;
+            String maNV = null;
+            if (nhanVienItem != null && nhanVienItem.contains(" - ")) {
+                maNV = nhanVienItem.split(" - ")[0].trim();
+            } else {
+                maNV = nhanVienItem;
+            }
             String loaiBD = cboLoaiBD.getSelectedItem() != null ? cboLoaiBD.getSelectedItem().toString() : null;
             java.util.Date ngayBD = dateNgayBD.getDate();
             double tongTien = 0;
@@ -247,7 +269,10 @@ private void updateTongTien() {
         boolean success = false;
         String result = null;
         if (phieu == null) {
-            // Thêm mới phiếu + chi tiết
+            // Nếu loại bảo dưỡng là Định Kỳ thì mã khách hàng là null
+            if ("Định Kỳ".equalsIgnoreCase(loaiBD)) {
+                maKH = null;
+            }
             result = baoDuongController.addPhieuBaoDuongFull(
                 maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
             );

@@ -289,4 +289,11 @@ public String updatePhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong>
         return "Lỗi hệ thống: " + msg;
     }
 }
+// Thêm vào BaoDuongService
+public boolean updatePhieuBaoDuongThongTinChung(PhieuBaoDuong phieu) {
+    return phieuBaoDuongDAO.updatePhieuBaoDuongThongTinChung(phieu);
+}
+public List<PhieuBaoDuong> getPhieuBaoDuongByKhachHangAndLoai(String maKH, String loaiBD) {
+    return phieuBaoDuongDAO.getPhieuBaoDuongByKhachHangAndLoai(maKH, loaiBD);
+}
 }

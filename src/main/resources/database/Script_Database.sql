@@ -574,6 +574,9 @@ END;
         END IF;
 
         -- Xử lý khi UPDATE SoTien hoặc LoaiGiaoDich
+        IF UPDATING AND ((:OLD.MaKH <> :NEW.MaKH) 
+        OR (:OLD.LoaiGiaoDich <> :NEW.LoaiGiaoDich) 
+        OR (:OLD.SoTien <> :NEW.SoTien)) THEN
         IF UPDATING('SoTien') OR UPDATING('LoaiGiaoDich') THEN
             IF :OLD.LoaiGiaoDich <> :NEW.LoaiGiaoDich OR :OLD.SoTien <> :NEW.SoTien THEN
                 -- Kiểm tra trước khi cập nhật

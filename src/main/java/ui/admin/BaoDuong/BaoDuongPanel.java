@@ -90,7 +90,7 @@ public class BaoDuongPanel extends JPanel {
         add(pnlTitle, BorderLayout.NORTH);
 
         // Bảng dữ liệu
-        String[] columns = {"Mã BD", "Mã Xe", "Mã Khách hàng", "Ngày BD", "Nhân viên", "Loại BD", "Tổng tiền"};
+        String[] columns = {"Mã BD", "Xe", "Khách hàng", "Ngày BD", "Nhân viên", "Loại BD", "Tổng tiền"};
         modelBaoDuong = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -220,10 +220,10 @@ public class BaoDuongPanel extends JPanel {
                 NhanVien nv = baoDuongController.getNhanVienByMa(phieu.getMaNV());
                 modelBaoDuong.addRow(new Object[]{
                         phieu.getMaBD(),
-                        xe != null ? phieu.getMaXe() : xe.getBienSo(),
-                        kh != null ? kh.getMaKH() : "Không có",
+                         xe != null ? (xe.getMaXe() + " - " + xe.getTenXe()) : phieu.getMaXe(),
+                        kh != null ? (kh.getMaKH() + " - " + kh.getHoTen()) : "Không có",
+                        nv != null ? (nv.getMaNV() + " - " + nv.getHoTen()) : phieu.getMaNV(),
                         dateFormat.format(phieu.getNgayBD()),
-                        nv != null ? phieu.getMaNV() : nv.getHoTen(),
                         phieu.getLoaiBD(),
                         currencyFormat.format(phieu.getTongTienBD()) + " VNĐ"
                 });
@@ -242,12 +242,15 @@ public class BaoDuongPanel extends JPanel {
             String loaiBD = cboLoaiBD.getSelectedItem().toString();
             modelBaoDuong.setRowCount(0);
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
             List<PhieuBaoDuong> danhSach;
             if (keyword.isEmpty() && loaiBD.equals("Tất cả")) {
                 danhSach = baoDuongController.getAllPhieuBaoDuong();
             } else {
-                danhSach = baoDuongController.searchPhieuBaoDuong(keyword, loaiBD);
+                // Nếu loại BD là Tất cả thì chỉ truyền keyword, còn lại truyền cả keyword và loạiBD
+                danhSach = loaiBD.equals("Tất cả")
+                        ? baoDuongController.searchPhieuBaoDuong(keyword)
+                        : baoDuongController.searchPhieuBaoDuong(keyword, loaiBD);
             }
             for (PhieuBaoDuong phieu : danhSach) {
                 Xe xe = baoDuongController.getXeByMa(phieu.getMaXe());
@@ -255,10 +258,10 @@ public class BaoDuongPanel extends JPanel {
                 NhanVien nv = baoDuongController.getNhanVienByMa(phieu.getMaNV());
                 modelBaoDuong.addRow(new Object[]{
                         phieu.getMaBD(),
-                        xe != null ? xe.getBienSo() : phieu.getMaXe(),
-                        kh != null ? kh.getHoTen() : "Không có",
+                         xe != null ? (xe.getMaXe() + " - " + xe.getTenXe()) : phieu.getMaXe(),
+                        kh != null ? (kh.getMaKH() + " - " + kh.getHoTen()) : "Không có",
+                        nv != null ? (nv.getMaNV() + " - " + nv.getHoTen()) : phieu.getMaNV(),
                         dateFormat.format(phieu.getNgayBD()),
-                        nv != null ? nv.getHoTen() : phieu.getMaNV(),
                         phieu.getLoaiBD(),
                         currencyFormat.format(phieu.getTongTienBD()) + " VNĐ"
                 });
@@ -270,10 +273,21 @@ public class BaoDuongPanel extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
     private void showBaoDuongDialog(PhieuBaoDuong phieu) {
         try {
             BaoDuongDialog dialog = new BaoDuongDialog(SwingUtilities.getWindowAncestor(this), phieu, this);
+            dialog.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi khi hiển thị dialog bảo dưỡng: " + e.getMessage(),
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+        private void showCapNhatBaoDuongDialog(PhieuBaoDuong phieu) {
+        try {
+            CapNhatBaoDuongDialog dialog = new CapNhatBaoDuongDialog(SwingUtilities.getWindowAncestor(this), phieu, this);
             dialog.setVisible(true);
         } catch (Exception e) {
             e.printStackTrace();
@@ -303,7 +317,7 @@ public class BaoDuongPanel extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            showBaoDuongDialog(phieu);
+            showCapNhatBaoDuongDialog(phieu);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                     "Lỗi khi sửa phiếu bảo dưỡng: " + e.getMessage(),

@@ -126,4 +126,12 @@ public class CongNoService {
     public LichSuCongNo getLichSuCongNoByMa(String maLichSu) {
     return congNoDAO.getLichSuCongNoByMa(maLichSu);
 }
+    // CongNoService.java
+    public boolean updateLichSuCongNoThongTinChung(LichSuCongNo ls) {
+        boolean result = congNoDAO.updateLichSuCongNoThongTinChung(ls);
+        return result;
+    }
+    public List<LichSuCongNo> searchLichSuCongNo(String keyword) {
+    return congNoDAO.searchLichSuCongNo(keyword);
+}
 }

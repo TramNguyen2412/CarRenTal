@@ -9,6 +9,14 @@ public class ChiTietBaoDuong {
     
     public ChiTietBaoDuong() {}
     
+    public ChiTietBaoDuong(ChiTietBaoDuong other) {
+    this.maBD = other.maBD;
+    this.maDV = other.maDV;
+    this.soLuong = other.soLuong;
+    this.phieuBaoDuong = other.phieuBaoDuong;
+    this.dichVuBD = other.dichVuBD;
+}
+    
     public ChiTietBaoDuong(String maBD, String maDV, int soLuong) {
         this.maBD = maBD;
         this.maDV = maDV;

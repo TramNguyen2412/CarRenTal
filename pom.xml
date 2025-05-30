@@ -14,6 +14,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
         <!-- Oracle JDBC driver (version 8 and 11 both present) -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
