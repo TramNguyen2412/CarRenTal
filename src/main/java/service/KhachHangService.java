@@ -3,10 +3,11 @@ package service;
 import dao.KhachHangDAO;
 import model.KhachHang;
 import java.util.List;
+import java.util.Map;
 
 public class KhachHangService {
     private KhachHangDAO khachHangDAO;
-    
+    private StringBuilder errorMessage = new StringBuilder();
     public KhachHangService() {
         this.khachHangDAO = new KhachHangDAO();
     }
@@ -126,4 +127,26 @@ public class KhachHangService {
         
         return true;
     }
+     public String getErrorMessage() {
+        return errorMessage.toString();
+    }
+
+    // Phương thức lấy danh sách khách hàng có công nợ
+    public List<KhachHang> getKhachHangCoCongNo() {
+        return khachHangDAO.getKhachHangCoCongNo();
+    }
+    public Map<String, Object> getThongKeKhachHang() {
+        return khachHangDAO.getThongKeKhachHang();
+    }
+    // Phương thức cập nhật công nợ khách hàng
+    public boolean updateCongNo(String maKH, double soTien) {
+        errorMessage = new StringBuilder();
+        if (maKH == null || maKH.trim().isEmpty()) {
+            errorMessage.append("Mã khách hàng không hợp lệ.");
+            return false;
+        }
+        // Additional validation for soTien if needed
+        return khachHangDAO.updateCongNo(maKH, soTien);
+    }
+
 }

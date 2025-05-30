@@ -7,10 +7,10 @@ public class NhanVien {
     private String sdt;
     private String email;
     private String chucVu;
-    
+
     public NhanVien() {
     }
-    
+
     public NhanVien(String maNV, String maTK, String hoTen, String sdt, String email, String chucVu) {
         this.maNV = maNV;
         this.maTK = maTK;
@@ -20,6 +20,7 @@ public class NhanVien {
         this.chucVu = chucVu;
     }
 
+    // Getters and Setters
     public String getMaNV() {
         return maNV;
     }
@@ -67,9 +68,16 @@ public class NhanVien {
     public void setChucVu(String chucVu) {
         this.chucVu = chucVu;
     }
-    
+
     @Override
     public String toString() {
-        return maNV + " - " + hoTen;
+        return "NhanVien{" +
+                "maNV='" + maNV + '\'' +
+                ", maTK='" + maTK + '\'' +
+                ", hoTen='" + hoTen + '\'' +
+                ", sdt='" + sdt + '\'' +
+                ", email='" + email + '\'' +
+                ", chucVu='" + chucVu + '\'' +
+                '}';
     }
 }

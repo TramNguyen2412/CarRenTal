@@ -16,6 +16,39 @@ import ui.admin.ThongKePanel;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import ui.admin.QLTK.TaiKhoanPanel;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JFrame; // Sửa đường dẫn package từ QLNV sang QLNhanVien
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+
+import model.TaiKhoan;
+import ui.admin.QLGNX.GiaoNhanXePanel;
+import ui.admin.QLHD.HopDongPanel;
+import ui.admin.QLKH.QuanLyKhachHangPanel;
+import ui.admin.QLNV.NhanVienPanel;
+import ui.admin.QLXe.XePanel;
+
+
 public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClickListener {
     private JPanel mainPanel;
     private JPanel contentPanel;
@@ -24,15 +57,18 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
     
     // Các panel quản lý
     private TaiKhoanPanel taikhoanPanel;
-    private JPanel khachHangPanel;
-    private JPanel nhanVienPanel;
+    private QuanLyKhachHangPanel khachHangPanel;
+    private JPanel trangChuPanel;
+    private JPanel QuanLyKhachHangPanel;
+    private NhanVienPanel nhanVienPanel; // Sửa kiểu dữ liệu từ JPanel sang NhanVienPanel
     private XePanel xePanel;
     private JPanel dichVuBDPanel;
     private HopDongPanel hopDongPanel;
     private JPanel baoDuongPanel;
     private JPanel congNoPanel;
-    private JPanel giaoNhanXePanel;
     private ThongKePanel tkPanel;
+    private GiaoNhanXePanel giaoNhanXePanel;
+    private JPanel baoCaoPanel;
     
     public AdminDashboard(TaiKhoan taiKhoan) {
         this.taiKhoan = taiKhoan;
@@ -74,8 +110,8 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         
         // Tạo các panel chức năng
         taikhoanPanel = new TaiKhoanPanel();
-        khachHangPanel = createSimplePanel("Quản Lý Khách Hàng");
-        nhanVienPanel = createSimplePanel("Quản Lý Nhân Viên");
+        khachHangPanel = new QuanLyKhachHangPanel();
+        nhanVienPanel = new NhanVienPanel();
 
         xePanel = new XePanel();
         dichVuBDPanel = new DichVuBDPanel();
@@ -83,7 +119,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         baoDuongPanel = new BaoDuongPanel();
         congNoPanel = new CongNoPanel();
 
-        giaoNhanXePanel = createSimplePanel("Quản Lý Giao Nhận Xe");
+        giaoNhanXePanel = new GiaoNhanXePanel();
         tkPanel = new ThongKePanel();
         
         // Thêm các panel vào cardLayout
@@ -91,6 +127,23 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         contentPanel.add(khachHangPanel, "khachHang");
         contentPanel.add(nhanVienPanel, "nhanVien");
         contentPanel.add(xePanel, "xe");
+      //  trangChuPanel = createWelcomePanel();
+    //   QuanLyKhachHangPanel = new QuanLyKhachHangPanel();
+     
+        nhanVienPanel = new NhanVienPanel(); // Sửa tên biến từ NhanVienPanel sang nhanVienPanel
+      //  xePanel = new XePanel(); // Panel riêng cho Xe
+     //   dichVuBDPanel = createSimplePanel("Quản Lý Dịch Vụ Bảo Dưỡng");
+     //   hopDongPanel = new HopDongPanel(); // Panel riêng cho Hợp đồng
+      //  baoDuongPanel = createSimplePanel("Quản Lý Bảo Dưỡng");
+      //  congNoPanel = createSimplePanel("Quản Lý Công Nợ");
+      //  giaoNhanXePanel = new GiaoNhanXePanel();
+      //  baoCaoPanel = createDashboardPanel();
+        
+        // Thêm các panel vào cardLayout
+     //   contentPanel.add(trangChuPanel, "trangChu");
+       // contentPanel.add(QuanLyKhachHangPanel, "khachHang");
+     //   contentPanel.add(nhanVienPanel, "nhanVien"); // Sửa tên biến
+    //    contentPanel.add(xePanel, "xe");    
         contentPanel.add(dichVuBDPanel, "dichVuBD");
         contentPanel.add(hopDongPanel, "hopDong");
         contentPanel.add(baoDuongPanel, "baoDuong");
@@ -133,33 +186,33 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         }
     }
     
-    // Tạo panel chào mừng đơn giản
-    private JPanel createWelcomePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        centerPanel.setBackground(Color.WHITE);
-        
-        JLabel welcomeLabel = new JLabel("CHÀO MỪNG ĐẾN VỚI HỆ THỐNG QUẢN LÝ CHO THUÊ XE");
-        welcomeLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
-        welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        // Khoảng cách
-        centerPanel.add(Box.createVerticalStrut(200));
-        centerPanel.add(welcomeLabel);
-        centerPanel.add(Box.createVerticalStrut(20));
-        
-        JLabel subLabel = new JLabel("Hệ thống quản lý hiện đại, tiện lợi và dễ sử dụng");
-        subLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 18));
-        subLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        centerPanel.add(subLabel);
-        
-        panel.add(centerPanel, BorderLayout.CENTER);
-        return panel;
-    }
-    
+//    // Tạo panel chào mừng đơn giản
+//    private JPanel createWelcomePanel() {
+//        JPanel panel = new JPanel(new BorderLayout());
+//        panel.setBackground(Color.WHITE);
+//        
+//        JPanel centerPanel = new JPanel();
+//        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+//        centerPanel.setBackground(Color.WHITE);
+//        
+//        JLabel welcomeLabel = new JLabel("CHÀO MỪNG ĐẾN VỚI HỆ THỐNG QUẢN LÝ CHO THUÊ XE");
+//        welcomeLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 24));
+//        welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        
+//        // Khoảng cách
+//        centerPanel.add(Box.createVerticalStrut(200));
+//        centerPanel.add(welcomeLabel);
+//        centerPanel.add(Box.createVerticalStrut(20));
+//        
+//        JLabel subLabel = new JLabel("Hệ thống quản lý hiện đại, tiện lợi và dễ sử dụng");
+//        subLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 18));
+//        subLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        centerPanel.add(subLabel);
+//        
+//        panel.add(centerPanel, BorderLayout.CENTER);
+//        return panel;
+//    }
+//    
     // Tạo một panel đơn giản với tiêu đề để hiển thị tạm thời
     private JPanel createSimplePanel(String title) {
         JPanel panel = new JPanel(new BorderLayout());

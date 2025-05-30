@@ -1,7 +1,7 @@
 package model;
 
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class HopDong {
@@ -12,12 +12,12 @@ public class HopDong {
     private String diaChiGiao;
     private double tongTien;
     private String trangThai;
-    
+
     // Thông tin liên kết
     private String tenKH;
     private String tenNV;
     private List<ChiTietHD> danhSachXeThue;
-    
+
     public HopDong() {
         this.ngayLap = new Date();
         this.trangThai = "Chờ xác nhận";
@@ -104,26 +104,26 @@ public class HopDong {
     public void setDanhSachXeThue(List<ChiTietHD> danhSachXeThue) {
         this.danhSachXeThue = danhSachXeThue;
     }
-    
+
     public void addChiTietHD(ChiTietHD chiTiet) {
         if (this.danhSachXeThue == null) {
             this.danhSachXeThue = new ArrayList<>();
         }
         this.danhSachXeThue.add(chiTiet);
     }
-    
+
     public void removeChiTietHD(ChiTietHD chiTiet) {
         if (this.danhSachXeThue != null) {
             this.danhSachXeThue.remove(chiTiet);
         }
     }
-    
+
     public void removeChiTietHDByIndex(int index) {
         if (this.danhSachXeThue != null && index >= 0 && index < this.danhSachXeThue.size()) {
             this.danhSachXeThue.remove(index);
         }
     }
-    
+
     public double tinhTongTien() {
         double total = 0;
         if (danhSachXeThue != null) {
