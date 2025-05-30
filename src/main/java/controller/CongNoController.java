@@ -166,4 +166,8 @@ public String updateLichSuCongNoThongTinChung(String maLS, String maKH, Date nga
 public List<LichSuCongNo> searchLichSuCongNo(String keyword) {
     return congNoService.searchLichSuCongNo(keyword);
 }
+
+
+
+
 }

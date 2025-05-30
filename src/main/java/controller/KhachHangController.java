@@ -7,6 +7,7 @@ import java.util.List;
 public class KhachHangController {
     private KhachHangDAO khachHangDAO;
     
+    
     public KhachHangController() {
         this.khachHangDAO = new KhachHangDAO();
     }
