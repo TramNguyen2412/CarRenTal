@@ -1,10 +1,5 @@
-package ui.admin.CongNo;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import java.io.FileOutputStream;
-import java.io.File;
-import java.io.IOException;
-import javax.swing.JFileChooser;
+package ui.admin;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -13,13 +8,19 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -36,9 +37,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
+import com.toedter.calendar.JDateChooser;
+
 import controller.CongNoController;
 import controller.KhachHangController;
-import java.util.Date;
 import model.HopDong;
 import model.KhachHang;
 import model.LichSuCongNo;
@@ -59,7 +61,7 @@ public class CongNoPanel extends JPanel {
     private controller.BaoDuongController baoDuongController = new controller.BaoDuongController();
     // Cột của bảng công nợ
     private final String[] CONG_NO_COLUMNS = {
-        "Mã LS", "Mã Khách Hàng", "Ngày GD", "Loại GD", "Số Tiền", "Ghi Chú", 
+        "Mã LS", "Khách Hàng", "Ngày GD", "Loại GD", "Số Tiền", "Ghi Chú", 
     };
 
     // Cột của bảng khách hàng
@@ -290,7 +292,7 @@ public class CongNoPanel extends JPanel {
             String maLS = tableCongNo.getValueAt(row, 0).toString();
             LichSuCongNo ls = congNoController.getLichSuCongNoByMa(maLS);
             if (ls != null) {
-                showCapNhatCongNoDialog(ls);
+                showCongNoDialog(ls);
             }
         });
 
@@ -345,12 +347,9 @@ public class CongNoPanel extends JPanel {
         
         List<LichSuCongNo> danhSachCongNo = congNoController.getAllLichSuCongNo();
         for (LichSuCongNo ls : danhSachCongNo) {
-            // Lấy thông tin khách hàng để hiển thị mã + tên
-            KhachHang kh = khachHangController.getKhachHangByMa(ls.getMaKH());
-            String maVaTenKH = kh != null ? (kh.getMaKH() + " - " + kh.getHoTen()) : ls.getMaKH();
             modelCongNo.addRow(new Object[]{
                 ls.getMaLichSu(),
-                maVaTenKH, // Hiển thị mã + tên khách hàng
+                ls.getMaKH(),
                 dateFormat.format(ls.getNgayGiaoDich()),
                 ls.getLoaiGiaoDich(),
                 currencyFormat.format(ls.getSoTien()) + " VNĐ",
@@ -378,13 +377,13 @@ public void showTongNoDetailDialog() {
         tongTienHopDong += hd.getTongTien();
     }
     // Lấy danh sách phiếu bảo dưỡng loại "Khách gây hư hại"
-    List<model.PhieuBaoDuong> dsPBD = baoDuongController.getPhieuBaoDuongByKhachHangAndLoai(maKH, "Khách gây hư hại");
-        double tongTienPBD = 0;
+    List<model.PhieuBaoDuong> dsPBD = baoDuongController.getPhieuBaoDuongByKhachHang(maKH);
+    double tongTienPBD = 0;
     DefaultTableModel modelPBD = new DefaultTableModel(new String[]{"Mã phiếu", "Ngày BD", "Xe", "Tổng tiền"}, 0) {
         public boolean isCellEditable(int r, int c) { return false; }
     };
     for (model.PhieuBaoDuong pbd : dsPBD) {
-        if (pbd.getLoaiBD() != null && "Khách gây hư hại".equalsIgnoreCase(pbd.getLoaiBD().trim())) {
+        if ("Khách gây hư hại".equals(pbd.getLoaiBD())) {
             tongTienPBD += pbd.getTongTienBD();
             modelPBD.addRow(new Object[]{
                 pbd.getMaBD(),
@@ -509,26 +508,14 @@ double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
 
     private void searchCongNo() {
         String keyword = txtSearch.getText().trim();
-        modelCongNo.setRowCount(0);
         if (keyword.isEmpty()) {
             loadCongNoData();
             return;
         }
-        // Tìm kiếm công nợ theo mã LS, mã KH, tên KH, loại GD, ghi chú
-        List<LichSuCongNo> danhSach = congNoController.searchLichSuCongNo(keyword);
-        for (LichSuCongNo ls : danhSach) {
-            KhachHang kh = khachHangController.getKhachHangByMa(ls.getMaKH());
-            String maVaTenKH = kh != null ? (kh.getMaKH() + " - " + kh.getHoTen()) : ls.getMaKH();
-            modelCongNo.addRow(new Object[]{
-                ls.getMaLichSu(),
-                maVaTenKH,
-                dateFormat.format(ls.getNgayGiaoDich()),
-                ls.getLoaiGiaoDich(),
-                currencyFormat.format(ls.getSoTien()) + " VNĐ",
-                ls.getGhiChu(),
-                ""
-            });
-        }
+        
+        // Giả sử có phương thức tìm kiếm trong controller
+        // Thực tế cần thêm phương thức này vào CongNoController
+        loadCongNoData(); // Tạm thời load lại tất cả
     }
     
     private void filterCongNoByKhachHang(String maKH) {
@@ -552,47 +539,225 @@ double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
         CongNoDialog dialog = new CongNoDialog(SwingUtilities.getWindowAncestor(this), congNo, this);
         dialog.setVisible(true);
     }
-    public void showCapNhatCongNoDialog(LichSuCongNo congNo) {
-        CapNhatCongNoDialog dialog = new CapNhatCongNoDialog(SwingUtilities.getWindowAncestor(this), congNo, this);
-        dialog.setVisible(true);
-    }    
-private void exportToExcel() {
-    JFileChooser fileChooser = new JFileChooser();
-    fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
-    String defaultName = "CongNoExport_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".xlsx";
-    fileChooser.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop/" + defaultName));
-    int userSelection = fileChooser.showSaveDialog(this);
-    if (userSelection != JFileChooser.APPROVE_OPTION) return;
-    File fileToSave = fileChooser.getSelectedFile();
-    try (Workbook workbook = new XSSFWorkbook()) {
-        Sheet sheet = workbook.createSheet("CongNo");
-        // Header
-        Row headerRow = sheet.createRow(0);
-        for (int i = 0; i < modelCongNo.getColumnCount(); i++) {
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(modelCongNo.getColumnName(i));
+    
+    private void exportToExcel() {
+        JOptionPane.showMessageDialog(this, "Chức năng xuất Excel sẽ được phát triển sau!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    // Inner class for CongNo Dialog
+    class CongNoDialog extends JDialog {
+        private JTextField txtMaLichSu, txtSoTien, txtGhiChu;
+        private JComboBox<String> cboKhachHang, cboLoaiGD;
+        private JDateChooser dateNgayGD;
+        private JButton btnSave, btnCancel;
+        private LichSuCongNo congNo;
+        private CongNoPanel parentPanel;
+        
+        public CongNoDialog(Window owner, LichSuCongNo congNo, CongNoPanel parentPanel) {
+            super(owner, congNo == null ? "Thêm Giao Dịch Công Nợ Mới" : "Cập Nhật Giao Dịch Công Nợ", ModalityType.APPLICATION_MODAL);
+            this.congNo = congNo;
+            this.parentPanel = parentPanel;
+            
+            initComponents();
+            loadComboBoxData();
+            
+            if (congNo != null) {
+                loadCongNoData();
+            }
+            
+            setSize(500, 400);
+            setLocationRelativeTo(owner);
         }
-        // Data
-        for (int row = 0; row < modelCongNo.getRowCount(); row++) {
-            Row excelRow = sheet.createRow(row + 1);
-            for (int col = 0; col < modelCongNo.getColumnCount(); col++) {
-                Object value = modelCongNo.getValueAt(row, col);
-                excelRow.createCell(col).setCellValue(value != null ? value.toString() : "");
+        
+        private void initComponents() {
+            JPanel panel = new JPanel(new GridBagLayout());
+            panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+            
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(5, 5, 5, 5);
+            
+            // Mã lịch sử
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            panel.add(new JLabel("Mã lịch sử:"), gbc);
+            
+            gbc.gridx = 1;
+            gbc.gridy = 0;
+            gbc.weightx = 1.0;
+            txtMaLichSu = new JTextField(20);
+            txtMaLichSu.setEditable(false); // Không cho phép sửa mã
+            panel.add(txtMaLichSu, gbc);
+            
+            // Khách hàng
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            gbc.weightx = 0;
+            panel.add(new JLabel("Khách hàng:"), gbc);
+            
+            gbc.gridx = 1;
+            gbc.gridy = 1;
+            gbc.weightx = 1.0;
+            cboKhachHang = new JComboBox<>();
+            panel.add(cboKhachHang, gbc);
+            
+            // Ngày giao dịch
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            gbc.weightx = 0;
+            panel.add(new JLabel("Ngày giao dịch:"), gbc);
+            
+            gbc.gridx = 1;
+            gbc.gridy = 2;
+            gbc.weightx = 1.0;
+            dateNgayGD = new JDateChooser();
+            dateNgayGD.setDate(new Date());
+            panel.add(dateNgayGD, gbc);
+            
+            // Loại giao dịch
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            gbc.weightx = 0;
+            panel.add(new JLabel("Loại giao dịch:"), gbc);
+            
+            gbc.gridx = 1;
+            gbc.gridy = 3;
+            gbc.weightx = 1.0;
+            cboLoaiGD = new JComboBox<>(new String[]{"PHAT SINH", "THANH TOAN"});
+            panel.add(cboLoaiGD, gbc);
+            
+            // Số tiền
+            gbc.gridx = 0;
+            gbc.gridy = 4;
+            gbc.weightx = 0;
+            panel.add(new JLabel("Số tiền:"), gbc);
+            
+            gbc.gridx = 1;
+            gbc.gridy = 4;
+            gbc.weightx = 1.0;
+            txtSoTien = new JTextField(20);
+            panel.add(txtSoTien, gbc);
+            
+            // Ghi chú
+            gbc.gridx = 0;
+            gbc.gridy = 5;
+            gbc.weightx = 0;
+            panel.add(new JLabel("Ghi chú:"), gbc);
+            
+            gbc.gridx = 1;
+            gbc.gridy = 5;
+            gbc.weightx = 1.0;
+            txtGhiChu = new JTextField(20);
+            panel.add(txtGhiChu, gbc);
+            
+            // Buttons
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            btnSave = new JButton("Lưu");
+            btnCancel = new JButton("Hủy");
+            
+            styleButton(btnSave, new Color(41, 121, 255));
+            styleButton(btnCancel, new Color(150, 150, 150));
+            
+            buttonPanel.add(btnSave);
+            buttonPanel.add(btnCancel);
+            
+            gbc.gridx = 0;
+            gbc.gridy = 6;
+            gbc.gridwidth = 2;
+            gbc.weightx = 1.0;
+            panel.add(buttonPanel, gbc);
+            
+            // Add event listeners
+            btnSave.addActionListener(e -> saveCongNo());
+            btnCancel.addActionListener(e -> dispose());
+            
+            getContentPane().add(panel);
+        }
+        
+        private void loadComboBoxData() {
+            cboKhachHang.removeAllItems();
+            KhachHangController khachHangController = new KhachHangController();
+            List<KhachHang> danhSachKH = khachHangController.getAllKhachHang();
+            for (KhachHang kh : danhSachKH) {
+                // Chỉ add mã khách hàng
+                cboKhachHang.addItem(kh.getMaKH());
             }
         }
-        // Auto-size columns
-        for (int i = 0; i < modelCongNo.getColumnCount(); i++) {
-            sheet.autoSizeColumn(i);
+        
+        private void loadCongNoData() {
+            txtMaLichSu.setText(congNo.getMaLichSu());
+            
+            // Set khách hàng
+            for (int i = 0; i < cboKhachHang.getItemCount(); i++) {
+                if (cboKhachHang.getItemAt(i).toString().contains(congNo.getMaKH())) {
+                    cboKhachHang.setSelectedIndex(i);
+                    break;
+                }
+            }
+            
+            // Set ngày giao dịch
+            dateNgayGD.setDate(congNo.getNgayGiaoDich());
+            
+            // Set loại giao dịch
+            cboLoaiGD.setSelectedItem(congNo.getLoaiGiaoDich());
+            
+            // Set số tiền
+            txtSoTien.setText(String.valueOf(congNo.getSoTien()));
+            
+            // Set ghi chú
+            txtGhiChu.setText(congNo.getGhiChu());
         }
-        try (FileOutputStream fos = new FileOutputStream(fileToSave)) {
-            workbook.write(fos);
+        
+        private void saveCongNo() {
+            if (cboKhachHang.getSelectedIndex() == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            if (dateNgayGD.getDate() == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày giao dịch", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            String soTienStr = txtSoTien.getText().trim();
+            if (soTienStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số tiền", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            double soTien;
+            try {
+                soTien = Double.parseDouble(soTienStr);
+                if (soTien <= 0) {
+                    JOptionPane.showMessageDialog(this, "Số tiền phải lớn hơn 0", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Số tiền không hợp lệ", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            String maKH = cboKhachHang.getSelectedItem().toString();
+            
+            String loaiGD = cboLoaiGD.getSelectedItem().toString();
+            Date ngayGD = dateNgayGD.getDate();
+            String ghiChu = txtGhiChu.getText().trim();
+            
+            String result;
+            if (congNo == null) { // Thêm mới
+                result = congNoController.addLichSuCongNo(maKH, ngayGD, loaiGD, soTien, ghiChu);
+            } else { // Cập nhật
+                result = congNoController.updateLichSuCongNo(congNo.getMaLichSu(), maKH, ngayGD, loaiGD, soTien, ghiChu);
+            }
+            
+            JOptionPane.showMessageDialog(this, result);
+            
+            if (result.contains("thành công")) {
+                parentPanel.loadCongNoData();
+                parentPanel.loadKhachHangData();
+                dispose();
+            }
         }
-        JOptionPane.showMessageDialog(this, "Xuất Excel thành công:\n" + fileToSave.getAbsolutePath(), "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-    } catch (IOException ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
-}
     
-
 }
