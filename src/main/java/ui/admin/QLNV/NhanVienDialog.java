@@ -168,19 +168,8 @@ public class NhanVienDialog extends JDialog {
         pack();
         setLocationRelativeTo(getOwner());
 
-        // Sự kiện Lưu: kiểm tra chức vụ
+        // Sự kiện Lưu
         btnSave.addActionListener(e -> {
-            // Không cần kiểm tra txtMaNV ở đây vì nó đã được xử lý là "Tự động tạo" hoặc mã
-            // có sẵn
-
-            if (cboChucVu.getSelectedItem() == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Vui lòng chọn chức vụ!", "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
-                cboChucVu.requestFocus();
-                return;
-            }
-
             // Kiểm tra dữ liệu nhập
             if (txtHoTen.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(NhanVienDialog.this, "Vui lòng nhập họ tên!", "Lỗi",
@@ -196,7 +185,7 @@ public class NhanVienDialog extends JDialog {
                 return;
             }
 
-            // Kiểm tra định dạng số ��iện thoại
+            // Kiểm tra định dạng số điện thoại
             if (!txtSDT.getText().trim().matches("^0[0-9]{9}$")) {
                 JOptionPane.showMessageDialog(NhanVienDialog.this,
                         "Số điện thoại không hợp lệ! Phải bắt đầu bằng số 0 và có 10 chữ số.", "Lỗi",
@@ -230,15 +219,16 @@ public class NhanVienDialog extends JDialog {
             }
 
             // Kiểm tra xem đây là thêm mới hay cập nhật
-            // Điều kiện isThemMoi vẫn giữ nguyên vì nó dựa vào nội dung của txtMaNV
             boolean isThemMoi = txtMaNV.getText().equals("Tự động tạo");
 
             // Tạo đối tượng nhân viên từ dữ liệu nhập
             NhanVien newNV = new NhanVien();
             if (!isThemMoi) {
                 newNV.setMaNV(nhanVien.getMaNV()); // Lấy MaNV từ đối tượng nhân viên hiện tại khi cập nhật
-                newNV.setMaTK(nhanVien.getMaTK()); // Giữ nguyên mã tài khoản nếu có
+                newNV.setMaTK(nhanVien.getMaTK()); // Giữ nguyên MaTK khi cập nhật
             }
+            // Không cần set MaTK khi thêm mới - sẽ được xử lý tự động
+
             // Các trường còn lại được lấy từ form
             newNV.setHoTen(txtHoTen.getText().trim());
             newNV.setSdt(txtSDT.getText().trim());
@@ -246,7 +236,7 @@ public class NhanVienDialog extends JDialog {
             newNV.setChucVu(cboChucVu.getSelectedItem().toString());
 
             if (isThemMoi) {
-                // Thêm mới - sử dụng phương thức trả về boolean
+                // Thêm mới - không cần MaTK
                 boolean success = nhanVienController.addNhanVien(newNV);
                 if (success) {
                     JOptionPane.showMessageDialog(NhanVienDialog.this,

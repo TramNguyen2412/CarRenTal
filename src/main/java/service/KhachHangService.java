@@ -57,32 +57,54 @@ public class KhachHangService {
     public boolean updateKhachHang(KhachHang kh) {
         errorMessage = new StringBuilder();
 
-        // Validate dữ liệu trước khi cập nhật
+        // Validate dữ liệu
         String validationError = validateKhachHangData(kh);
         if (validationError != null) {
             errorMessage.append(validationError);
             return false;
         }
 
-        // Kiểm tra trùng lặp
-        if (khachHangDAO.isPhoneNumberExists(kh.getSdt(), kh.getMaKH())) {
-            errorMessage.append("Số điện thoại đã tồn tại trong hệ thống");
+        // Kiểm tra khách hàng tồn tại
+        KhachHang existingKH = khachHangDAO.getKhachHangByMa(kh.getMaKH());
+        if (existingKH == null) {
+            errorMessage.append("Không tìm thấy khách hàng với mã " + kh.getMaKH());
             return false;
         }
 
-        if (kh.getEmail() != null && !kh.getEmail().isEmpty() &&
-                khachHangDAO.isEmailExists(kh.getEmail(), kh.getMaKH())) {
-            errorMessage.append("Email đã tồn tại trong hệ thống");
+        // Kiểm tra trùng lặp SĐT (loại trừ chính khách hàng đang cập nhật)
+        if (!kh.getSdt().equals(existingKH.getSdt()) &&
+                khachHangDAO.isPhoneNumberExists(kh.getSdt(), kh.getMaKH())) {
+            errorMessage.append("Số điện thoại đã tồn tại cho một khách hàng khác");
             return false;
         }
 
-        if (kh.getCccd() != null && !kh.getCccd().isEmpty() &&
-                khachHangDAO.isCCCDExists(kh.getCccd(), kh.getMaKH())) {
-            errorMessage.append("CCCD đã tồn tại trong hệ thống");
-            return false;
+        // Kiểm tra trùng lặp Email (chỉ khi email không null và không rỗng)
+        if (kh.getEmail() != null && !kh.getEmail().trim().isEmpty()) {
+            String existingEmail = existingKH.getEmail();
+            // Chỉ kiểm tra nếu email thay đổi
+            if ((existingEmail == null || !kh.getEmail().equals(existingEmail)) &&
+                    khachHangDAO.isEmailExists(kh.getEmail(), kh.getMaKH())) {
+                errorMessage.append("Email đã tồn tại cho một khách hàng khác");
+                return false;
+            }
         }
 
-        return khachHangDAO.updateKhachHang(kh);
+        // Kiểm tra trùng lặp CCCD (chỉ khi CCCD không null và không rỗng)
+        if (kh.getCccd() != null && !kh.getCccd().trim().isEmpty()) {
+            String existingCCCD = existingKH.getCccd();
+            // Chỉ kiểm tra nếu CCCD thay đổi
+            if ((existingCCCD == null || !kh.getCccd().equals(existingCCCD)) &&
+                    khachHangDAO.isCCCDExists(kh.getCccd(), kh.getMaKH())) {
+                errorMessage.append("CCCD đã tồn tại cho một khách hàng khác");
+                return false;
+            }
+        }
+
+        boolean success = khachHangDAO.updateKhachHang(kh);
+        if (!success) {
+            errorMessage.append("Cập nhật khách hàng không thành công do lỗi hệ thống.");
+        }
+        return success;
     }
 
     public boolean deleteKhachHang(String maKH) {
@@ -100,11 +122,15 @@ public class KhachHangService {
             return false;
         }
 
-        // Kiểm tra khách hàng có công nợ
+        // Kiểm tra khách hàng có công nợ - QUAN TRỌNG: phải > 0
         if (kh.getTongTienNo() > 0) {
-            errorMessage.append("Không thể xóa khách hàng đang có công nợ");
+            errorMessage.append("Không thể xóa khách hàng đang có công nợ. Tổng nợ hiện tại: " +
+                    String.format("%,.0f", kh.getTongTienNo()) + " VNĐ");
             return false;
         }
+
+        // Kiểm tra khách hàng có đang thuê xe không (nếu có bảng HopDong)
+        // Có thể thêm logic kiểm tra này nếu cần
 
         return khachHangDAO.deleteKhachHang(maKH);
     }
@@ -139,14 +165,21 @@ public class KhachHangService {
             return "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và đủ 10 số)";
         }
 
-        if (kh.getEmail() != null && !kh.getEmail().isEmpty() &&
-                !Pattern.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", kh.getEmail())) {
+        // Kiểm tra email nếu có
+        if (kh.getEmail() != null && !kh.getEmail().trim().isEmpty() &&
+                !Pattern.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$", kh.getEmail())) {
             return "Email không hợp lệ";
         }
 
-        if (kh.getCccd() != null && !kh.getCccd().isEmpty() &&
+        // Kiểm tra CCCD nếu có
+        if (kh.getCccd() != null && !kh.getCccd().trim().isEmpty() &&
                 !Pattern.matches("^[0-9]{12}$", kh.getCccd())) {
             return "CCCD không hợp lệ (phải đủ 12 số)";
+        }
+
+        // Kiểm tra tổng tiền nợ
+        if (kh.getTongTienNo() < 0) {
+            return "Tổng tiền nợ không được âm";
         }
 
         return null; // Không có lỗi

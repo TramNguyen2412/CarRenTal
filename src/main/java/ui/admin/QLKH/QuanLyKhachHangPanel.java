@@ -225,9 +225,10 @@ public class QuanLyKhachHangPanel extends JPanel implements ActionListener {
         if (!success) {
             String errorMessage = controller.getErrorMessage();
             JOptionPane.showMessageDialog(this,
-                    "Không thể xóa khách hàng. " + (errorMessage != null && !errorMessage.isEmpty() ? errorMessage
-                            : "Vui lòng kiểm tra lại."),
-                    "Lỗi Xóa Khách Hàng", JOptionPane.ERROR_MESSAGE);
+                    "Không thể xóa khách hàng.\n" +
+                            (errorMessage != null && !errorMessage.isEmpty() ? errorMessage : "Vui lòng kiểm tra lại."),
+                    "Lỗi Xóa Khách Hàng",
+                    JOptionPane.ERROR_MESSAGE);
         }
         return success;
     }

@@ -76,7 +76,7 @@ public class SuaKhachHangDialog extends JDialog {
         JLabel lblEmail = createLabel("Email:");
         JLabel lblCCCD = createLabel("CCCD:");
         JLabel lblDiaChi = createLabel("Địa chỉ:");
-        JLabel lblTongTienNo = createLabel("Tổng nợ:");
+        JLabel lblTongTienNo = createLabel("Tổng nợ:"); // Thêm label công nợ
 
         txtMaKH = createStyledTextField();
         txtMaKH.setEditable(false);
@@ -88,45 +88,52 @@ public class SuaKhachHangDialog extends JDialog {
         txtCCCD = createStyledTextField();
         txtDiaChi = createStyledTextField();
 
+        // Thêm trường tổng tiền nợ - có thể chỉnh sửa
         txtTongTienNo = createStyledTextField();
-        txtTongTienNo.setEditable(false);
-        txtTongTienNo.setBackground(new Color(230, 230, 230));
+        txtTongTienNo.setHorizontalAlignment(JTextField.RIGHT);
 
-        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+        layout.setHorizontalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(lblMaKH)
                                 .addComponent(lblHoTen)
                                 .addComponent(lblSDT)
                                 .addComponent(lblEmail)
                                 .addComponent(lblCCCD)
                                 .addComponent(lblDiaChi)
-                                .addComponent(lblTongTienNo))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(lblTongTienNo)) // Thêm vào layout
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(txtMaKH, GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                                .addComponent(txtMaKH)
                                 .addComponent(txtHoTen)
                                 .addComponent(txtSDT)
                                 .addComponent(txtEmail)
                                 .addComponent(txtCCCD)
                                 .addComponent(txtDiaChi)
-                                .addComponent(txtTongTienNo))));
+                                .addComponent(txtTongTienNo))); // Thêm vào layout
 
-        layout.setVerticalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblMaKH)
-                        .addComponent(txtMaKH))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblHoTen)
-                        .addComponent(txtHoTen))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblSDT)
-                        .addComponent(txtSDT))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblEmail)
-                        .addComponent(txtEmail))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblCCCD)
-                        .addComponent(txtCCCD))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblDiaChi)
-                        .addComponent(txtDiaChi))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblTongTienNo)
-                        .addComponent(txtTongTienNo)));
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblMaKH)
+                                .addComponent(txtMaKH))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblHoTen)
+                                .addComponent(txtHoTen))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblSDT)
+                                .addComponent(txtSDT))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblEmail)
+                                .addComponent(txtEmail))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblCCCD)
+                                .addComponent(txtCCCD))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblDiaChi)
+                                .addComponent(txtDiaChi))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblTongTienNo)
+                                .addComponent(txtTongTienNo))); // Thêm vào layout
 
         mainPanel.add(formPanel, BorderLayout.CENTER);
 
@@ -182,7 +189,8 @@ public class SuaKhachHangDialog extends JDialog {
             txtEmail.setText(khachHang.getEmail() != null ? khachHang.getEmail() : "");
             txtCCCD.setText(khachHang.getCccd() != null ? khachHang.getCccd() : "");
             txtDiaChi.setText(khachHang.getDiaChi() != null ? khachHang.getDiaChi() : "");
-            txtTongTienNo.setText(currencyFormatter.format(khachHang.getTongTienNo()));
+            // Hiển thị tổng tiền nợ với format tiền tệ hoặc số thường
+            txtTongTienNo.setText(String.valueOf(khachHang.getTongTienNo()));
         }
     }
 
@@ -192,6 +200,7 @@ public class SuaKhachHangDialog extends JDialog {
         String email = txtEmail.getText().trim();
         String cccd = txtCCCD.getText().trim();
         String diaChi = txtDiaChi.getText().trim();
+        String tongTienNoStr = txtTongTienNo.getText().trim();
 
         if (hoTen.isEmpty()) {
             showError("Họ tên không được để trống.", txtHoTen);
@@ -205,29 +214,59 @@ public class SuaKhachHangDialog extends JDialog {
             showError("SĐT không hợp lệ (phải bắt đầu bằng 0 và có 10 chữ số).", txtSDT);
             return;
         }
-        if (!email.isEmpty() && !email.matches("^[A-Za-z0-9._%+-]+@[A-ZaZ0-9.-]+\\.[A-Za-z]{2,6}$")) {
+
+        // Sửa regex email - đã có lỗi chính tả "ZaZ"
+        if (!email.isEmpty() && !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
             showError("Email không hợp lệ.", txtEmail);
             return;
         }
+
         if (!cccd.isEmpty() && !cccd.matches("^[0-9]{12}$")) {
             showError("CCCD không hợp lệ (phải đủ 12 số).", txtCCCD);
             return;
         }
 
-        // Pass MaKH to check for duplicates excluding the current customer
+        // Kiểm tra và parse tổng tiền nợ
+        double tongTienNo = 0;
+        try {
+            if (!tongTienNoStr.isEmpty()) {
+                tongTienNo = Double.parseDouble(tongTienNoStr.replace(",", ""));
+                if (tongTienNo < 0) {
+                    showError("Tổng tiền nợ không được âm.", txtTongTienNo);
+                    return;
+                }
+            }
+        } catch (NumberFormatException ex) {
+            showError("Tổng tiền nợ không hợp lệ.", txtTongTienNo);
+            return;
+        }
+
+        // Sửa logic kiểm tra trùng lặp - so sánh chính xác hơn
         if (!sdt.equals(khachHang.getSdt()) && controller.isPhoneNumberExists(sdt, khachHang.getMaKH())) {
             showError("SĐT đã tồn tại cho khách hàng khác.", txtSDT);
             return;
         }
-        if (!email.isEmpty() && !email.equals(khachHang.getEmail())
-                && controller.isEmailExists(email, khachHang.getMaKH())) {
-            showError("Email đã tồn tại cho khách hàng khác.", txtEmail);
-            return;
+
+        // Sửa logic kiểm tra email - xử lý cả trường hợp null
+        String currentEmail = khachHang.getEmail();
+        if (!email.isEmpty()) {
+            // Nếu email mới khác email cũ thì mới kiểm tra trùng lặp
+            if ((currentEmail == null || !email.equals(currentEmail))
+                    && controller.isEmailExists(email, khachHang.getMaKH())) {
+                showError("Email đã tồn tại cho khách hàng khác.", txtEmail);
+                return;
+            }
         }
-        if (!cccd.isEmpty() && !cccd.equals(khachHang.getCccd())
-                && controller.isCCCDExists(cccd, khachHang.getMaKH())) {
-            showError("CCCD đã tồn tại cho khách hàng khác.", txtCCCD);
-            return;
+
+        // Sửa logic kiểm tra CCCD
+        String currentCCCD = khachHang.getCccd();
+        if (!cccd.isEmpty()) {
+            // Nếu CCCD mới khác CCCD cũ thì mới kiểm tra trùng lặp
+            if ((currentCCCD == null || !cccd.equals(currentCCCD))
+                    && controller.isCCCDExists(cccd, khachHang.getMaKH())) {
+                showError("CCCD đã tồn tại cho khách hàng khác.", txtCCCD);
+                return;
+            }
         }
 
         khachHang.setHoTen(hoTen);
@@ -235,8 +274,7 @@ public class SuaKhachHangDialog extends JDialog {
         khachHang.setEmail(email.isEmpty() ? null : email);
         khachHang.setCccd(cccd.isEmpty() ? null : cccd);
         khachHang.setDiaChi(diaChi.isEmpty() ? null : diaChi);
-        // TongTienNo is not typically edited here by admin, it's usually
-        // system-calculated
+        khachHang.setTongTienNo(tongTienNo);
 
         if (controller.updateKhachHang(khachHang)) {
             successfullyUpdated = true;
