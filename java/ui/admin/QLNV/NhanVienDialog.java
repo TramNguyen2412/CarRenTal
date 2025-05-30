@@ -90,6 +90,21 @@ public class NhanVienDialog extends JDialog {
         txtSDT = createStyledTextField();
         txtEmail = createStyledTextField();
 
+        // Cập nhật txtMaNV dựa trên việc thêm mới hay chỉnh sửa
+        if (nhanVien != null && nhanVien.getMaNV() != null && !nhanVien.getMaNV().isEmpty()) {
+            // Chế độ chỉnh sửa: hiển thị MaNV và không cho sửa
+            txtMaNV.setText(nhanVien.getMaNV());
+            txtMaNV.setEditable(false);
+            txtMaNV.setBackground(new Color(230, 230, 230)); // Màu nền cho trường không sửa được
+            lblTitle.setText("CHỈNH SỬA THÔNG TIN NHÂN VIÊN");
+        } else {
+            // Chế độ thêm mới: hiển thị "Tự động tạo" và không cho sửa
+            txtMaNV.setText("Tự động tạo");
+            txtMaNV.setEditable(false);
+            txtMaNV.setBackground(new Color(230, 230, 230)); // Màu nền cho trường không sửa được
+            lblTitle.setText("THÊM NHÂN VIÊN MỚI");
+        }
+
         // Combobox chức vụ
         DefaultComboBoxModel<String> m = new DefaultComboBoxModel<>();
         nhanVienController.getAllChucVu()
@@ -155,6 +170,9 @@ public class NhanVienDialog extends JDialog {
 
         // Sự kiện Lưu: kiểm tra chức vụ
         btnSave.addActionListener(e -> {
+            // Không cần kiểm tra txtMaNV ở đây vì nó đã được xử lý là "Tự động tạo" hoặc mã
+            // có sẵn
+
             if (cboChucVu.getSelectedItem() == null) {
                 JOptionPane.showMessageDialog(this,
                         "Vui lòng chọn chức vụ!", "Lỗi",
@@ -212,26 +230,27 @@ public class NhanVienDialog extends JDialog {
             }
 
             // Kiểm tra xem đây là thêm mới hay cập nhật
+            // Điều kiện isThemMoi vẫn giữ nguyên vì nó dựa vào nội dung của txtMaNV
             boolean isThemMoi = txtMaNV.getText().equals("Tự động tạo");
 
             // Tạo đối tượng nhân viên từ dữ liệu nhập
             NhanVien newNV = new NhanVien();
             if (!isThemMoi) {
-                newNV.setMaNV(nhanVien.getMaNV());
-                newNV.setMaTK(nhanVien.getMaTK()); // Giữ nguyên mã tài khoản
+                newNV.setMaNV(nhanVien.getMaNV()); // Lấy MaNV từ đối tượng nhân viên hiện tại khi cập nhật
+                newNV.setMaTK(nhanVien.getMaTK()); // Giữ nguyên mã tài khoản nếu có
             }
-
+            // Các trường còn lại được lấy từ form
             newNV.setHoTen(txtHoTen.getText().trim());
             newNV.setSdt(txtSDT.getText().trim());
             newNV.setEmail(txtEmail.getText().trim());
             newNV.setChucVu(cboChucVu.getSelectedItem().toString());
 
             if (isThemMoi) {
-                // Thêm mới - sử dụng phương thức trả về String
-                String newMaNV = nhanVienController.addNhanVien(newNV);
-                if (newMaNV != null) {
+                // Thêm mới - sử dụng phương thức trả về boolean
+                boolean success = nhanVienController.addNhanVien(newNV);
+                if (success) {
                     JOptionPane.showMessageDialog(NhanVienDialog.this,
-                            "Thêm nhân viên mới thành công! Mã nhân viên: " + newMaNV,
+                            "Thêm nhân viên mới thành công!",
                             "Thông báo",
                             JOptionPane.INFORMATION_MESSAGE);
                     dispose();

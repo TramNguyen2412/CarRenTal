@@ -6,12 +6,12 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
-public class ButtonRenderer extends JPanel implements TableCellRenderer {
+public class ButtonRendererNV extends JPanel implements TableCellRenderer {
     private JButton btnView, btnEdit, btnDelete;
     
-    public ButtonRenderer() {
+    public ButtonRendererNV() {
         setLayout(new GridBagLayout());
-        setOpaque(true);
+        setOpaque(true); // Important for background colors to show correctly
         
         // Tạo các nút
         btnView = createStyledButton("Xem", new Color(23, 162, 184));
@@ -45,10 +45,12 @@ public class ButtonRenderer extends JPanel implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
+        // Thiết lập màu nền dựa trên trạng thái được chọn và dòng chẵn/lẻ
+        // (Matching ButtonRenderer.java)
         if (isSelected) {
             setBackground(table.getSelectionBackground());
         } else {
-            setBackground(table.getBackground());
+            setBackground(row % 2 == 0 ? Color.WHITE : new Color(248, 248, 248));
         }
         
         return this;

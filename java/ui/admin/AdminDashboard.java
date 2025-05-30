@@ -1,17 +1,35 @@
 package ui.admin;
-import java.net.URL;
-import model.TaiKhoan;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import ui.admin.QLXe.XePanel;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JFrame; // Sửa đường dẫn package từ QLNV sang QLNhanVien
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+
+import model.TaiKhoan;
+import ui.admin.QLGNX.GiaoNhanXePanel;
 import ui.admin.QLHD.HopDongPanel;
 import ui.admin.QLKH.QuanLyKhachHangPanel;
-import ui.admin.QLNV.NhanVienPanel; // Sửa đường dẫn package từ QLNV sang QLNhanVien
-import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import ui.admin.QLNV.NhanVienPanel;
+import ui.admin.QLXe.XePanel;
 
 
 public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClickListener {
@@ -29,7 +47,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
     private JPanel hopDongPanel;
     private JPanel baoDuongPanel;
     private JPanel congNoPanel;
-    private JPanel giaoNhanXePanel;
+    private GiaoNhanXePanel giaoNhanXePanel;
     private JPanel baoCaoPanel;
     
     public AdminDashboard(TaiKhoan taiKhoan) {
@@ -80,7 +98,7 @@ public class AdminDashboard extends JFrame implements SidebarMenuPanel.MenuClick
         hopDongPanel = new HopDongPanel(); // Panel riêng cho Hợp đồng
         baoDuongPanel = createSimplePanel("Quản Lý Bảo Dưỡng");
         congNoPanel = createSimplePanel("Quản Lý Công Nợ");
-        giaoNhanXePanel = createSimplePanel("Quản Lý Giao Nhận Xe");
+        giaoNhanXePanel = new GiaoNhanXePanel();
         baoCaoPanel = createDashboardPanel();
         
         // Thêm các panel vào cardLayout
