@@ -1,40 +1,33 @@
 package controller;
 
-import dao.NhanVienDAO;
 import model.NhanVien;
+import service.NhanVienService;
 import java.util.List;
 
 public class NhanVienController {
-    private NhanVienDAO nhanVienDAO;
+    private NhanVienService nhanVienService;
     
     public NhanVienController() {
-        nhanVienDAO = new NhanVienDAO();
+        nhanVienService = new NhanVienService();
     }
     
     public List<NhanVien> getAllNhanVien() {
-        return nhanVienDAO.getAllNhanVien();
+        return nhanVienService.getAllNhanVien();
     }
     
     public NhanVien getNhanVienByMa(String maNV) {
-        return nhanVienDAO.getNhanVienByMa(maNV);
+        return nhanVienService.getNhanVienByMa(maNV);
     }
     
     public NhanVien getNhanVienByMaTK(String maTK) {
-        return nhanVienDAO.getNhanVienByMaTK(maTK);
+        return nhanVienService.getNhanVienByMaTK(maTK);
     }
     
     public boolean existsNhanVien(String maNV) {
-        return nhanVienDAO.existsNhanVien(maNV);
+        return nhanVienService.existsNhanVien(maNV);
     }
     
-    // Phương thức lấy mã nhân viên mặc định nếu cần
     public String getDefaultNhanVienMa() {
-        // Trả về một mã nhân viên mặc định có trong hệ thống
-        // Hoặc có thể là null nếu không tìm thấy
-        List<NhanVien> danhSachNV = getAllNhanVien();
-        if (danhSachNV != null && !danhSachNV.isEmpty()) {
-            return danhSachNV.get(0).getMaNV();
-        }
-        return null;
+        return nhanVienService.getDefaultNhanVienMa();
     }
 }
