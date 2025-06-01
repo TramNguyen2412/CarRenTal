@@ -211,7 +211,7 @@ private void updateTongTien() {
     lblTongTien.setText(String.format("%,.0f VNĐ", tong));
 }
 
-        private void savePhieuBaoDuong() {
+    private void savePhieuBaoDuong() {
             // Lấy dữ liệu từ form
             String maBD = txtMaBD.getText().trim();
             String maXe = null;
@@ -263,6 +263,10 @@ private void updateTongTien() {
 
             if (tongTien < 0) {
                 JOptionPane.showMessageDialog(this, "Tổng tiền phải lớn hơn 0!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (chiTietList == null || chiTietList.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Phiếu bảo dưỡng phải có ít nhất 1 chi tiết bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
