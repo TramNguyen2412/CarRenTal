@@ -90,7 +90,7 @@ public class BaoDuongPanel extends JPanel {
         add(pnlTitle, BorderLayout.NORTH);
 
         // Bảng dữ liệu
-        String[] columns = {"Mã BD", "Xe", "Khách hàng", "Ngày BD", "Nhân viên", "Loại BD", "Tổng tiền"};
+        String[] columns = {"Mã BD", "Xe", "Khách hàng", "Nhân viên","Ngày BD", "Loại BD", "Tổng tiền"};
         modelBaoDuong = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {

@@ -204,7 +204,10 @@ public class ThongKeDAO {
         // Thiết lập TRANSACTION_READ_COMMITTED để cho phép phantom read
         if (reportViewLocked) {
             conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+          //  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+          //  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            
             lockedConnection = conn;
         }
 
