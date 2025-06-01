@@ -163,16 +163,6 @@ public class NhanVienService {
         return nhanVienDAO.getThongKeNhanVien();
     }
 
-    public boolean existsNhanVien(String maNV) {
-        if (maNV == null || maNV.trim().isEmpty()) {
-            return false;
-        }
-        return nhanVienDAO.existsNhanVien(maNV);
-    }
-
-    public String getDefaultNhanVienMa() {
-        return nhanVienDAO.getDefaultNhanVienMa();
-    }
 
     // Phương thức validate dữ liệu nhân viên
     private String validateNhanVienData(NhanVien nv, boolean isUpdate) {
@@ -202,9 +192,9 @@ public class NhanVienService {
         }
 
         // Chỉ check MaTK khi update, không check khi thêm mới
-        if (isUpdate && (nv.getMaTK() == null || nv.getMaTK().trim().isEmpty())) {
-            return "Mã tài khoản không được để trống khi cập nhật";
-        }
+//        if (isUpdate && (nv.getMaTK() == null || nv.getMaTK().trim().isEmpty())) {
+//            return "Mã tài khoản không được để trống khi cập nhật";
+//        }
 
         return null; // Không có lỗi
     }

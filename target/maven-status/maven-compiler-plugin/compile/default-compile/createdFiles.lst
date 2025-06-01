@@ -27,6 +27,7 @@ ui\customer\GioXeTableActionCellEditor$2.class
 ui\admin\CongNo\CongNoPanel$3.class
 ui\admin\QLKH\KhachHangTablePanel$1.class
 ui\admin\QLKH\QuanLyKhachHangPanel$2.class
+ui\admin\QLGNX\GiaoNhanXeDialog$1.class
 model\GioXe.class
 ui\admin\QLKH\QuanLyKhachHangPanel.class
 ui\customer\DanhGiaPanel$3.class

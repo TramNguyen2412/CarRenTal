@@ -4,6 +4,7 @@ import dao.KhachHangDAO;
 import model.KhachHang;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class KhachHangService {
     private KhachHangDAO khachHangDAO;
@@ -28,58 +29,82 @@ public class KhachHangService {
         
         return khachHangDAO.addKhachHang(kh);
     }
-    
+    private String validateKhachHangData(KhachHang kh) {
+        if (kh.getHoTen() == null || kh.getHoTen().trim().isEmpty()) {
+            return "Họ tên không được để trống";
+        }
+
+        if (kh.getSdt() == null || kh.getSdt().trim().isEmpty()) {
+            return "Số điện thoại không được để trống";
+        }
+
+        if (!Pattern.matches("^0[0-9]{9}$", kh.getSdt())) {
+            return "Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và đủ 10 số)";
+        }
+
+        if (kh.getEmail() != null && !kh.getEmail().isEmpty() &&
+                !Pattern.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", kh.getEmail())) {
+            return "Email không hợp lệ";
+        }
+
+        if (kh.getCccd() != null && !kh.getCccd().isEmpty() &&
+                !Pattern.matches("^[0-9]{12}$", kh.getCccd())) {
+            return "CCCD không hợp lệ (phải đủ 12 số)";
+        }
+
+        return null; // Không có lỗi
+    }
     public boolean updateKhachHang(KhachHang kh) {
-    errorMessage = new StringBuilder();
+        errorMessage = new StringBuilder();
 
-    // Validate dữ liệu
-    String validationError = validateKhachHangData(kh);
-    if (validationError != null) {
-        errorMessage.append(validationError);
-        return false;
-    }
-
-    // Kiểm tra khách hàng tồn tại
-    KhachHang existingKH = khachHangDAO.getKhachHangByMa(kh.getMaKH());
-    if (existingKH == null) {
-        errorMessage.append("Không tìm thấy khách hàng với mã " + kh.getMaKH());
-        return false;
-    }
-
-    // Kiểm tra trùng lặp SĐT (loại trừ chính khách hàng đang cập nhật)
-    if (!kh.getSdt().equals(existingKH.getSdt()) &&
-            khachHangDAO.isPhoneNumberExists(kh.getSdt(), kh.getMaKH())) {
-        errorMessage.append("Số điện thoại đã tồn tại cho một khách hàng khác");
-        return false;
-    }
-
-    // Kiểm tra trùng lặp Email (chỉ khi email không null và không rỗng)
-    if (kh.getEmail() != null && !kh.getEmail().trim().isEmpty()) {
-        String existingEmail = existingKH.getEmail();
-        // Chỉ kiểm tra nếu email thay đổi
-        if ((existingEmail == null || !kh.getEmail().equals(existingEmail)) &&
-                khachHangDAO.isEmailExists(kh.getEmail(), kh.getMaKH())) {
-            errorMessage.append("Email đã tồn tại cho một khách hàng khác");
+        // Validate dữ liệu
+        String validationError = validateKhachHangData(kh);
+        if (validationError != null) {
+            errorMessage.append(validationError);
             return false;
         }
-    }
 
-    // Kiểm tra trùng lặp CCCD (chỉ khi CCCD không null và không rỗng)
-    if (kh.getCccd() != null && !kh.getCccd().trim().isEmpty()) {
-        String existingCCCD = existingKH.getCccd();
-        // Chỉ kiểm tra nếu CCCD thay đổi
-        if ((existingCCCD == null || !kh.getCccd().equals(existingCCCD)) &&
-                khachHangDAO.isCCCDExists(kh.getCccd(), kh.getMaKH())) {
-            errorMessage.append("CCCD đã tồn tại cho một khách hàng khác");
+        // Kiểm tra khách hàng tồn tại
+        KhachHang existingKH = khachHangDAO.getKhachHangByMa(kh.getMaKH());
+        if (existingKH == null) {
+            errorMessage.append("Không tìm thấy khách hàng với mã " + kh.getMaKH());
             return false;
         }
-    }
 
-    boolean success = khachHangDAO.updateKhachHang(kh);
-    if (!success) {
-        errorMessage.append("Cập nhật khách hàng không thành công do lỗi hệ thống.");
-    }
-    return success;
+        // Kiểm tra trùng lặp SĐT (loại trừ chính khách hàng đang cập nhật)
+        if (!kh.getSdt().equals(existingKH.getSdt()) &&
+                khachHangDAO.isPhoneNumberExists(kh.getSdt(), kh.getMaKH())) {
+            errorMessage.append("Số điện thoại đã tồn tại cho một khách hàng khác");
+            return false;
+        }
+
+        // Kiểm tra trùng lặp Email (chỉ khi email không null và không rỗng)
+        if (kh.getEmail() != null && !kh.getEmail().trim().isEmpty()) {
+            String existingEmail = existingKH.getEmail();
+            // Chỉ kiểm tra nếu email thay đổi
+            if ((existingEmail == null || !kh.getEmail().equals(existingEmail)) &&
+                    khachHangDAO.isEmailExists(kh.getEmail(), kh.getMaKH())) {
+                errorMessage.append("Email đã tồn tại cho một khách hàng khác");
+                return false;
+            }
+        }
+
+        // Kiểm tra trùng lặp CCCD (chỉ khi CCCD không null và không rỗng)
+        if (kh.getCccd() != null && !kh.getCccd().trim().isEmpty()) {
+            String existingCCCD = existingKH.getCccd();
+            // Chỉ kiểm tra nếu CCCD thay đổi
+            if ((existingCCCD == null || !kh.getCccd().equals(existingCCCD)) &&
+                    khachHangDAO.isCCCDExists(kh.getCccd(), kh.getMaKH())) {
+                errorMessage.append("CCCD đã tồn tại cho một khách hàng khác");
+                return false;
+            }
+        }
+
+        boolean success = khachHangDAO.updateKhachHang(kh);
+        if (!success) {
+            errorMessage.append("Cập nhật khách hàng không thành công do lỗi hệ thống.");
+        }
+        return success;
 }
 
 
