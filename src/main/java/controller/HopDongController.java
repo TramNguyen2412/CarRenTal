@@ -1,15 +1,18 @@
 package controller;
 
-import dao.HopDongDAO;
-import dao.ChiTietHDDao;
-import model.HopDong;
-import model.ChiTietHD;
-import model.Xe;
-import model.NhanVien;
-import controller.NhanVienController;
-import controller.XeController;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
+
+import dao.ChiTietHDDao;
+import dao.HopDongDAO;
+import model.ChiTietHD;
+import model.HopDong;
+import model.NhanVien;
+import model.Xe;
+
+
+
 
 public class HopDongController {
     private HopDongDAO hopDongDAO;
@@ -300,4 +303,18 @@ public class HopDongController {
     public String getDefaultNhanVienMa() {
         return nhanVienController.getDefaultNhanVienMa();
     }
+    public String kiemTraXeThueDuoc(String maXe, Date ngayBatDau, Date ngayKetThuc, String maHDHienTai) {
+         return chiTietHDDAO.kiemTraXeThueDuoc(maXe, ngayBatDau, ngayKetThuc, maHDHienTai);
+    }
+// Lấy tất cả hợp đồng của một khách hàng
+public List<HopDong> getHopDongByKhachHang(String maKH) {
+    List<HopDong> all = hopDongDAO.getAllHopDong();
+    List<HopDong> result = new java.util.ArrayList<>();
+    for (HopDong hd : all) {
+        if (hd.getMaKH() != null && hd.getMaKH().equals(maKH)) {
+            result.add(hd);
+        }
+    }
+    return result;
+}
 }

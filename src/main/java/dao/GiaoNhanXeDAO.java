@@ -17,7 +17,7 @@ public class GiaoNhanXeDAO {
         Connection conn = DatabaseUtil.getConnection();
         if (conn == null || conn.isClosed() || !conn.isValid(2)) {
             System.out.println("Connection invalidated or closed, attempting to reconnect...");
-            DatabaseUtil.reconnect();
+        //    DatabaseUtil.reconnect();
             conn = DatabaseUtil.getConnection();
             if (conn == null || conn.isClosed() || !conn.isValid(2)) {
                 throw new SQLException("Failed to establish a valid database connection.");

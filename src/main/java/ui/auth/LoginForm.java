@@ -1,6 +1,6 @@
 package ui.auth;
 
-import dao.TaiKhoanDAO;
+import controller.TaiKhoanController;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -12,6 +12,8 @@ import ui.customer.CustomerDashboard;
 import java.io.File;
 import java.awt.Image;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import model.KhachHang;
+
 public class LoginForm extends javax.swing.JFrame {
     
     private JPanel mainPanel;
@@ -24,7 +26,7 @@ public class LoginForm extends javax.swing.JFrame {
     private JPasswordField txtPassword;
     private JButton btnLogin;
     private JLabel lblImage;
-    
+     private JButton btnRegister; 
     public LoginForm() {
         initComponents();
         this.setLocationRelativeTo(null); // Center window
@@ -136,6 +138,21 @@ public class LoginForm extends javax.swing.JFrame {
         gbc.insets = new Insets(20, 0, 0, 0);
         rightPanel.add(btnLogin, gbc);
         
+        // Register Button - THÊM MỚI
+        btnRegister = new JButton("ĐĂNG KÝ TÀI KHOẢN");
+        btnRegister.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
+        btnRegister.setPreferredSize(new Dimension(300, 40));
+        btnRegister.setBackground(new Color(240, 240, 240));
+        btnRegister.setForeground(Color.BLACK);
+        btnRegister.setFocusPainted(false);
+        btnRegister.setBorderPainted(false);
+        btnRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRegister.addActionListener(e -> btnRegisterActionPerformed());
+        gbc.gridy = 7;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        rightPanel.add(btnRegister, gbc);
+        
+        
         // Add panels to main panel
         mainPanel.add(leftPanel);
         mainPanel.add(rightPanel);
@@ -153,16 +170,26 @@ public class LoginForm extends javax.swing.JFrame {
             return;
         }
         
-        TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
-        TaiKhoan taiKhoan = taiKhoanDAO.checkLogin(username, password);
+     // 1. Tạo Controller thay vì gọi trực tiếp DAO
+        TaiKhoanController taiKhoanController = new TaiKhoanController();
+        TaiKhoan taiKhoan = taiKhoanController.dangNhap(username, password);
         
         if (taiKhoan != null) {
             // Kiểm tra vai trò
             switch (taiKhoan.getMaVaiTro()) {
                 case "VT001" -> {
-                    // Mở form dành cho khách hàng
+                    KhachHang khachHang = taiKhoanController.getKhachHangByMaTK(taiKhoan.getMaTK());
+                
+                    // In debug
+                    if (khachHang != null) {
+                        System.out.println("Tìm thấy khách hàng: " + khachHang.getHoTen());
+                    } else {
+                        System.out.println("Không tìm thấy thông tin khách hàng cho tài khoản này");
+                    }
+
+                    // 4. Truyền cả TaiKhoan và KhachHang vào CustomerDashboard
                     this.dispose();
-                    new CustomerDashboard(taiKhoan).setVisible(true);
+                    new CustomerDashboard(taiKhoan, khachHang).setVisible(true);
                 }
                 case "VT002" -> {
                     // Mở form dành cho quản lý
@@ -176,5 +203,9 @@ public class LoginForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, 
                 "Đăng nhập thất bại! Kiểm tra lại thông tin đăng nhập");
         }
+    }
+     private void btnRegisterActionPerformed() {
+        this.dispose(); // Đóng form đăng nhập
+        new RegisterForm().setVisible(true); // Mở form đăng ký
     }
 }

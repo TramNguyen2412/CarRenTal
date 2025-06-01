@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class NhanVienController {
     private NhanVienService nhanVienService;
-
+    
     public NhanVienController() {
         this.nhanVienService = new NhanVienService();
     }
@@ -19,7 +19,10 @@ public class NhanVienController {
     public NhanVien getNhanVienByMa(String maNV) {
         return nhanVienService.getNhanVienByMa(maNV);
     }
-
+    
+    public NhanVien getNhanVienByMaTK(String maTK) {
+        return nhanVienService.getNhanVienByMaTK(maTK);
+    }
     public boolean addNhanVien(NhanVien nv) {
         return nhanVienService.addNhanVien(nv);
     }
@@ -79,7 +82,6 @@ public class NhanVienController {
     public boolean existsNhanVien(String maNV) {
         return nhanVienService.existsNhanVien(maNV);
     }
-
     public String getDefaultNhanVienMa() {
         return nhanVienService.getDefaultNhanVienMa();
     }

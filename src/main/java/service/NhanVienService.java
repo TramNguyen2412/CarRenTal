@@ -1,28 +1,41 @@
 package service;
 
+import dao.NhanVienDAO;
+import model.NhanVien;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import dao.NhanVienDAO;
-import model.NhanVien;
-
 public class NhanVienService {
     private NhanVienDAO nhanVienDAO;
-    private StringBuilder errorMessage = new StringBuilder();
-
+     private StringBuilder errorMessage = new StringBuilder();
     public NhanVienService() {
         nhanVienDAO = new NhanVienDAO();
     }
-
+    
     public List<NhanVien> getAllNhanVien() {
         return nhanVienDAO.getAllNhanVien();
     }
-
+    
     public NhanVien getNhanVienByMa(String maNV) {
         return nhanVienDAO.getNhanVienByMa(maNV);
     }
-
+    
+    public NhanVien getNhanVienByMaTK(String maTK) {
+        return nhanVienDAO.getNhanVienByMaTK(maTK);
+    }
+    
+    public boolean existsNhanVien(String maNV) {
+        return nhanVienDAO.existsNhanVien(maNV);
+    }
+    
+    public String getDefaultNhanVienMa() {
+        List<NhanVien> danhSachNV = getAllNhanVien();
+        if (danhSachNV != null && !danhSachNV.isEmpty()) {
+            return danhSachNV.get(0).getMaNV();
+        }
+        return null;
+    }   
     public boolean addNhanVien(NhanVien nv) {
         errorMessage = new StringBuilder();
 
@@ -196,3 +209,4 @@ public class NhanVienService {
         return null; // Không có lỗi
     }
 }
+

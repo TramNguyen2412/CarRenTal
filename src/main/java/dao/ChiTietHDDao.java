@@ -6,22 +6,35 @@ import java.util.List;
 import model.ChiTietHD;
 import util.DatabaseUtil;
 import javax.swing.JOptionPane;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 public class ChiTietHDDao {
 
-    // Thay thế phương thức checkConnection bằng getValidConnection
+   //  Thay thế phương thức checkConnection bằng getValidConnection
+//    private Connection getValidConnection() throws SQLException {
+//        Connection conn = DatabaseUtil.getConnection();
+//        
+//        // Kiểm tra kết nối còn hợp lệ không
+//        if (!conn.isValid(2)) { // timeout 2 giây
+//            System.out.println("Connection invalidated, reconnecting...");
+//            DatabaseUtil.reconnect();
+//            conn = DatabaseUtil.getConnection();
+//        }
+//        
+//        return conn;
+//    }
     private Connection getValidConnection() throws SQLException {
-        Connection conn = DatabaseUtil.getConnection();
-        
-        // Kiểm tra kết nối còn hợp lệ không
-        if (!conn.isValid(2)) { // timeout 2 giây
-            System.out.println("Connection invalidated, reconnecting...");
-            DatabaseUtil.reconnect();
-            conn = DatabaseUtil.getConnection();
-        }
-        
-        return conn;
+    Connection conn = DatabaseUtil.getConnection();
+    
+    // Kiểm tra kết nối còn hợp lệ không
+    if (!conn.isValid(2)) { // timeout 2 giây
+        System.out.println("Connection invalidated, reconnecting...");
+        conn = DatabaseUtil.reconnect(conn); // Truyền conn hiện tại và nhận conn mới
     }
+    
+    return conn;
+  }
     
     public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
         List<ChiTietHD> danhSachCT = new ArrayList<>();
@@ -58,16 +71,16 @@ public class ChiTietHDDao {
             System.err.println("Error in getChiTietHDByMaHD: " + e.getMessage());
             e.printStackTrace();
             
-            // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in getChiTietHDByMaHD");
-                    DatabaseUtil.reconnect();
-                    return getChiTietHDByMaHD(maHD); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            // Thử kết nối lại nếu bị lỗi kết nối đóng
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in getChiTietHDByMaHD");
+//                    DatabaseUtil.reconnect();
+//                    return getChiTietHDByMaHD(maHD); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -109,15 +122,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in addChiTietHD");
-                    DatabaseUtil.reconnect();
-                    return addChiTietHD(ct); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in addChiTietHD");
+//                    DatabaseUtil.reconnect();
+//                    return addChiTietHD(ct); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -158,15 +171,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in updateChiTietHD");
-                    DatabaseUtil.reconnect();
-                    return updateChiTietHD(ct); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in updateChiTietHD");
+//                    DatabaseUtil.reconnect();
+//                    return updateChiTietHD(ct); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -203,15 +216,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in deleteChiTietHD");
-                    DatabaseUtil.reconnect();
-                    return deleteChiTietHD(maHD, maXe); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in deleteChiTietHD");
+//                    DatabaseUtil.reconnect();
+//                    return deleteChiTietHD(maHD, maXe); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -247,15 +260,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in deleteChiTietHDByMaHD");
-                    DatabaseUtil.reconnect();
-                    return deleteChiTietHDByMaHD(maHD); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in deleteChiTietHDByMaHD");
+//                    DatabaseUtil.reconnect();
+//                    return deleteChiTietHDByMaHD(maHD); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             // Chuyển tiếp ngoại lệ để xử lý ở tầng trên
             throw e;
         } finally {
@@ -298,15 +311,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in isXeDangThueTrongThoiGian");
-                    DatabaseUtil.reconnect();
-                    return isXeDangThueTrongThoiGian(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in isXeDangThueTrongThoiGian");
+//                    DatabaseUtil.reconnect();
+//                    return isXeDangThueTrongThoiGian(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             return false;
         } finally {
             try {
@@ -348,15 +361,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in hasMaintenanceSchedule");
-                    DatabaseUtil.reconnect();
-                    return hasMaintenanceSchedule(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in hasMaintenanceSchedule");
+//                    DatabaseUtil.reconnect();
+//                    return hasMaintenanceSchedule(maXe, ngayBatDau, ngayKetThuc); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             return false;
         } finally {
             try {
@@ -365,6 +378,109 @@ public class ChiTietHDDao {
                 // KHÔNG đóng connection ở đây
             } catch (SQLException e) {
                 System.err.println("Error closing resources: " + e.getMessage());
+            }
+        }
+    }
+    public String kiemTraXeThueDuoc(String maXe, Date ngayBatDau, Date ngayKetThuc, String maHDHienTai) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getValidConnection();
+
+            // 1. Kiểm tra xe đang được thuê bởi hợp đồng khác
+            String sql = "SELECT COUNT(*) FROM CTHD c JOIN HOPDONG h ON c.MAHD = h.MAHD " +
+                         "WHERE c.MAXE = ? AND h.TRANGTHAI IN ('Chờ xác nhận', 'Đang thuê', 'Đã xác nhận') " +
+                         "AND (TRUNC(?) <= TRUNC(c.NGAYKETTHUC) AND TRUNC(?) >= TRUNC(c.NGAYBATDAU))";
+
+            // Loại trừ hợp đồng hiện tại (nếu đang chỉnh sửa)
+            if (maHDHienTai != null && !maHDHienTai.isEmpty()) {
+                sql += " AND c.MAHD <> ?";
+            }
+
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, maXe);
+            pstmt.setDate(2, new java.sql.Date(ngayBatDau.getTime()));
+            pstmt.setDate(3, new java.sql.Date(ngayKetThuc.getTime()));
+
+            if (maHDHienTai != null && !maHDHienTai.isEmpty()) {
+                pstmt.setString(4, maHDHienTai);
+            }
+
+            rs = pstmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return "Xe đã được thuê trong khoảng thời gian này";
+            }
+
+            // 2. Kiểm tra lịch bảo dưỡng
+            rs.close();
+            pstmt.close();
+
+            sql = "SELECT COUNT(*) FROM PHIEUBAODUONG " +
+                  "WHERE MaXe = ? AND TRUNC(NgayBD) BETWEEN TRUNC(?) AND TRUNC(?)";
+
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, maXe);
+            pstmt.setDate(2, new java.sql.Date(ngayBatDau.getTime()));
+            pstmt.setDate(3, new java.sql.Date(ngayKetThuc.getTime()));
+
+            rs = pstmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return "Xe có lịch bảo dưỡng trong khoảng thời gian này";
+            }
+
+            // 3. Kiểm tra trạng thái xe nếu thuê ngay
+            Date today = new Date();
+            // Chuyển sang định dạng chuẩn chỉ có ngày để so sánh
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String todayStr = sdf.format(today);
+            String ngayBDStr = sdf.format(ngayBatDau);
+
+            if (todayStr.equals(ngayBDStr)) { // Nếu thuê ngày hôm nay
+                rs.close();
+                pstmt.close();
+
+                // Chỉ kiểm tra trạng thái xe nếu đây là hợp đồng mới hoặc xe mới được thêm vào hợp đồng
+                // Nếu đang sửa thông tin xe đã có trong hợp đồng thì bỏ qua kiểm tra trạng thái
+                if (maHDHienTai != null && !maHDHienTai.isEmpty()) {
+                    sql = "SELECT COUNT(*) FROM CTHD WHERE MAHD = ? AND MAXE = ?";
+                    pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1, maHDHienTai);
+                    pstmt.setString(2, maXe);
+
+                    rs = pstmt.executeQuery();
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        // Xe này đã thuộc hợp đồng hiện tại, bỏ qua kiểm tra trạng thái
+                        return null;
+                    }
+                }
+
+                // Xe không thuộc hợp đồng hiện tại hoặc là hợp đồng mới, kiểm tra trạng thái
+                sql = "SELECT TrangThai FROM XE WHERE MaXe = ?";
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, maXe);
+
+                rs = pstmt.executeQuery();
+                if (rs.next() && !"Sẵn sàng".equals(rs.getString("TrangThai"))) {
+                    return "Xe không ở trạng thái 'Sẵn sàng' nên không thể thuê ngay";
+                }
+            }
+
+
+            // Nếu không có lỗi
+            return null;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Lỗi kiểm tra: " + e.getMessage();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                // KHÔNG đóng connection ở đây
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -395,15 +511,15 @@ public class ChiTietHDDao {
             e.printStackTrace();
             
             // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-                try {
-                    System.out.println("Attempting to reconnect in getXeTrangThai");
-                    DatabaseUtil.reconnect();
-                    return getXeTrangThai(maXe); // Gọi lại phương thức
-                } catch (SQLException ex) {
-                    System.err.println("Failed to reconnect: " + ex.getMessage());
-                }
-            }
+//            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+//                try {
+//                    System.out.println("Attempting to reconnect in getXeTrangThai");
+//                    DatabaseUtil.reconnect();
+//                    return getXeTrangThai(maXe); // Gọi lại phương thức
+//                } catch (SQLException ex) {
+//                    System.err.println("Failed to reconnect: " + ex.getMessage());
+//                }
+//            }
             return null;
         } finally {
             try {
