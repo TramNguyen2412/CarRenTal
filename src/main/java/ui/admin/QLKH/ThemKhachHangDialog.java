@@ -29,7 +29,7 @@ import model.KhachHang;
 
 @SuppressWarnings("serial")
 public class ThemKhachHangDialog extends JDialog {
-    private JTextField txtMaKH, txtHoTen, txtSDT, txtEmail, txtCCCD, txtDiaChi;
+    private JTextField txtMaKH, txtHoTen, txtSDT, txtEmail, txtCCCD, txtDiaChi, txtTongTienNo;
     private KhachHangController controller;
     private boolean successfullyAdded = false;
 
@@ -70,6 +70,7 @@ public class ThemKhachHangDialog extends JDialog {
         JLabel lblEmail = createLabel("Email:");
         JLabel lblCCCD = createLabel("CCCD:");
         JLabel lblDiaChi = createLabel("Địa chỉ:");
+        JLabel lblTongTienNo = createLabel("Tổng tiền nợ:"); // Thêm label công nợ
 
         txtMaKH = createStyledTextField();
         txtMaKH.setText("Tự động tạo");
@@ -82,37 +83,53 @@ public class ThemKhachHangDialog extends JDialog {
         txtCCCD = createStyledTextField();
         txtDiaChi = createStyledTextField();
 
-        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+        // Thêm trường tổng tiền nợ
+        txtTongTienNo = createStyledTextField();
+        txtTongTienNo.setText("0");
+        txtTongTienNo.setHorizontalAlignment(JTextField.RIGHT);
+
+        layout.setHorizontalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(lblMaKH)
                                 .addComponent(lblHoTen)
                                 .addComponent(lblSDT)
                                 .addComponent(lblEmail)
                                 .addComponent(lblCCCD)
-                                .addComponent(lblDiaChi))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(lblDiaChi)
+                                .addComponent(lblTongTienNo)) // Thêm vào layout
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addComponent(txtMaKH, GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                                .addComponent(txtMaKH)
                                 .addComponent(txtHoTen)
                                 .addComponent(txtSDT)
                                 .addComponent(txtEmail)
                                 .addComponent(txtCCCD)
-                                .addComponent(txtDiaChi))));
+                                .addComponent(txtDiaChi)
+                                .addComponent(txtTongTienNo))); // Thêm vào layout
 
-        layout.setVerticalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblMaKH)
-                        .addComponent(txtMaKH))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblHoTen)
-                        .addComponent(txtHoTen))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblSDT)
-                        .addComponent(txtSDT))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblEmail)
-                        .addComponent(txtEmail))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblCCCD)
-                        .addComponent(txtCCCD))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(lblDiaChi)
-                        .addComponent(txtDiaChi)));
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblMaKH)
+                                .addComponent(txtMaKH))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblHoTen)
+                                .addComponent(txtHoTen))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblSDT)
+                                .addComponent(txtSDT))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblEmail)
+                                .addComponent(txtEmail))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblCCCD)
+                                .addComponent(txtCCCD))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblDiaChi)
+                                .addComponent(txtDiaChi))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblTongTienNo)
+                                .addComponent(txtTongTienNo))); // Thêm vào layout
 
         mainPanel.add(formPanel, BorderLayout.CENTER);
 
@@ -166,6 +183,7 @@ public class ThemKhachHangDialog extends JDialog {
         String email = txtEmail.getText().trim();
         String cccd = txtCCCD.getText().trim();
         String diaChi = txtDiaChi.getText().trim();
+        String tongTienNoStr = txtTongTienNo.getText().trim();
 
         if (hoTen.isEmpty()) {
             showError("Họ tên không được để trống.", txtHoTen);
@@ -188,6 +206,21 @@ public class ThemKhachHangDialog extends JDialog {
             return;
         }
 
+        // Kiểm tra và parse tổng tiền nợ
+        double tongTienNo = 0;
+        try {
+            if (!tongTienNoStr.isEmpty()) {
+                tongTienNo = Double.parseDouble(tongTienNoStr.replace(",", ""));
+                if (tongTienNo < 0) {
+                    showError("Tổng tiền nợ không được âm.", txtTongTienNo);
+                    return;
+                }
+            }
+        } catch (NumberFormatException ex) {
+            showError("Tổng tiền nợ không hợp lệ.", txtTongTienNo);
+            return;
+        }
+
         if (controller.isPhoneNumberExists(sdt, null)) {
             showError("Số điện thoại đã tồn tại trong hệ thống.", txtSDT);
             return;
@@ -207,12 +240,8 @@ public class ThemKhachHangDialog extends JDialog {
         newKhachHang.setEmail(email.isEmpty() ? null : email);
         newKhachHang.setCccd(cccd.isEmpty() ? null : cccd);
         newKhachHang.setDiaChi(diaChi.isEmpty() ? null : diaChi);
-        newKhachHang.setTongTienNo(0);
-        // MaTK is not set here as TaiKhoanUtils is removed.
-        // newKhachHang.setMaTK(null); // maTK will be null by default for a new String
-        // field
+        newKhachHang.setTongTienNo(tongTienNo); // Set tổng tiền nợ
 
-        // Call the controller method that takes only KhachHang object
         String generatedMaKH = controller.addKhachHang(newKhachHang);
 
         if (generatedMaKH != null) {

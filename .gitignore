@@ -1,3 +1,7 @@
+# Ignore specific Java files
+src/main/java/util/DatabaseConfig.java
+
+# Ignore build artifacts
 /target/
 nb-configuration.xml
 *.class

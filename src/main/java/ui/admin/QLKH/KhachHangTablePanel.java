@@ -70,11 +70,17 @@ public class KhachHangTablePanel extends JPanel {
         columnModel.getColumn(6).setPreferredWidth(100); // Tổng Nợ
         columnModel.getColumn(7).setPreferredWidth(180); // Thao tác (was 150)
 
-        // Custom renderer and editor for action buttons column
-        tableKhachHang.getColumnModel().getColumn(7).setCellRenderer(new ButtonRenderer()); // Use updated
-                                                                                            // QLKH.ButtonRenderer
-        tableKhachHang.getColumnModel().getColumn(7).setCellEditor(new ButtonEditor(parentPanel)); // Use updated
-                                                                                                   // QLKH.ButtonEditor
+        // Đặt renderer và editor cho cột button
+        tableKhachHang.getColumnModel().getColumn(7).setCellRenderer(new ButtonRenderer());
+        tableKhachHang.getColumnModel().getColumn(7).setCellEditor(new ButtonEditor(parentPanel));
+
+        // Tăng chiều rộng cột button để chứa đủ 3 nút
+        tableKhachHang.getColumnModel().getColumn(7).setPreferredWidth(160);
+        tableKhachHang.getColumnModel().getColumn(7).setMinWidth(160);
+        tableKhachHang.getColumnModel().getColumn(7).setMaxWidth(180);
+
+        // Đặt chiều cao hàng phù hợp
+        tableKhachHang.setRowHeight(35);
 
         // Tùy chỉnh header bảng
         JTableHeader header = tableKhachHang.getTableHeader();

@@ -266,26 +266,48 @@ public class KhachHangDAO {
         }
     }
     
-    public boolean deleteKhachHang(String maKH) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+   public boolean deleteKhachHang(String maKH) {
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+    ResultSet rs = null;
+
+    try {
+        conn = getValidConnection();
+
+        // Kiểm tra lại công nợ trước khi xóa để đảm bảo an toàn
+        String checkDebtSql = "SELECT TONGTIENNO FROM KHACHHANG WHERE MAKH = ?";
+        pstmt = conn.prepareStatement(checkDebtSql);
+        pstmt.setString(1, maKH);
+        rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            double tongTienNo = rs.getDouble("TONGTIENNO");
+            if (tongTienNo > 0) {
+                System.err.println("Attempt to delete customer with debt: " + maKH + ", debt: " + tongTienNo);
+                return false; // Không cho phép xóa khách hàng có nợ
+            }
+        } else {
+            return false; // Khách hàng không tồn tại
+        }
+
+        // Đóng resources từ câu query đầu
+        rs.close();
+        pstmt.close();
+
+        // Thực hiện xóa
+        String deleteSql = "DELETE FROM KHACHHANG WHERE MAKH = ?";
+        pstmt = conn.prepareStatement(deleteSql);
+        pstmt.setString(1, maKH);
         
-        try {
-            conn = getValidConnection();
-            
-            String sql = "DELETE FROM KHACHHANG WHERE MAKH = ?";
-            
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, maKH);
-            
-            int rows = pstmt.executeUpdate();
-            return rows > 0;
-        } catch (SQLException e) {
-            System.err.println("Error in deleteKhachHang: " + e.getMessage());
-            e.printStackTrace();
-            
-            // Thử kết nối lại nếu bị lỗi kết nối đóng
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
+        int rows = pstmt.executeUpdate();
+        return rows > 0;
+
+    } catch (SQLException e) {
+        System.err.println("Error in deleteKhachHang: " + e.getMessage());
+        e.printStackTrace();
+        
+        // Thử kết nối lại nếu bị lỗi kết nối đóng
+        if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
 //                try {
 //                    System.out.println("Attempting to reconnect in deleteKhachHang");
 //                    DatabaseUtil.reconnect();
@@ -293,16 +315,17 @@ public class KhachHangDAO {
 //                } catch (SQLException ex) {
 //                    System.err.println("Failed to reconnect: " + ex.getMessage());
 //                }
-            }
-            return false;
-        } finally {
-            try {
-                if (pstmt != null) pstmt.close();
-            } catch (SQLException e) {
-                System.err.println("Error closing resources: " + e.getMessage());
-            }
+        }
+        return false;
+    } finally {
+        try {
+            if (pstmt != null) pstmt.close();
+        } catch (SQLException e) {
+            System.err.println("Error closing resources: " + e.getMessage());
         }
     }
+}
+
     
     public List<KhachHang> searchKhachHang(String keyword) {
         List<KhachHang> danhSachKH = new ArrayList<>();
@@ -1024,25 +1047,42 @@ public class KhachHangDAO {
     // Phương thức mới: Xóa nhiều khách hàng
     public int deleteMultipleKhachHang(List<String> maKHList) {
         Connection conn = null;
-        PreparedStatement pstmt = null;
+        PreparedStatement checkStmt = null;
+        PreparedStatement deleteStmt = null;
+        ResultSet rs = null;
         int countDeleted = 0;
 
         try {
             conn = getValidConnection();
             conn.setAutoCommit(false);
 
-            String sql = "DELETE FROM KHACHHANG WHERE MAKH = ?";
-            pstmt = conn.prepareStatement(sql);
+            String checkSql = "SELECT TONGTIENNO FROM KHACHHANG WHERE MAKH = ?";
+            String deleteSql = "DELETE FROM KHACHHANG WHERE MAKH = ?";
+
+            checkStmt = conn.prepareStatement(checkSql);
+            deleteStmt = conn.prepareStatement(deleteSql);
 
             for (String maKH : maKHList) {
-                // Kiểm tra khách hàng có công nợ không
-                KhachHang kh = getKhachHangByMa(maKH);
-                if (kh != null && kh.getTongTienNo() > 0) {
-                    continue; // Bỏ qua khách hàng có công nợ
-                }
+                // Kiểm tra công nợ trước khi xóa
+                checkStmt.setString(1, maKH);
+                rs = checkStmt.executeQuery();
 
-                pstmt.setString(1, maKH);
-                int rows = pstmt.executeUpdate();
+                if (rs.next()) {
+                    double tongTienNo = rs.getDouble("TONGTIENNO");
+                    if (tongTienNo > 0) {
+                        System.out.println("Skipping customer " + maKH + " with debt: " + tongTienNo);
+                        rs.close();
+                        continue; // Bỏ qua khách hàng có công nợ
+                    }
+                } else {
+                    rs.close();
+                    continue; // Khách hàng không tồn tại
+                }
+                rs.close();
+
+                // Thực hiện xóa
+                deleteStmt.setString(1, maKH);
+                int rows = deleteStmt.executeUpdate();
                 if (rows > 0) {
                     countDeleted++;
                 }
@@ -1077,8 +1117,12 @@ public class KhachHangDAO {
             return 0;
         } finally {
             try {
-                if (pstmt != null)
-                    pstmt.close();
+                if (rs != null)
+                    rs.close();
+                if (checkStmt != null)
+                    checkStmt.close();
+                if (deleteStmt != null)
+                    deleteStmt.close();
                 if (conn != null)
                     conn.setAutoCommit(true);
             } catch (SQLException e) {

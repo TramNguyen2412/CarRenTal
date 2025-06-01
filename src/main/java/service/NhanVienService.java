@@ -39,7 +39,7 @@ public class NhanVienService {
     public boolean addNhanVien(NhanVien nv) {
         errorMessage = new StringBuilder();
 
-        // Validate dữ liệu trước khi thêm
+        // Validate dữ liệu trước khi thêm (không check MaTK)
         String validationError = validateNhanVienData(nv, false); // false for add (MaNV is not set yet)
         if (validationError != null) {
             errorMessage.append(validationError);
@@ -69,7 +69,7 @@ public class NhanVienService {
     public boolean updateNhanVien(NhanVien nv) {
         errorMessage = new StringBuilder();
 
-        // Validate dữ liệu trước khi cập nhật
+        // Validate dữ liệu trước khi cập nhật (check MaTK cho update)
         String validationError = validateNhanVienData(nv, true); // true for update (MaNV should exist)
         if (validationError != null) {
             errorMessage.append(validationError);
@@ -110,13 +110,6 @@ public class NhanVienService {
             return false;
         }
 
-        // TODO: Kiểm tra nhân viên có liên quan đến dữ liệu khác không (ví dụ: Hợp
-        // đồng, Phiếu bảo dưỡng)
-        // Ví dụ: if (hopDongDAO.hasActiveContractsForNhanVien(maNV)) {
-        // errorMessage.append("Không thể xóa nhân viên vì có hợp đồng liên quan.");
-        // return false;
-        // }
-
         boolean success = nhanVienDAO.deleteNhanVien(maNV);
         if (!success) {
             errorMessage.append("Xóa nhân viên không thành công do lỗi hệ thống.");
@@ -128,14 +121,57 @@ public class NhanVienService {
         return nhanVienDAO.searchNhanVien(keyword);
     }
 
-    // Phương thức kiểm tra số điện thoại đã tồn tại
     public boolean isPhoneNumberExists(String sdt, String excludeMaNV) {
         return nhanVienDAO.isPhoneNumberExists(sdt, excludeMaNV);
     }
 
-    // Phương thức kiểm tra email đã tồn tại
     public boolean isEmailExists(String email, String excludeMaNV) {
         return nhanVienDAO.isEmailExists(email, excludeMaNV);
+    }
+
+    public String getErrorMessage() {
+        String msg = errorMessage.toString();
+        errorMessage.setLength(0); // Clear message after retrieval
+        return msg;
+    }
+
+    public List<NhanVien> getNhanVienByChucVu(String chucVu) {
+        return nhanVienDAO.getNhanVienByChucVu(chucVu);
+    }
+
+    public List<String> getAllChucVu() {
+        return nhanVienDAO.getAllChucVu();
+    }
+
+    public NhanVien getNhanVienBySDT(String sdt) {
+        return nhanVienDAO.getNhanVienBySDT(sdt);
+    }
+
+    public NhanVien getNhanVienByEmail(String email) {
+        return nhanVienDAO.getNhanVienByEmail(email);
+    }
+
+    public int deleteMultipleNhanVien(List<String> maNVList) {
+        return nhanVienDAO.deleteMultipleNhanVien(maNVList);
+    }
+
+    public int importNhanVien(List<NhanVien> danhSachNV) {
+        return nhanVienDAO.importNhanVien(danhSachNV);
+    }
+
+    public Map<String, Object> getThongKeNhanVien() {
+        return nhanVienDAO.getThongKeNhanVien();
+    }
+
+    public boolean existsNhanVien(String maNV) {
+        if (maNV == null || maNV.trim().isEmpty()) {
+            return false;
+        }
+        return nhanVienDAO.existsNhanVien(maNV);
+    }
+
+    public String getDefaultNhanVienMa() {
+        return nhanVienDAO.getDefaultNhanVienMa();
     }
 
     // Phương thức validate dữ liệu nhân viên
@@ -165,56 +201,12 @@ public class NhanVienService {
             return "Chức vụ không được để trống";
         }
 
-        if (nv.getMaTK() == null || nv.getMaTK().trim().isEmpty()) {
-            return "Mã tài khoản không được để trống";
+        // Chỉ check MaTK khi update, không check khi thêm mới
+        if (isUpdate && (nv.getMaTK() == null || nv.getMaTK().trim().isEmpty())) {
+            return "Mã tài khoản không được để trống khi cập nhật";
         }
 
         return null; // Không có lỗi
     }
-
-    public String getErrorMessage() {
-        String msg = errorMessage.toString();
-        errorMessage.setLength(0); // Clear message after retrieval
-        return msg;
-    }
-
-    // Phương thức lấy nhân viên theo chức vụ
-    public List<NhanVien> getNhanVienByChucVu(String chucVu) {
-        return nhanVienDAO.getNhanVienByChucVu(chucVu);
-    }
-
-    // Phương thức lấy danh sách chức vụ
-    public List<String> getAllChucVu() {
-        return nhanVienDAO.getAllChucVu();
-    }
-
-    // Phương thức lấy nhân viên theo số điện thoại
-    public NhanVien getNhanVienBySDT(String sdt) {
-        return nhanVienDAO.getNhanVienBySDT(sdt);
-    }
-
-    // Phương thức lấy nhân viên theo email
-    public NhanVien getNhanVienByEmail(String email) {
-        return nhanVienDAO.getNhanVienByEmail(email);
-    }
-
-    // Phương thức xóa nhiều nhân viên
-    public int deleteMultipleNhanVien(List<String> maNVList) {
-        // TODO: Add checks for dependencies before deleting multiple employees
-        return nhanVienDAO.deleteMultipleNhanVien(maNVList);
-    }
-
-    // Phương thức nhập danh sách nhân viên từ danh sách
-    public int importNhanVien(List<NhanVien> danhSachNV) {
-        // TODO: Add more robust validation for each NhanVien in the list
-        return nhanVienDAO.importNhanVien(danhSachNV);
-    }
-
-    // Phương thức lấy thống kê nhân viên
-    public Map<String, Object> getThongKeNhanVien() {
-        return nhanVienDAO.getThongKeNhanVien();
-    }
-
-  
-    
 }
+

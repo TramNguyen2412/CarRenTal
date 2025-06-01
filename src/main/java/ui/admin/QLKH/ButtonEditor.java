@@ -31,10 +31,24 @@ public class ButtonEditor extends DefaultCellEditor {
     private KhachHang currentKhachHang;
     private QuanLyKhachHangPanel parentPanel;
 
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 11)); // Giảm font size
+        button.setForeground(Color.WHITE);
+        button.setBackground(bgColor);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(50, 28)); // Tăng kích thước
+        button.setMinimumSize(new Dimension(50, 28));
+        button.setMaximumSize(new Dimension(50, 28));
+        button.setMargin(new Insets(2, 4, 2, 4)); // Thêm margin
+        return button;
+    }
+
     public ButtonEditor(QuanLyKhachHangPanel parentPanel) {
         super(new JCheckBox());
         this.parentPanel = parentPanel;
-        // this.isPushed = false; // isPushed is a protected field in DefaultCellEditor
 
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(true);
@@ -44,7 +58,7 @@ public class ButtonEditor extends DefaultCellEditor {
         btnDelete = createStyledButton("Xóa", new Color(220, 53, 69));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 2, 0, 2);
+        gbc.insets = new Insets(2, 1, 2, 1); // Giảm khoảng cách
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
 
@@ -74,18 +88,32 @@ public class ButtonEditor extends DefaultCellEditor {
         });
 
         btnDelete.addActionListener(e -> {
-            if (maKH != null) {
+            if (currentKhachHang != null) {
+                String maKH = currentKhachHang.getMaKH();
+
+                // Kiểm tra công nợ trước khi hiển thị dialog xác nhận
+                if (currentKhachHang.getTongTienNo() > 0) {
+                    JOptionPane.showMessageDialog(
+                            SwingUtilities.getWindowAncestor(parentPanel),
+                            "Không thể xóa khách hàng '" + currentKhachHang.getHoTen() + "'\n" +
+                                    "vì đang có công nợ: " + String.format("%,.0f", currentKhachHang.getTongTienNo())
+                                    + " VNĐ\n" +
+                                    "Vui lòng thanh toán hết công nợ trước khi xóa.",
+                            "Không thể xóa",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
                 int confirm = JOptionPane.showConfirmDialog(
                         SwingUtilities.getWindowAncestor(parentPanel),
-                        "Bạn có chắc chắn muốn xóa khách hàng '"
-                                + (currentKhachHang != null ? currentKhachHang.getHoTen() : maKH) + "' (Mã: " + maKH
-                                + ")?",
+                        "Bạn có chắc chắn muốn xóa khách hàng '" +
+                                currentKhachHang.getHoTen() + "' (Mã: " + maKH + ")?\n" +
+                                "Hành động này không thể hoàn tác!",
                         "Xác nhận xóa",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.WARNING_MESSAGE);
+
                 if (confirm == JOptionPane.YES_OPTION) {
-                    // QuanLyKhachHangPanel.xoaKhachHang will handle showing specific error messages
-                    // from service
                     boolean success = parentPanel.xoaKhachHang(maKH);
                     if (success) {
                         JOptionPane.showMessageDialog(
@@ -95,23 +123,12 @@ public class ButtonEditor extends DefaultCellEditor {
                                 JOptionPane.INFORMATION_MESSAGE);
                         parentPanel.loadData();
                     }
-                    // Error message is handled by parentPanel.xoaKhachHang
+                    // Nếu không thành công, error message đã được hiển thị trong
+                    // parentPanel.xoaKhachHang
                 }
             }
             fireEditingStopped();
         });
-    }
-
-    private JButton createStyledButton(String text, Color bgColor) {
-        JButton button = new JButton(text);
-        button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 12));
-        button.setForeground(Color.WHITE);
-        button.setBackground(bgColor);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setPreferredSize(new Dimension(60, 25));
-        return button;
     }
 
     @Override
