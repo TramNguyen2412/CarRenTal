@@ -3,7 +3,7 @@
 --    FOR c IN (SELECT table_name FROM user_tables WHERE table_name IN (
 --       'CHITIETBAODUONG', 'DICHVUBD', 'PHIEUBAODUONG', 'DANHGIA', 
 --       'LICHSUCONGNO', 'GIAONHANXE', 'CTHD', 'HOPDONG', 'NHANVIEN',
---       'KHACHHANG', 'VAITRO_QUYENHAN', 'TAIKHOAN', 'QUYENHAN', 'VAITRO', 'XE'
+--       'KHACHHANG', 'VAITRO_QUYENHAN', 'TAIKHOAN', 'QUYENHAN', 'VAITRO', 'XE', 'GIOHANG'
 --    )) LOOP
 --       EXECUTE IMMEDIATE 'DROP TABLE ' || c.table_name || ' CASCADE CONSTRAINTS';
 --    END LOOP;
@@ -21,8 +21,9 @@
 --    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_dichvubd';
 --    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_vaitro';
 --    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_quyenhan';
+--       EXECUTE IMMEDIATE 'DROP SEQUENCE seq_giohang';
+      
 -- END;
-
 
 -- 2. Bảng VAITRO (Vai trò)
 CREATE TABLE VAITRO (
@@ -81,8 +82,8 @@ CREATE TABLE XE (
     TrangThai VARCHAR2(50),
     GiaThueNgay NUMBER(10,2)
 );
-
 ALTER TABLE XE ADD HinhAnh VARCHAR2(255);
+
 -- 7. Bảng NHANVIEN
 CREATE TABLE NHANVIEN (
     MaNV VARCHAR2(10) PRIMARY KEY,
@@ -131,6 +132,7 @@ CREATE TABLE GIAONHANXE (
     FOREIGN KEY (MaNV) REFERENCES NHANVIEN(MaNV)
 );
 ALTER TABLE GIAONHANXE ADD TrangThaiGN VARCHAR2(255) CHECK (TrangThaiGN IN ('Đã giao', 'Đã nhận về'));
+
 -- 11. Bảng LICHSUCONGNO
 CREATE TABLE LICHSUCONGNO (
     MaLichSu VARCHAR2(10) PRIMARY KEY,
@@ -145,12 +147,10 @@ CREATE TABLE LICHSUCONGNO (
 -- 12. Bảng DANHGIA
 CREATE TABLE DANHGIA (
     MaDG VARCHAR2(10) PRIMARY KEY,
-    MaKH VARCHAR2(10),
     MaHD VARCHAR2(10),
     DiemSo NUMBER(1) CHECK (DiemSo BETWEEN 1 AND 5),
     BinhLuan VARCHAR2(500),
     NgayDanhGia DATE,
-    FOREIGN KEY (MaKH) REFERENCES KHACHHANG(MaKH),
     FOREIGN KEY (MaHD) REFERENCES HOPDONG(MaHD)
 );
 
@@ -186,10 +186,16 @@ CREATE TABLE CHITIETBAODUONG (
     FOREIGN KEY (MaDV) REFERENCES DICHVUBD(MaDV)
 );
 
-
-
-COMMIT;
-
+CREATE TABLE GIOHANG (
+    MaGH VARCHAR2(10) PRIMARY KEY,
+    MaKH VARCHAR2(10) NOT NULL,
+    MaXe VARCHAR2(10) NOT NULL,
+    NgayBatDau DATE NOT NULL,
+    NgayKetThuc DATE NOT NULL,
+    NgayThem DATE DEFAULT SYSDATE,
+    FOREIGN KEY (MaKH) REFERENCES KHACHHANG(MaKH),
+    FOREIGN KEY (MaXe) REFERENCES XE(MaXe)
+);
 
 ALTER TABLE KHACHHANG MODIFY TongTienNo NUMBER(15,2);
 ALTER TABLE XE MODIFY GiaThueNgay NUMBER(15,2);
@@ -210,9 +216,8 @@ CREATE SEQUENCE seq_phieubaoduong START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 CREATE SEQUENCE seq_dichvubd START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 CREATE SEQUENCE seq_vaitro START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 CREATE SEQUENCE seq_quyenhan START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+CREATE SEQUENCE SEQ_GIOHANG  START WITH 1  INCREMENT BY 1  NOCACHE NOCYCLE;
 
-
-COMMIT;
 -- 2. Tạo các trigger tương ứng để tạo mã
 -- Trigger cho KHACHHANG
 CREATE OR REPLACE TRIGGER trigger_taoma_khachhang 
@@ -343,9 +348,17 @@ BEGIN
     END IF;
 END;
 /
-
-
-
+CREATE OR REPLACE TRIGGER trigger_taoma_giohang
+BEFORE INSERT ON GIOHANG
+FOR EACH ROW
+BEGIN
+    IF :NEW.MaGH IS NULL THEN
+        SELECT 'GH' || LPAD(SEQ_GIOHANG.NEXTVAL, 3, '0')
+        INTO :NEW.MaGH
+        FROM DUAL;
+    END IF;
+END;
+/
 
 ----------------------------------------------------------------------------------------
 --- FUNCTION: HÀM TÍNH SỐ NGÀY THUÊ XE
@@ -377,8 +390,6 @@ END;
 /
 ------------------------------------------
 --2. TRIGGER xử lý sửa CTHD thì TONGTIEN sẽ thay đổi theo.(GHI TÊN KHÁC ĐỂ THỂ HIỆN TƯỜNG MINH HƠN)
-
---------XXXXXXXXXXXXXXXXXXXXXXXXXXCẦN VIẾT MÃ GIẢXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     CREATE OR REPLACE TRIGGER trg_CTHD_UpdateTongTien
     BEFORE INSERT OR DELETE OR UPDATE ON CTHD
     FOR EACH ROW
@@ -419,7 +430,6 @@ END;
     END;
     /
 -------3. Trigger sửa GiaThueNgay ==> Xử lý TongTien hopDong sau khi sửa
---------XXXXXXXXXXXXXXXXXXXXXXXXXXCẦN VIẾT MÃ GIẢXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 CREATE OR REPLACE TRIGGER trg_XE_UpdateGiaThueNgay
 BEFORE UPDATE OF GiaThueNgay ON XE
@@ -517,10 +527,8 @@ END;
 ---Trigger 3: TongCongNo của khách hàng = TongTienBD(Loại BD là khách gây hư hại) + SoTien(Phát sinh trong LSCN) - SoTien(Thanh toán trong LSCN)
 
 ---1. LICHSUCONGNO
---------XXXXXXXXXXXXXXXXXXXXXXXXXXCẦN VIẾT MÃ GIẢXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-    CREATE OR REPLACE TRIGGER trg_Update_ins_del_LSCN
-    AFTER INSERT OR DELETE OR UPDATE OF SoTien, LoaiGiaoDich, MaKH ON LICHSUCONGNO
+CREATE OR REPLACE TRIGGER trg_Update_ins_del_LSCN
+    AFTER INSERT OR DELETE OR UPDATE ON LICHSUCONGNO
     FOR EACH ROW
     DECLARE
     v_TongNo_KHCu NUMBER;
@@ -573,20 +581,22 @@ END;
             END IF;
         END IF;
 
-        -- Xử lý khi UPDATE SoTien hoặc LoaiGiaoDich
-        IF UPDATING AND ((:OLD.MaKH <> :NEW.MaKH) 
-        OR (:OLD.LoaiGiaoDich <> :NEW.LoaiGiaoDich) 
-        OR (:OLD.SoTien <> :NEW.SoTien)) THEN
-        IF UPDATING('SoTien') OR UPDATING('LoaiGiaoDich') THEN
-            IF :OLD.LoaiGiaoDich <> :NEW.LoaiGiaoDich OR :OLD.SoTien <> :NEW.SoTien THEN
+        -- Xử lý khi UPDATE và có thay đổi thực sự trên các trường quan trọng
+        IF UPDATING AND ((:OLD.MaKH <> :NEW.MaKH) OR (:OLD.LoaiGiaoDich <> :NEW.LoaiGiaoDich) OR (:OLD.SoTien <> :NEW.SoTien)) THEN
+            -- Xử lý khi UPDATE SoTien hoặc LoaiGiaoDich nhưng không thay đổi MaKH
+            IF :OLD.MaKH = :NEW.MaKH THEN
                 -- Kiểm tra trước khi cập nhật
                 SELECT NVL(TongTienNo, 0) INTO v_TongNo_KHMoi
                 FROM KHACHHANG
                 WHERE MaKH = :NEW.MaKH;
                 
                 v_NoSauCapNhat := v_TongNo_KHMoi
-                    - CASE WHEN :OLD.LoaiGiaoDich = 'PHAT SINH' THEN :OLD.SoTien ELSE -:OLD.SoTien END
-                    + CASE WHEN :NEW.LoaiGiaoDich = 'PHAT SINH' THEN :NEW.SoTien ELSE -:NEW.SoTien END;
+                    - CASE WHEN :OLD.LoaiGiaoDich = 'PHAT SINH' THEN :OLD.SoTien 
+                           WHEN :OLD.LoaiGiaoDich = 'THANH TOAN' THEN -:OLD.SoTien 
+                           ELSE 0 END
+                    + CASE WHEN :NEW.LoaiGiaoDich = 'PHAT SINH' THEN :NEW.SoTien 
+                           WHEN :NEW.LoaiGiaoDich = 'THANH TOAN' THEN -:NEW.SoTien 
+                           ELSE 0 END;
                
                 IF v_NoSauCapNhat < 0 THEN
                     RAISE_APPLICATION_ERROR(-20012, 
@@ -597,51 +607,53 @@ END;
                     SET TongTienNo = v_NoSauCapNhat
                     WHERE MaKH = :NEW.MaKH;
                 END IF;
-            END IF;
-        END IF;
-        
-        -- Xử lý khi UPDATE MaKH (chuyển công nợ)
-        IF UPDATING('MaKH') THEN
-            -- Kiểm tra KH cũ
-            SELECT NVL(TongTienNo, 0) INTO v_TongNo_KHCu
-            FROM KHACHHANG
-            WHERE MaKH = :OLD.MaKH;
-            
-            -- Kiểm tra KH mới
-            SELECT NVL(TongTienNo, 0) INTO v_TongNo_KHMoi
-            FROM KHACHHANG
-            WHERE MaKH = :NEW.MaKH;
-            
-            -- Tính toán công nợ mới cho cả 2 KH
-            DECLARE
-                v_NoSauCapNhat_KHCu NUMBER := v_TongNo_KHCu - 
-                    CASE WHEN :OLD.LoaiGiaoDich = 'PHAT SINH' THEN :OLD.SoTien ELSE -:OLD.SoTien END;
+            ELSE
+                -- Trường hợp thay đổi MaKH (chuyển công nợ)
+                -- Kiểm tra KH cũ
+                SELECT NVL(TongTienNo, 0) INTO v_TongNo_KHCu
+                FROM KHACHHANG
+                WHERE MaKH = :OLD.MaKH;
                 
-                v_NoSauCapNhat_KHMoi NUMBER := v_TongNo_KHMoi + 
-                    CASE WHEN :NEW.LoaiGiaoDich = 'PHAT SINH' THEN :NEW.SoTien ELSE -:NEW.SoTien END;
-            BEGIN
-                -- Kiểm tra công nợ âm cho cả 2 KH
-                IF v_NoSauCapNhat_KHCu < 0 OR v_NoSauCapNhat_KHMoi < 0 THEN
-                    RAISE_APPLICATION_ERROR(-20013, 
-                        'Không thể chuyển giao dịch: Công nợ sau sẽ âm. ' ||
-                        'KH cũ: ' || v_NoSauCapNhat_KHCu || ', KH mới: ' || v_NoSauCapNhat_KHMoi);
-                ELSE
-                    -- Cập nhật KH cũ
-                    UPDATE KHACHHANG
-                    SET TongTienNo = v_NoSauCapNhat_KHCu
-                    WHERE MaKH = :OLD.MaKH;
+                -- Kiểm tra KH mới
+                SELECT NVL(TongTienNo, 0) INTO v_TongNo_KHMoi
+                FROM KHACHHANG
+                WHERE MaKH = :NEW.MaKH;
+                
+                -- Tính toán công nợ mới cho cả 2 KH
+                DECLARE
+                    v_NoSauCapNhat_KHCu NUMBER := v_TongNo_KHCu - 
+                        CASE WHEN :OLD.LoaiGiaoDich = 'PHAT SINH' THEN :OLD.SoTien 
+                             WHEN :OLD.LoaiGiaoDich = 'THANH TOAN' THEN -:OLD.SoTien 
+                             ELSE 0 END;
                     
-                    -- Cập nhật KH mới
-                    UPDATE KHACHHANG
-                    SET TongTienNo = v_NoSauCapNhat_KHMoi
-                    WHERE MaKH = :NEW.MaKH;
-                END IF;
-            END;
+                    v_NoSauCapNhat_KHMoi NUMBER := v_TongNo_KHMoi + 
+                        CASE WHEN :NEW.LoaiGiaoDich = 'PHAT SINH' THEN :NEW.SoTien 
+                             WHEN :NEW.LoaiGiaoDich = 'THANH TOAN' THEN -:NEW.SoTien 
+                             ELSE 0 END;
+                BEGIN
+                    -- Kiểm tra công nợ âm cho cả 2 KH
+                    IF v_NoSauCapNhat_KHCu < 0 OR v_NoSauCapNhat_KHMoi < 0 THEN
+                        RAISE_APPLICATION_ERROR(-20013, 
+                            'Không thể chuyển giao dịch: Công nợ sau sẽ âm. ' ||
+                            'KH cũ: ' || v_NoSauCapNhat_KHCu || ', KH mới: ' || v_NoSauCapNhat_KHMoi);
+                    ELSE
+                        -- Cập nhật KH cũ
+                        UPDATE KHACHHANG
+                        SET TongTienNo = v_NoSauCapNhat_KHCu
+                        WHERE MaKH = :OLD.MaKH;
+                        
+                        -- Cập nhật KH mới
+                        UPDATE KHACHHANG
+                        SET TongTienNo = v_NoSauCapNhat_KHMoi
+                        WHERE MaKH = :NEW.MaKH;
+                    END IF;
+                END;
+            END IF;
         END IF;
     END;
     /
+
 --Thêm, xóa, sửa Phieubaoduong(LoaiBD, TongTienBD, MaKH) 
---------XXXXXXXXXXXXXXXXXXXXXXXXXXCẦN VIẾT MÃ GIẢXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     CREATE OR REPLACE TRIGGER trg_Upd_Ins_Del_From_PBD
     AFTER INSERT OR DELETE OR UPDATE OF LoaiBD, TongTienBD, MaKH ON PHIEUBAODUONG
@@ -714,28 +726,41 @@ END;
         END IF;
     END;
    /
---Trigger 5: Số tiền hợp đồng sẽ được lưu vào TongCongNo của khách hàng ngay lúc lập hợp đồng(vì thanh toán trả sau)
-    CREATE OR REPLACE TRIGGER trg_update_congno_khachhang
-    AFTER INSERT OR UPDATE OR DELETE ON HOPDONG
-    FOR EACH ROW
-    BEGIN
-        -- Khi thêm mới hoặc cập nhật hợp đồng
-        IF INSERTING THEN
-            UPDATE KHACHHANG
-            SET TongTienNo = TongTienNo + :NEW.TongTien
-            WHERE MaKH = :NEW.MaKH;
-        ELSIF UPDATING THEN
-            UPDATE KHACHHANG
-            SET TongTienNo = TongTienNo + (:NEW.TongTien - :OLD.TongTien)
-            WHERE MaKH = :NEW.MaKH;
-        ELSIF DELETING THEN
+
+CREATE OR REPLACE TRIGGER trg_update_congno_khachhang
+AFTER INSERT OR UPDATE OR DELETE ON HOPDONG
+FOR EACH ROW
+BEGIN
+    -- Khi thêm mới hoặc cập nhật hợp đồng
+    IF INSERTING THEN
+        UPDATE KHACHHANG
+        SET TongTienNo = TongTienNo + :NEW.TongTien
+        WHERE MaKH = :NEW.MaKH;
+    ELSIF UPDATING THEN
+        -- Kiểm tra nếu khách hàng thay đổi
+        IF :NEW.MaKH <> :OLD.MaKH THEN
+            -- Giảm công nợ của khách hàng cũ
             UPDATE KHACHHANG
             SET TongTienNo = TongTienNo - :OLD.TongTien
             WHERE MaKH = :OLD.MaKH;
+            
+            -- Tăng công nợ của khách hàng mới
+            UPDATE KHACHHANG
+            SET TongTienNo = TongTienNo + :NEW.TongTien
+            WHERE MaKH = :NEW.MaKH;
+        ELSE
+            -- Trường hợp chỉ thay đổi tổng tiền (code gốc của bạn)
+            UPDATE KHACHHANG
+            SET TongTienNo = TongTienNo + (:NEW.TongTien - :OLD.TongTien)
+            WHERE MaKH = :NEW.MaKH;
         END IF;
-    END;
-    /
-
+    ELSIF DELETING THEN
+        UPDATE KHACHHANG
+        SET TongTienNo = TongTienNo - :OLD.TongTien
+        WHERE MaKH = :OLD.MaKH;
+    END IF;
+END;
+/
 
 --/PROCEDURE
 -- Tạo procedure đăng ký khách hàng
@@ -832,6 +857,7 @@ BEGIN
     RETURNING MaKH INTO v_MaKH; -- Lấy mã KH vừa được tạo bởi trigger
     
     COMMIT;
+
     p_Message := 'Đăng ký thành công! Mã khách hàng của bạn là: ' || v_MaKH || ', Mã tài khoản: ' || v_MaTK;
 
 EXCEPTION
@@ -844,11 +870,21 @@ EXCEPTION
 END;
 /
 
+---==============================
+
 CREATE OR REPLACE PROCEDURE sp_BaoCaoDoanhThuNam(
-    p_Nam IN NUMBER
+    p_Nam IN NUMBER,
+    p_Result OUT SYS_REFCURSOR
 )
 IS
-    CURSOR c_baocao IS
+    v_NamHienTai NUMBER := EXTRACT(YEAR FROM SYSDATE);
+BEGIN
+    IF p_Nam IS NULL OR p_Nam < 1900 OR p_Nam > v_NamHienTai THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Năm nhập vào không hợp lệ.');
+    END IF;
+    
+    -- Mở cursor để trả kết quả về
+    OPEN p_Result FOR
         SELECT 
             t.Thang,
             NVL(h.TongDoanhThu, 0) as TongDoanhThu
@@ -860,45 +896,30 @@ IS
                 SUM(TongTien) as TongDoanhThu
              FROM HOPDONG
              WHERE EXTRACT(YEAR FROM NgayLap) = p_Nam
-             AND TrangThai = 'Hoàn thành'
+             AND TrangThai <> 'Chờ xác nhận'
              GROUP BY EXTRACT(MONTH FROM NgayLap)) h
         ON t.Thang = h.Thang
         ORDER BY t.Thang;
-    v_NamHienTai NUMBER := EXTRACT(YEAR FROM SYSDATE);
-    v_TongDoanhThuNam NUMBER := 0;
-BEGIN
-    IF p_Nam IS NULL OR p_Nam < 1900 OR p_Nam > v_NamHienTai THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Năm nhập vào không hợp lệ.');
-    END IF;
-    -- In tiêu đề báo cáo
-    DBMS_OUTPUT.PUT_LINE('===========================================');
-    DBMS_OUTPUT.PUT_LINE('BÁO CÁO DOANH THU NĂM ' || p_Nam);
-    DBMS_OUTPUT.PUT_LINE('Ngày lập: ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS'));
-    DBMS_OUTPUT.PUT_LINE('Tháng | Doanh Thu');
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
-    -- Dùng FOR LOOP với cursor
-    FOR r IN c_baocao LOOP
-        DBMS_OUTPUT.PUT_LINE('Tháng ' || r.Thang || ' | ' || r.TongDoanhThu || ' VNĐ');
-        v_TongDoanhThuNam := v_TongDoanhThuNam + r.TongDoanhThu;
-    END LOOP;
-    
-    -- In tổng doanh thu năm
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
-    DBMS_OUTPUT.PUT_LINE('TỔNG DOANH THU: ' || v_TongDoanhThuNam || ' VNĐ');
-    DBMS_OUTPUT.PUT_LINE('===========================================');
 EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20003, 'Lỗi: ' || SQLERRM);
 END;
 /
 
--- 2. PROCEDURE Báo cáo doanh thu theo khách hàng
+-- 2. Báo cáo doanh thu theo khách hàng - điều chỉnh để trả về cursor
 CREATE OR REPLACE PROCEDURE sp_BaoCaoDoanhThuKhachHang(
-    p_Nam IN NUMBER
+    p_Nam IN NUMBER,
+    p_Result OUT SYS_REFCURSOR
 )
 IS
     v_NamHienTai NUMBER := EXTRACT(YEAR FROM SYSDATE);
-    CURSOR c_baocao IS
+BEGIN
+    IF p_Nam IS NULL OR p_Nam < 1900 OR p_Nam > v_NamHienTai THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Năm nhập vào không hợp lệ.');
+    END IF;
+    
+    -- Mở cursor để trả kết quả về
+    OPEN p_Result FOR
         SELECT 
             kh.MaKH,
             kh.HoTen,
@@ -907,74 +928,76 @@ IS
         FROM KHACHHANG kh
         JOIN HOPDONG hd ON kh.MaKH = hd.MaKH
         WHERE EXTRACT(YEAR FROM hd.NgayLap) = p_Nam
-          AND hd.TrangThai = 'Hoàn thành'
+          AND hd.TrangThai <> 'Chờ xác nhận'
         GROUP BY kh.MaKH, kh.HoTen
         ORDER BY TongDoanhThu DESC;
-
-    v_TongDoanhThu NUMBER := 0;
-    v_SoKhachHang NUMBER := 0;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Lỗi: ' || SQLERRM);
+END;
+/
+-- 3. Báo cáo doanh thu theo xe
+CREATE OR REPLACE PROCEDURE sp_BaoCaoDoanhThuXe(
+    p_Nam IN NUMBER,
+    p_Result OUT SYS_REFCURSOR
+)
+IS
+    v_NamHienTai NUMBER := EXTRACT(YEAR FROM SYSDATE);
 BEGIN
     IF p_Nam IS NULL OR p_Nam < 1900 OR p_Nam > v_NamHienTai THEN
         RAISE_APPLICATION_ERROR(-20001, 'Năm nhập vào không hợp lệ.');
     END IF;
-    -- In tiêu đề báo cáo
-    DBMS_OUTPUT.PUT_LINE('===========================================');
-    DBMS_OUTPUT.PUT_LINE('BÁO CÁO DOANH THU THEO KHÁCH HÀNG NĂM ' || p_Nam);
-    DBMS_OUTPUT.PUT_LINE('Ngày lập: ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS'));
-    DBMS_OUTPUT.PUT_LINE('Mã KH | Họ Tên | Số HĐ | Doanh Thu');
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
     
-    -- Dùng FOR LOOP với cursor
-    FOR r IN c_baocao LOOP
-        DBMS_OUTPUT.PUT_LINE( r.MaKH || ' | ' ||  r.HoTen || ' | ' || r.SoHopDong || ' | ' || r.TongDoanhThu || ' VNĐ');
-         v_TongDoanhThu := v_TongDoanhThu + r.TongDoanhThu;
-        v_SoKhachHang := v_SoKhachHang + 1;
-    END LOOP;
-    -- In thông tin tổng
-    DBMS_OUTPUT.PUT_LINE('-------------------------------------------');
-    DBMS_OUTPUT.PUT_LINE('TỔNG DOANH THU: ' || v_TongDoanhThu || ' VNĐ');
-    DBMS_OUTPUT.PUT_LINE('TỔNG SỐ KHÁCH HÀNG CÓ DOANH THU: ' || v_SoKhachHang);
-    DBMS_OUTPUT.PUT_LINE('===========================================');
+    -- Mở cursor để trả kết quả về
+    OPEN p_Result FOR
+        SELECT 
+            x.MaXe,
+            x.TenXe,
+            x.BienSo,
+            COUNT(ct.MaXe) as SoLuotThue,
+            SUM((TRUNC(ct.NgayKetThuc) - TRUNC(ct.NgayBatDau) + 1) * x.GiaThueNgay) as DoanhThu
+        FROM XE x
+        JOIN CTHD ct ON x.MaXe = ct.MaXe
+        JOIN HOPDONG hd ON ct.MaHD = hd.MaHD
+        WHERE EXTRACT(YEAR FROM hd.NgayLap) = p_Nam
+          AND hd.TrangThai <> 'Chờ xác nhận'
+        GROUP BY x.MaXe, x.TenXe, x.BienSo
+        ORDER BY DoanhThu DESC;
 EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20003, 'Lỗi: ' || SQLERRM);
 END;
 /
 
----------------PROCEDUre thêm dịch vụ bảo dưỡng mới
-CREATE OR REPLACE PROCEDURE sp_ThemDichVu(
-    p_TenDV IN VARCHAR2,
-    p_GiaDV IN NUMBER,
-    p_Message OUT VARCHAR2
+
+-- 4. Procedure tổng quan hệ thống
+CREATE OR REPLACE PROCEDURE sp_ThongKeTongQuan(
+    p_TongSoXe OUT NUMBER,
+    p_TongSoKhachHang OUT NUMBER,
+    p_TongSoHopDong OUT NUMBER,
+    p_TongDoanhThu OUT NUMBER
 )
 IS
 BEGIN
-    -- Kiểm tra TenDV không rỗng
-    IF p_TenDV IS NULL OR LENGTH(TRIM(p_TenDV)) = 0 THEN
-        p_Message := 'Tên dịch vụ không được để trống';
-        RETURN;
-    END IF;
+    -- Tổng số xe
+    SELECT COUNT(*) INTO p_TongSoXe FROM XE;
     
-    -- Kiểm tra GiaDV >= 0
-    IF p_GiaDV < 0 THEN
-        p_Message := 'Giá dịch vụ không được âm';
-        RETURN;
-    END IF;
+    -- Tổng số khách hàng
+    SELECT COUNT(*) INTO p_TongSoKhachHang FROM KHACHHANG;
     
-    -- Thêm dịch vụ mới
-    INSERT INTO DICHVUBD (TenDV, GiaDV)
-    VALUES (p_TenDV, p_GiaDV);
+    -- Tổng số hợp đồng
+    SELECT COUNT(*) INTO p_TongSoHopDong FROM HOPDONG;
     
-    COMMIT;
-    p_Message := 'Thêm dịch vụ thành công';
-    
+    -- Tổng doanh thu
+    SELECT NVL(SUM(TongTien), 0) INTO p_TongDoanhThu 
+    FROM HOPDONG 
+    WHERE TrangThai = 'Hoàn thành';
 EXCEPTION
     WHEN OTHERS THEN
-        ROLLBACK;
-        p_Message := 'Lỗi: ' || SQLERRM;
+        RAISE_APPLICATION_ERROR(-20003, 'Lỗi: ' || SQLERRM);
 END;
 /
---==============================================
+
 CREATE OR REPLACE FUNCTION IS_CAR_IN_CONTRACT(p_MaXe IN VARCHAR2) 
 RETURN BOOLEAN IS
     v_count NUMBER := 0;
@@ -983,7 +1006,7 @@ BEGIN
     SELECT COUNT(*) INTO v_count
     FROM CTHD ct
     WHERE ct.MaXe = p_MaXe
-    AND v_current_date BETWEEN ct.NgayBatDau AND ct.NgayKetThuc;
+    AND TRUNC(SYSDATE) BETWEEN TRUNC(ct.NgayBatDau) AND TRUNC(ct.NgayKetThuc);
     
     RETURN (v_count > 0);
 END;
@@ -1017,8 +1040,6 @@ BEGIN
 END;
 /
 ---/===============TRIGGER XỬ  LÝ TRẠNG THÁI XE========================/
-
-
 -- COMPOUND TRIGGER cho XE (Gộp RBTV1 và RBTV2) 
 --Trigger: Xe chỉ có thể "Sẵn sàng" khi không trong hợp đồng và không bảo dưỡng 
 --Xe phải có trạng thái "Đang thuê" khi đang trong hợp đồng
@@ -1528,7 +1549,7 @@ COMPOUND TRIGGER
         END IF;
         
         -- RBTV5: Chỉ kiểm tra trạng thái "Sẵn sàng" nếu hợp đồng bắt đầu ngay (từ ngày hiện tại)
-        IF :NEW.NgayBatDau <= v_current_date THEN
+        IF :NEW.NgayBatDau = v_current_date THEN
             -- Nếu hợp đồng bắt đầu ngay hôm nay, xe phải ở trạng thái "Sẵn sàng"
             IF v_trang_thai <> 'Sẵn sàng' THEN
                 RAISE_APPLICATION_ERROR(-20005, 'Chỉ xe có trạng thái "Sẵn sàng" mới có thể thêm vào hợp đồng bắt đầu ngay');
@@ -1556,7 +1577,6 @@ COMPOUND TRIGGER
     END AFTER STATEMENT;
 END TRG_CTHD_INSERT_COMPOUND;
 /
-
 --TRIGGER: UPDATE CTHD
 -- COMPOUND TRIGGER cho CTHD UPDATE (Đã sửa để kiểm tra lịch bảo dưỡng)
 CREATE OR REPLACE TRIGGER TRG_CTHD_UPDATE_COMPOUND
@@ -1750,7 +1770,6 @@ COMPOUND TRIGGER
 END TRG_CTHD_UPDATE_COMPOUND;
 /
 
-
 -- 2. Thêm dữ liệu mẫu (không chỉ định mã cho các bảng có trigger)
 
 INSERT INTO VAITRO (TenVaiTro) VALUES ('Khách hàng');
@@ -1775,7 +1794,9 @@ INSERT INTO TAIKHOAN (MaVaiTro, TenDangNhap, MatKhau, TrangThai) VALUES ('VT002'
 INSERT INTO TAIKHOAN (MaVaiTro, TenDangNhap, MatKhau, TrangThai) VALUES ('VT002', 'admin1', '123456', 'Hoạt động');
 INSERT INTO TAIKHOAN (MaVaiTro, TenDangNhap, MatKhau, TrangThai) VALUES ('VT002', 'admin2', '123456', 'Hoạt động');
 INSERT INTO TAIKHOAN (MaVaiTro, TenDangNhap, MatKhau, TrangThai) VALUES ('VT002', 'admin3', '123456', 'Hoạt động');
-
+INSERT INTO TAIKHOAN (MaVaiTro, TenDangNhap, MatKhau, TrangThai) VALUES ('VT001', 'lehoainam', '123456', 'Hoạt động');
+INSERT INTO TAIKHOAN (MaVaiTro, TenDangNhap, MatKhau, TrangThai) VALUES ('VT001', 'ptha', '123456', 'Hoạt động');
+INSERT INTO TAIKHOAN (MaVaiTro, TenDangNhap, MatKhau, TrangThai) VALUES ('VT001', 'tvbinh', '123456', 'Hoạt động');
 -- Thêm dữ liệu vào bảng NHANVIEN
 INSERT INTO NHANVIEN (MaTK, HoTen, SDT, Email, ChucVu) VALUES ('TK003', 'Nguyễn Quản Lý', '0901234567', 'quanly@carental.com', 'Quản lý');
 INSERT INTO NHANVIEN (MaTK, HoTen, SDT, Email, ChucVu) VALUES ('TK004', 'Trần Văn Bán', '0912345678', 'banle@carental.com', 'Nhân viên bán hàng');
@@ -1783,23 +1804,24 @@ INSERT INTO NHANVIEN (MaTK, HoTen, SDT, Email, ChucVu) VALUES ('TK005', 'Lê K�
 INSERT INTO NHANVIEN (MaTK, HoTen, SDT, Email, ChucVu) VALUES ('TK006', 'Phạm Giao Nhận', '0934567890', 'giaonhan@carental.com', 'Nhân viên giao nhận');
 
 -- Thêm dữ liệu vào bảng KHACHHANG
-INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES (NULL, 0, 'Nguyễn Văn Khách', '0945678901', 'khach1@gmail.com', '001234567890', 'Quận 1, TP.HCM');
-INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES (NULL, 0, 'Trần Thị Khách', '0956789012', 'khach2@gmail.com', '001234567891', 'Quận 2, TP.HCM');
-INSERT INTO KHACHHANG (TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES (0, 'Lê Hoài Nam', '0967890123', 'nam@gmail.com', '001234567892', 'Quận 3, TP.HCM');
-INSERT INTO KHACHHANG (TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES (0, 'Phạm Thị Hà', '0978901234', 'ha@gmail.com', '001234567893', 'Quận 4, TP.HCM');
-INSERT INTO KHACHHANG (TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES (0, 'Trương Văn Bình', '0989012345', 'binh@gmail.com', '001234567894', 'Quận 5, TP.HCM');
+INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES ('TK001', 0, 'Nguyễn Văn Khách', '0945678901', 'khach1@gmail.com', '001234567890', 'Quận 1, TP.HCM');
+INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES ('TK002', 0, 'Trần Thị Khách', '0956789012', 'khach2@gmail.com', '001234567891', 'Quận 2, TP.HCM');
+INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES ('TK007', 0, 'Lê Hoài Nam', '0967890123', 'nam@gmail.com', '001234567892', 'Quận 3, TP.HCM');
+INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES ('TK008', 0, 'Phạm Thị Hà', '0978901234', 'ha@gmail.com', '001234567893', 'Quận 4, TP.HCM');
+INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES ('TK009', 0, 'Trương Văn Bình', '0989012345', 'binh@gmail.com', '001234567894', 'Quận 5, TP.HCM');
+INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi) VALUES (NULL, 0, 'Trâm Nguyễn', '0989012345', 'binh@gmail.com', '001234567894', 'Quận 5, TP.HCM');
 
 -- Thêm dữ liệu vào bảng XE
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Toyota Camry', '51A-12345', 5, 'Toyota', 2020, 'Sẵn sàng', 800000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Honda Civic', '51A-23456', 5, 'Honda', 2021, 'Sẵn sàng', 750000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Ford Everest', '51A-34567', 7, 'Ford', 2022, 'Sẵn sàng', 950000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Mazda CX-5', '51A-45678', 5, 'Mazda', 2021, 'Sẵn sàng', 850000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Kia Sportage', '51A-56789', 5, 'Kia', 2022, 'Sẵn sàng', 820000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Toyota Fortuner', '51A-67890', 7, 'Toyota', 2020, 'Sẵn sàng', 950000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Mercedes-Benz C300', '51A-78901', 5, 'Mercedes', 2022, 'Sẵn sàng', 1500000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('BMW X5', '51A-89012', 5, 'BMW', 2021, 'Sẵn sàng', 1600000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Audi Q5', '51A-90123', 5, 'Audi', 2022, 'Sẵn sàng', 1450000, NULL);
-INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Hyundai Santa Fe', '51A-01234', 7, 'Hyundai', 2021, 'Sẵn sàng', 900000, NULL);
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Toyota Camry', '51A-12345', 5, 'Toyota', 2020, 'Sẵn sàng', 800000, 'xe_XE001.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Honda Civic', '51A-23456', 5, 'Honda', 2021, 'Sẵn sàng', 750000, 'xe_XE002.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Ford Everest', '51A-34567', 7, 'Ford', 2022, 'Sẵn sàng', 950000, 'xe_XE003.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Mazda CX-5', '51A-45678', 5, 'Mazda', 2021, 'Sẵn sàng', 850000, 'xe_XE004.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Kia Sportage', '51A-56789', 5, 'Kia', 2022, 'Sẵn sàng', 820000, 'xe_XE005.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Toyota Fortuner', '51A-67890', 7, 'Toyota', 2020, 'Sẵn sàng', 950000, 'xe_XE006.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Mercedes-Benz C300', '51A-78901', 5, 'Mercedes', 2022, 'Sẵn sàng', 1500000, 'xe_XE007.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('BMW X5', '51A-89012', 5, 'BMW', 2021, 'Sẵn sàng', 1600000, 'xe_XE008.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Audi Q5', '51A-90123', 5, 'Audi', 2022, 'Sẵn sàng', 1450000, 'xe_XE009.png');
+INSERT INTO XE (TenXe, BienSo, SoCho, HangXe, NamSX, TrangThai, GiaThueNgay, HinhAnh) VALUES ('Hyundai Santa Fe', '51A-01234', 7, 'Hyundai', 2021, 'Sẵn sàng', 900000, 'xe_XE010.png');
 
 -- Thêm dữ liệu vào bảng DICHVUBD
 INSERT INTO DICHVUBD (TenDV, GiaDV) VALUES ('Thay nhớt', 350000);
@@ -1811,21 +1833,152 @@ INSERT INTO DICHVUBD (TenDV, GiaDV) VALUES ('Thay dầu hộp số', 500000);
 INSERT INTO DICHVUBD (TenDV, GiaDV) VALUES ('Thay bugi', 250000);
 INSERT INTO DICHVUBD (TenDV, GiaDV) VALUES ('Kiểm tra và sửa điều hòa', 600000);
 
--- Thêm dữ liệu vào bảng HOPDONG (với TongTien khác 0)
-INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH001', 'NV002', SYSDATE-10, 'Quận 1, TP.HCM', 0, 'Chờ xác nhận');
-INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH002', 'NV002', SYSDATE-7, 'Quận 2, TP.HCM', 0, 'Chờ xác nhận');
-INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH003', 'NV002', SYSDATE-5, 'Quận 3, TP.HCM', 0, 'Đang thuê');
-INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH001', 'NV002', SYSDATE-3, 'Quận 1, TP.HCM', 0, 'Đang thuê');
-INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH002', 'NV002', SYSDATE-1, 'Quận 2, TP.HCM', 0, 'Chờ xác nhận');
+-- -- Thêm dữ liệu vào bảng HOPDONG (với TongTien khác 0)
+-- INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH001', 'NV002', SYSDATE-10, 'Quận 1, TP.HCM', 0, 'Chờ xác nhận');
+-- INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH002', 'NV002', SYSDATE-7, 'Quận 2, TP.HCM', 0, 'Chờ xác nhận');
+-- INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH003', 'NV002', SYSDATE-5, 'Quận 3, TP.HCM', 0, 'Đang thuê');
+-- INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH001', 'NV002', SYSDATE-3, 'Quận 1, TP.HCM', 0, 'Đang thuê');
+-- INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) VALUES ('KH002', 'NV002', SYSDATE-1, 'Quận 2, TP.HCM', 0, 'Chờ xác nhận');
 
--- Thêm dữ liệu vào bảng CTHD
-INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD001', 'XE001', SYSDATE-10, SYSDATE-7);
-INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD002', 'XE002', SYSDATE-7, SYSDATE+3);
-INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD002', 'XE003', SYSDATE-7, SYSDATE+3);
-INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD003', 'XE004', SYSDATE-5, SYSDATE);
-INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD004', 'XE005', SYSDATE-3, SYSDATE+4);
-INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD004', 'XE006', SYSDATE-3, SYSDATE+4);
-INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD005', 'XE007', SYSDATE+1, SYSDATE+5);
+
+-- -- Thêm dữ liệu vào bảng CTHD
+-- INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD001', 'XE001', SYSDATE-10, SYSDATE-7);
+-- INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD002', 'XE002', SYSDATE-7, SYSDATE+3);
+-- INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD002', 'XE003', SYSDATE-7, SYSDATE+3);
+-- INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD003', 'XE004', SYSDATE-5, SYSDATE);
+-- INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD004', 'XE005', SYSDATE-3, SYSDATE+4);
+-- INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD004', 'XE006', SYSDATE-3, SYSDATE+4);
+-- INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) VALUES ('HD005', 'XE007', SYSDATE+1, SYSDATE+5);
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH001', 'NV002', TO_DATE('15-05-2024', 'DD-MM-YYYY'), 'Quận 1, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH002', 'NV003', TO_DATE('22-06-2024', 'DD-MM-YYYY'), 'Quận 2, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH003', 'NV001', TO_DATE('10-07-2024', 'DD-MM-YYYY'), 'Quận 3, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH001', 'NV002', TO_DATE('18-08-2024', 'DD-MM-YYYY'), 'Quận 1, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH004', 'NV004', TO_DATE('05-09-2024', 'DD-MM-YYYY'), 'Quận 5, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH002', 'NV003', TO_DATE('12-10-2024', 'DD-MM-YYYY'), 'Quận 2, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH005', 'NV002', TO_DATE('28-11-2024', 'DD-MM-YYYY'), 'Quận 7, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH003', 'NV001', TO_DATE('15-12-2024', 'DD-MM-YYYY'), 'Quận 3, TP.HCM', 0, 'Hoàn thành');
+
+-- Các hợp đồng từ đầu năm nay
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH001', 'NV004', TO_DATE('05-01-2025', 'DD-MM-YYYY'), 'Quận 1, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH006', 'NV002', TO_DATE('18-01-2025', 'DD-MM-YYYY'), 'Quận 6, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH002', 'NV003', TO_DATE('02-02-2025', 'DD-MM-YYYY'), 'Quận 2, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH004', 'NV001', TO_DATE('20-02-2025', 'DD-MM-YYYY'), 'Quận 5, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH003', 'NV002', TO_DATE('10-03-2025', 'DD-MM-YYYY'), 'Quận 3, TP.HCM', 0, 'Hoàn thành');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH005', 'NV004', TO_DATE('25-03-2025', 'DD-MM-YYYY'), 'Quận 7, TP.HCM', 0, 'Hoàn thành');
+
+-- Các hợp đồng gần đây (tháng 4-5/2025)
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH002', 'NV003', TO_DATE('08-04-2025', 'DD-MM-YYYY'), 'Quận 2, TP.HCM', 0, 'Đang thuê');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH001', 'NV001', TO_DATE('22-04-2025', 'DD-MM-YYYY'), 'Quận 1, TP.HCM', 0, 'Đang thuê');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH006', 'NV002', TO_DATE('01-05-2025', 'DD-MM-YYYY'), 'Quận 6, TP.HCM', 0, 'Đang thuê');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH003', 'NV004', TO_DATE('12-05-2025', 'DD-MM-YYYY'), 'Quận 3, TP.HCM', 0, 'Chờ xác nhận');
+
+INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai) 
+VALUES ('KH004', 'NV003', TO_DATE('25-05-2025', 'DD-MM-YYYY'), 'Quận 5, TP.HCM', 0, 'Chờ xác nhận');
+
+-- Thêm dữ liệu vào bảng CTHD với thời gian tương ứng
+-- Các hợp đồng cũ từ năm trước
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD001', 'XE001', TO_DATE('16-05-2024', 'DD-MM-YYYY'), TO_DATE('19-05-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD002', 'XE002', TO_DATE('23-06-2024', 'DD-MM-YYYY'), TO_DATE('28-06-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD002', 'XE003', TO_DATE('23-06-2024', 'DD-MM-YYYY'), TO_DATE('28-06-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD003', 'XE004', TO_DATE('12-07-2024', 'DD-MM-YYYY'), TO_DATE('13-07-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD004', 'XE001', TO_DATE('20-08-2024', 'DD-MM-YYYY'), TO_DATE('23-08-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD005', 'XE005', TO_DATE('06-09-2024', 'DD-MM-YYYY'), TO_DATE('07-09-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD006', 'XE002', TO_DATE('14-10-2024', 'DD-MM-YYYY'), TO_DATE('15-10-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD007', 'XE006', TO_DATE('29-11-2024', 'DD-MM-YYYY'), TO_DATE('01-12-2024', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD008', 'XE003', TO_DATE('16-12-2024', 'DD-MM-YYYY'), TO_DATE('17-12-2024', 'DD-MM-YYYY'));
+
+-- Các hợp đồng từ đầu năm nay
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD009', 'XE004', TO_DATE('06-01-2025', 'DD-MM-YYYY'), TO_DATE('07-01-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD010', 'XE007', TO_DATE('19-01-2025', 'DD-MM-YYYY'), TO_DATE('20-01-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD011', 'XE001', TO_DATE('03-02-2025', 'DD-MM-YYYY'), TO_DATE('04-02-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD012', 'XE005', TO_DATE('21-02-2025', 'DD-MM-YYYY'), TO_DATE('23-02-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD013', 'XE002', TO_DATE('11-03-2025', 'DD-MM-YYYY'), TO_DATE('14-03-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD013', 'XE003', TO_DATE('11-03-2025', 'DD-MM-YYYY'), TO_DATE('14-03-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD014', 'XE006', TO_DATE('26-03-2025', 'DD-MM-YYYY'), TO_DATE('28-03-2025', 'DD-MM-YYYY'));
+
+-- Các hợp đồng đang thuê (tháng 4-5/2025)
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD015', 'XE004', TO_DATE('09-04-2025', 'DD-MM-YYYY'), TO_DATE('13-04-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD016', 'XE001', TO_DATE('23-04-2025', 'DD-MM-YYYY'), TO_DATE('26-04-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD016', 'XE007', TO_DATE('10-05-2025', 'DD-MM-YYYY'), TO_DATE('14-05-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD017', 'XE003', TO_DATE('13-06-2025', 'DD-MM-YYYY'), TO_DATE('15-06-2025', 'DD-MM-YYYY'));
+
+-- Các hợp đồng chờ xác nhận (tháng 5/2025 với ngày bắt đầu trong tương lai)
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD018', 'XE005', TO_DATE('15-06-2025', 'DD-MM-YYYY'), TO_DATE('20-06-2025', 'DD-MM-YYYY'));
+
+INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc) 
+VALUES ('HD019', 'XE002', TO_DATE('10-06-2025', 'DD-MM-YYYY'), TO_DATE('17-06-2025', 'DD-MM-YYYY'));
+
 
 -- Thêm dữ liệu vào bảng GIAONHANXE
 INSERT INTO GIAONHANXE (MaHD, MaXe, MaNV, TrangThaiXe, GhiChu, TrangThaiGN) VALUES ('HD001', 'XE001', 'NV004', 'Tốt', 'Giao xe đúng hẹn', 'Đã giao');
@@ -1834,11 +1987,11 @@ INSERT INTO GIAONHANXE (MaHD, MaXe, MaNV, TrangThaiXe, GhiChu, TrangThaiGN) VALU
 INSERT INTO GIAONHANXE (MaHD, MaXe, MaNV, TrangThaiXe, GhiChu, TrangThaiGN) VALUES ('HD003', 'XE004', 'NV004', 'Tốt', 'Đã kiểm tra trước khi giao', 'Đã giao');
 
 -- Thêm dữ liệu vào bảng PHIEUBAODUONG (với TongTienBD khác 0)
-INSERT INTO PHIEUBAODUONG (MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) VALUES ('XE001', NULL, SYSDATE-20, 'NV003', 'Định Kỳ', 0);
+INSERT INTO PHIEUBAODUONG (MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) VALUES ('XE001', NULL, SYSDATE-15, 'NV003', 'Định Kỳ', 0);
 INSERT INTO PHIEUBAODUONG (MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) VALUES ('XE002', NULL, SYSDATE-15, 'NV003', 'Định Kỳ', 0);
 INSERT INTO PHIEUBAODUONG (MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) VALUES ('XE003', 'KH001', SYSDATE+30, 'NV003', 'Khách gây hư hại', 0);
 INSERT INTO PHIEUBAODUONG (MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) VALUES ('XE004', NULL, SYSDATE+31, 'NV003', 'Định Kỳ', 0);
-
+INSERT INTO PHIEUBAODUONG (MaXe, MaKH, NgayBD, MaNV, LoaiBD, TongTienBD) VALUES ('XE005', NULL, SYSDATE+31, 'NV003', 'Định Kỳ', 0);
 -- Thêm dữ liệu vào bảng CHITIETBAODUONG
 INSERT INTO CHITIETBAODUONG (MaBD, MaDV, SoLuong) VALUES ('BD001', 'DV001', 1);
 INSERT INTO CHITIETBAODUONG (MaBD, MaDV, SoLuong) VALUES ('BD001', 'DV002', 1);
@@ -1860,8 +2013,197 @@ INSERT INTO LICHSUCONGNO (MaKH, NgayGiaoDich, LoaiGiaoDich, SoTien, GhiChu) VALU
 INSERT INTO LICHSUCONGNO (MaKH, NgayGiaoDich, LoaiGiaoDich, SoTien, GhiChu) VALUES ('KH001', SYSDATE-5, 'PHAT SINH', 1200000, 'Chi phí sửa chữa xe');
 INSERT INTO LICHSUCONGNO (MaKH, NgayGiaoDich, LoaiGiaoDich, SoTien, GhiChu) VALUES ('KH001', SYSDATE-3, 'PHAT SINH', 3200000, 'Phát sinh từ hợp đồng thuê xe');
 
--- Thêm dữ liệu vào bảng DANHGIA
-INSERT INTO DANHGIA (MaKH, MaHD, DiemSo, BinhLuan, NgayDanhGia) VALUES ('KH001', 'HD001', 5, 'Dịch vụ rất tốt, xe sạch sẽ và chạy êm', SYSDATE-7);
-INSERT INTO DANHGIA (MaKH, MaHD, DiemSo, BinhLuan, NgayDanhGia) VALUES ('KH002', 'HD002', 4, 'Xe tốt nhưng giá hơi cao', SYSDATE-6);
+INSERT INTO LICHSUCONGNO (MaKH, NgayGiaoDich, LoaiGiaoDich, SoTien, GhiChu) VALUES ('KH003', SYSDATE-5, 'PHAT SINH', 1200000, 'Chi phí sửa chữa xe');
+INSERT INTO LICHSUCONGNO (MaKH, NgayGiaoDich, LoaiGiaoDich, SoTien, GhiChu) VALUES ('KH004', SYSDATE-3, 'PHAT SINH', 3200000, 'Phát sinh từ hợp đồng thuê xe');
 
-COMMIT;
+-- Thêm dữ liệu vào bảng DANHGIA
+INSERT INTO DANHGIA (MaHD, DiemSo, BinhLuan, NgayDanhGia) VALUES ('HD001', 5, 'Dịch vụ rất tốt, xe sạch sẽ và chạy êm', SYSDATE-7);
+INSERT INTO DANHGIA (MaHD, DiemSo, BinhLuan, NgayDanhGia) VALUES ('HD002', 4, 'Xe tốt nhưng giá hơi cao', SYSDATE-6);
+
+CREATE OR REPLACE TRIGGER trg_khachhang_delete
+BEFORE DELETE ON KHACHHANG
+FOR EACH ROW
+BEGIN
+    -- Nếu khách hàng có tài khoản
+    IF :OLD.MaTK IS NOT NULL THEN
+        -- Kiểm tra xem tài khoản có liên kết với nhân viên nào không
+        DECLARE
+            v_count NUMBER;
+        BEGIN
+            SELECT COUNT(*) INTO v_count FROM NHANVIEN 
+            WHERE MaTK = :OLD.MaTK;
+            
+            -- Nếu không có liên kết với nhân viên nào, xóa tài khoản
+            IF v_count = 0 THEN
+                DELETE FROM TAIKHOAN WHERE MaTK = :OLD.MaTK;
+            END IF;
+        END;
+    END IF;
+END;
+/
+
+CREATE OR REPLACE TRIGGER trg_nhanvien_delete
+BEFORE DELETE ON NHANVIEN
+FOR EACH ROW
+BEGIN
+    -- Nếu nhân viên có tài khoản
+    IF :OLD.MaTK IS NOT NULL THEN
+        -- Kiểm tra xem tài khoản có liên kết với khách hàng nào không
+        DECLARE
+            v_count NUMBER;
+        BEGIN
+            SELECT COUNT(*) INTO v_count FROM KHACHHANG 
+            WHERE MaTK = :OLD.MaTK;
+            
+            -- Nếu không có liên kết với khách hàng nào, xóa tài khoản
+            IF v_count = 0 THEN
+                DELETE FROM TAIKHOAN WHERE MaTK = :OLD.MaTK;
+            END IF;
+        END;
+    END IF;
+END;
+/
+CREATE OR REPLACE PROCEDURE sp_TaoKhachHang(
+    p_HoTen IN KHACHHANG.HoTen%TYPE,
+    p_SDT IN KHACHHANG.SDT%TYPE,
+    p_Email IN KHACHHANG.Email%TYPE,
+    p_CCCD IN KHACHHANG.CCCD%TYPE,
+    p_DiaChi IN KHACHHANG.DiaChi%TYPE,
+    p_MaKH OUT KHACHHANG.MaKH%TYPE
+)
+IS
+    v_Count NUMBER; -- Khai báo biến chung cho toàn bộ procedure
+BEGIN
+    -- Kiểm tra dữ liệu đầu vào
+    IF p_HoTen IS NULL OR p_SDT IS NULL OR p_CCCD IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Họ tên, SĐT và CCCD không được để trống.');
+    END IF;
+    
+    -- Kiểm tra SĐT đã tồn tại chưa
+    SELECT COUNT(*) INTO v_Count FROM KHACHHANG WHERE SDT = p_SDT;
+    IF v_Count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Số điện thoại đã được sử dụng.');
+    END IF;
+    
+    -- Kiểm tra CCCD đã tồn tại chưa
+    SELECT COUNT(*) INTO v_Count FROM KHACHHANG WHERE CCCD = p_CCCD;
+    IF v_Count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'CCCD đã được sử dụng.');
+    END IF;
+    
+    -- Thêm khách hàng mới với MaTK = NULL, trigger sẽ tạo mã tự động
+    INSERT INTO KHACHHANG (MaTK, TongTienNo, HoTen, SDT, Email, CCCD, DiaChi)
+    VALUES (NULL, 0, p_HoTen, p_SDT, p_Email, p_CCCD, p_DiaChi)
+    RETURNING MaKH INTO p_MaKH;
+    
+    DBMS_OUTPUT.PUT_LINE('Đã tạo khách hàng: ' || p_HoTen || ' - Mã: ' || p_MaKH);
+END;
+/
+
+CREATE OR REPLACE PROCEDURE sp_TaoHopDong(
+    p_MaKH IN KHACHHANG.MaKH%TYPE,
+    p_MaNV IN NHANVIEN.MaNV%TYPE,
+    p_DiaChiGiao IN HOPDONG.DiaChiGiao%TYPE,
+    p_MaHD OUT HOPDONG.MaHD%TYPE
+)
+IS
+    v_TongTienNo KHACHHANG.TongTienNo%TYPE;
+    v_Count NUMBER; 
+BEGIN
+    -- Kiểm tra khách hàng tồn tại
+    SELECT COUNT(*) INTO v_Count FROM KHACHHANG WHERE MaKH = p_MaKH;
+    IF v_Count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20010, 'Khách hàng không tồn tại.');
+    END IF;
+    
+    -- Kiểm tra nhân viên tồn tại
+    SELECT COUNT(*) INTO v_Count FROM NHANVIEN WHERE MaNV = p_MaNV;
+    IF v_Count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20011, 'Nhân viên không tồn tại.');
+    END IF;
+    
+    -- Kiểm tra công nợ của khách hàng
+    SELECT TongTienNo INTO v_TongTienNo
+    FROM KHACHHANG
+    WHERE MaKH = p_MaKH;
+    
+    IF v_TongTienNo > 5000000 THEN
+        RAISE_APPLICATION_ERROR(-20012, 'Khách hàng có công nợ vượt quá 5 triệu đồng, không thể tạo hợp đồng mới.');
+    END IF;
+    
+    -- Thêm hợp đồng mới, trigger sẽ tạo mã tự động
+    INSERT INTO HOPDONG (MaKH, MaNV, NgayLap, DiaChiGiao, TongTien, TrangThai)
+    VALUES (p_MaKH, p_MaNV, SYSDATE, p_DiaChiGiao, 0, 'Đang thuê')
+    RETURNING MaHD INTO p_MaHD;
+    
+    DBMS_OUTPUT.PUT_LINE('Đã tạo hợp đồng mới - Mã: ' || p_MaHD);
+    DBMS_OUTPUT.PUT_LINE('Khách hàng: ' || p_MaKH || ' - Công nợ hiện tại: ' || v_TongTienNo || ' VNĐ');
+END;
+/
+
+CREATE OR REPLACE PROCEDURE sp_ThemXeVaoHopDong(
+    p_MaHD IN HOPDONG.MaHD%TYPE,
+    p_MaXe IN XE.MaXe%TYPE,
+    p_NgayBatDau IN CTHD.NgayBatDau%TYPE,
+    p_NgayKetThuc IN CTHD.NgayKetThuc%TYPE
+)
+IS
+    v_TrangThaiXe XE.TrangThai%TYPE;
+    v_TrangThaiHD HOPDONG.TrangThai%TYPE;
+    v_SoXeTrongHD NUMBER;
+    v_Count NUMBER;
+BEGIN
+    -- Kiểm tra hợp đồng tồn tại và chưa hoàn thành
+    SELECT TrangThai INTO v_TrangThaiHD
+    FROM HOPDONG
+    WHERE MaHD = p_MaHD;
+    
+    IF v_TrangThaiHD = 'Hoàn thành' THEN
+        RAISE_APPLICATION_ERROR(-20030, 'Hợp đồng đã được hoàn thành, không thể thêm xe.');
+    END IF;
+    
+    -- Kiểm tra số xe đã có trong hợp đồng này (tối đa 3 xe)
+    SELECT COUNT(*) INTO v_SoXeTrongHD
+    FROM CTHD
+    WHERE MaHD = p_MaHD;
+    
+    -- Kiểm tra giới hạn 3 xe trong 1 hợp đồng
+    IF v_SoXeTrongHD >= 3 THEN
+        RAISE_APPLICATION_ERROR(-20031, 'Hợp đồng chỉ được thuê tối đa 3 xe.');
+    END IF;
+    
+    -- Kiểm tra thời gian thuê hợp lý
+    IF p_NgayBatDau < TRUNC(SYSDATE) THEN
+        RAISE_APPLICATION_ERROR(-20032, 'Ngày bắt đầu phải từ hôm nay trở đi.');
+    END IF;
+    
+    IF p_NgayKetThuc <= p_NgayBatDau THEN
+        RAISE_APPLICATION_ERROR(-20033, 'Ngày kết thúc phải sau ngày bắt đầu.');
+    END IF;
+    
+    SELECT COUNT(*)
+    INTO v_Count
+    FROM CTHD
+    WHERE MaXe = p_MaXe
+    AND (
+        (p_NgayBatDau BETWEEN NgayBatDau AND NgayKetThuc)
+        OR (p_NgayKetThuc BETWEEN NgayBatDau AND NgayKetThuc)
+        OR (p_NgayBatDau <= NgayBatDau AND p_NgayKetThuc >= NgayKetThuc)
+    );
+    
+    IF v_Count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20035, 'Xe đã được đặt trong khoảng thời gian này.');
+    END IF;
+    
+    -- Thêm xe vào hợp đồng
+    INSERT INTO CTHD (MaHD, MaXe, NgayBatDau, NgayKetThuc)
+    VALUES (p_MaHD, p_MaXe, p_NgayBatDau, p_NgayKetThuc);
+    
+    
+    DBMS_OUTPUT.PUT_LINE('Đã thêm xe ' || p_MaXe || ' vào hợp đồng ' || p_MaHD);
+    DBMS_OUTPUT.PUT_LINE('Thời gian thuê: ' || TO_CHAR(p_NgayBatDau, 'DD/MM/YYYY') || ' đến ' || TO_CHAR(p_NgayKetThuc, 'DD/MM/YYYY'));
+END;
+/
+
+
+COMMIT
