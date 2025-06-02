@@ -22,5 +22,5 @@ public class KhachHangDoanhThu {
         
         public double getDoanhThu() { return doanhThu; }
         public void setDoanhThu(double doanhThu) { this.doanhThu = doanhThu; }
-    }
+}
    
