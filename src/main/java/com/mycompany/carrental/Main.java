@@ -18,8 +18,7 @@ public class Main {
         try {
             // Sử dụng class ScaledUISettings thay vì thiết lập trực tiếp
             ScaledUISettings.initializeFonts();
-          //  ScaledUISettings.applyGlobalFontSettings();
-            // Chọn theme
+      
             FlatIntelliJLaf.setup();
             
             // Các thiết lập UI khác giữ nguyên

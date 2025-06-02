@@ -103,7 +103,6 @@ public boolean updateLichSuCongNo(LichSuCongNo ls) throws SQLException {
 }
     
     public boolean deleteLichSuCongNo(String maLichSu) {
-        // The trigger trg_Update_ins_del_LSCN will handle updating customer debt
         String sql = "DELETE FROM LICHSUCONGNO WHERE MaLichSu = ?";
         
         try (Connection conn = DatabaseUtil.getConnection();

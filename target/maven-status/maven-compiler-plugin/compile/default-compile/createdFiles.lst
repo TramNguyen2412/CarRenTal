@@ -58,7 +58,6 @@ service\GiaoNhanXeService.class
 ui\admin\QLHD\HopDongPanel$2.class
 controller\CongNoController.class
 ui\admin\QLXe\XeTablePanel$1.class
-ui\customer\DanhGiaDialog$1.class
 ui\admin\QLHD\XemChiTietHDDialog.class
 ui\admin\CongNo\CongNoPanel$8.class
 ui\admin\QLGNX\GiaoNhanXeDialog.class
@@ -70,7 +69,6 @@ ui\admin\BaoDuong\BaoDuongPanel$3.class
 dao\GioXeDAO.class
 ui\admin\QLKH\ButtonRenderer.class
 ui\admin\QLTK\TaiKhoanDialog.class
-ui\customer\DanhGiaDialog.class
 ui\admin\QLTK\TaiKhoanPanel$1.class
 ui\auth\LoginForm.class
 ui\admin\QLXe\XePanel.class
@@ -116,7 +114,6 @@ ui\admin\BaoDuong\BaoDuongPanel$1.class
 ui\admin\QLHD\XemChiTietHDDialog$1.class
 dao\GiaoNhanXeDAO.class
 ui\admin\QLNV\NhanVienDetailDialog$1.class
-ui\customer\DanhGiaDialog$2.class
 util\ScaledUISettings.class
 ui\admin\QLHD\HopDongPanel.class
 ui\admin\CongNo\CongNoPanel$7.class

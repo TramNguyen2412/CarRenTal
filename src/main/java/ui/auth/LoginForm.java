@@ -55,13 +55,13 @@ public class LoginForm extends javax.swing.JFrame {
                 lblImage = new JLabel(imageIcon);
                 leftPanel.add(lblImage, BorderLayout.CENTER);
 
-                System.out.println("✅ Đã load ảnh thành công bằng đường dẫn: " + file.getAbsolutePath());
+                System.out.println("Đã load ảnh thành công bằng đường dẫn: " + file.getAbsolutePath());
             } else {
-                System.out.println("❌ Không tìm thấy file ảnh tại: " + file.getAbsolutePath());
+                System.out.println("Không tìm thấy file ảnh tại: " + file.getAbsolutePath());
                 leftPanel.setBackground(new Color(208, 240, 240));
             }
         } catch (Exception e) {
-            System.out.println("❌ Lỗi: " + e.getMessage());
+            System.out.println("Lỗi: " + e.getMessage());
             e.printStackTrace();
             leftPanel.setBackground(new Color(208, 240, 240));
         }
@@ -170,7 +170,6 @@ public class LoginForm extends javax.swing.JFrame {
             return;
         }
         
-     // 1. Tạo Controller thay vì gọi trực tiếp DAO
         TaiKhoanController taiKhoanController = new TaiKhoanController();
         TaiKhoan taiKhoan = taiKhoanController.dangNhap(username, password);
         
@@ -180,7 +179,6 @@ public class LoginForm extends javax.swing.JFrame {
                 case "VT001" -> {
                     KhachHang khachHang = taiKhoanController.getKhachHangByMaTK(taiKhoan.getMaTK());
                 
-                    // In debug
                     if (khachHang != null) {
                         System.out.println("Tìm thấy khách hàng: " + khachHang.getHoTen());
                     } else {

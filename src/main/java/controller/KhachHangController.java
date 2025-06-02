@@ -22,14 +22,10 @@ public class KhachHangController {
     }
 
     public String addKhachHang(KhachHang kh, String defaultPassword) {
-        // This method signature was from a previous response.
-        // If TaiKhoanUtils was removed, the password might not be relevant here.
-        // The service's addKhachHang should handle all logic.
-        return khachHangService.addKhachHang(kh); // Assuming service handles MaTK and password if needed
+   
+        return khachHangService.addKhachHang(kh); 
     }
 
-    // Overload for when password is not handled at this stage or TaiKhoanUtils is
-    // not used
     public String addKhachHang(KhachHang kh) {
         return khachHangService.addKhachHang(kh);
     }

@@ -49,7 +49,6 @@ public class GiaoNhanXeService {
             errorMessage.append(validationError);
             return false;
         }
-        // Additional business logic checks for update
         return giaoNhanXeDAO.updateGiaoNhanXe(gn);
     }
 
@@ -63,7 +62,6 @@ public class GiaoNhanXeService {
             errorMessage.append("Không tìm thấy bản ghi giao nhận xe với mã ").append(maGiaoNhan);
             return false;
         }
-        // Add checks for dependencies if necessary before deletion
         return giaoNhanXeDAO.deleteGiaoNhanXe(maGiaoNhan);
     }
 
@@ -79,26 +77,14 @@ public class GiaoNhanXeService {
         if (gn.getMaHD() == null || gn.getMaHD().trim().isEmpty()) {
             return "Mã hợp đồng không được để trống.";
         }
-        // TODO: Validate MaHD exists using HopDongDAO
-        // if (hopDongDAO.getHopDongByMa(gn.getMaHD()) == null) {
-        // return "Mã hợp đồng không tồn tại.";
-        // }
-
+ 
         if (gn.getMaXe() == null || gn.getMaXe().trim().isEmpty()) {
             return "Mã xe không được để trống.";
         }
-        // TODO: Validate MaXe exists using XeDAO
-        // if (xeDAO.getXeByMa(gn.getMaXe()) == null) {
-        // return "Mã xe không tồn tại.";
-        // }
-
+    
         if (gn.getMaNV() == null || gn.getMaNV().trim().isEmpty()) {
             return "Mã nhân viên không được để trống.";
         }
-        // TODO: Validate MaNV exists using NhanVienDAO
-        // if (nhanVienDAO.getNhanVienByMa(gn.getMaNV()) == null) {
-        // return "Mã nhân viên không tồn tại.";
-        // }
 
         if (gn.getTrangThaiXe() == null || gn.getTrangThaiXe().trim().isEmpty()) {
             return "Trạng thái xe không được để trống.";
@@ -110,9 +96,6 @@ public class GiaoNhanXeService {
             return "Trạng thái giao nhận không hợp lệ. Chỉ chấp nhận 'Đã giao' hoặc 'Đã nhận về'.";
         }
 
-        // Add more specific business rules if needed
-        // e.g., A vehicle cannot be in "Đã giao" state twice for the same contract
-        // without an intermediate "Đã nhận về"
 
         return null; // No validation errors
     }

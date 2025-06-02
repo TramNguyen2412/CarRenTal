@@ -64,8 +64,7 @@ public class TaiKhoanController {
         return taiKhoanDAO.getKhachHangChuaCoTaiKhoan();
     }
     
-    // Tạo tài khoản mới và liên kết với người dùng
-    // Tạo tài khoản mới và liên kết với người dùng
+
     public boolean createTaiKhoan(TaiKhoan taiKhoan, String loaiNguoiDung, String maNguoiDung) {
         try {
             // Tạo mã tài khoản mới
@@ -154,5 +153,5 @@ public class TaiKhoanController {
     public boolean isUsernameExists(String username) {
         return taiKhoanDAO.isUsernameExists(username);
     }
-    // Thêm các phương thức khác như tạo tài khoản, cập nhật, đổi mật khẩu...
+  
 }

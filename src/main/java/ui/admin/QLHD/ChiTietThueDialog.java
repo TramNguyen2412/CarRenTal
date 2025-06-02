@@ -274,43 +274,7 @@ public class ChiTietThueDialog extends JDialog {
             lblThanhTien.setText("");
         }
     }
-    
-//    private void saveChiTietThue() {
-//        try {
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-//            Date ngayBatDau = dateFormat.parse(txtNgayBatDau.getText());
-//            Date ngayKetThuc = dateFormat.parse(txtNgayKetThuc.getText());
-//
-//            if (ngayKetThuc.before(ngayBatDau)) {
-//                JOptionPane.showMessageDialog(this, 
-//                        "Ngày kết thúc phải sau ngày bắt đầu!", 
-//                        "Lỗi", 
-//                        JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
-//
-//            // Kiểm tra xe có thể thuê được không
-//            String errorMessage = hopDongController.kiemTraXeThueDuoc(
-//                chiTietHD.getMaXe(), ngayBatDau, ngayKetThuc, null);
-//
-//            if (errorMessage != null) {
-//                JOptionPane.showMessageDialog(this, errorMessage, "Lỗi", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
-//
-//            // Nếu không có lỗi, cập nhật thông tin thuê
-//            chiTietHD.setNgayBatDau(ngayBatDau);
-//            chiTietHD.setNgayKetThuc(ngayKetThuc);
-//            confirmed = true;
-//            dispose();
-//
-//        } catch (ParseException e) {
-//            JOptionPane.showMessageDialog(this, 
-//                    "Vui lòng nhập đúng định dạng ngày (dd/MM/yyyy)!", 
-//                    "Lỗi", 
-//                    JOptionPane.ERROR_MESSAGE);
-//        }
-//    }
+   
     private void saveChiTietThue() {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");

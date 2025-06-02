@@ -156,7 +156,6 @@ public class HopDongDAO {
             
             conn.setAutoCommit(false); // Bắt đầu transaction
             
-            // Sử dụng trigger để tạo MAHD
             String sql = "INSERT INTO HOPDONG (MAKH, MANV, NGAYLAP, DIACHIGIAO, TONGTIEN, TRANGTHAI) " +
                          "VALUES (?, ?, ?, ?, 0, ?)";
             
