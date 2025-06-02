@@ -233,5 +233,6 @@ model\TaiKhoanExtended.class
 ui\admin\QLNV\ButtonEditorNV$2.class
 ui\admin\QLGNX\GiaoNhanXePanel$1.class
 ui\admin\ThongKePanel$3.class
+dao\KhachHangDAO.class
 ui\admin\QLTK\TaiKhoanDialog$1.class
 ui\customer\XemChiTietXeDialog.class

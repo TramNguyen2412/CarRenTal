@@ -8,15 +8,10 @@ import model.GiaoNhanXe;
 public class GiaoNhanXeService {
     private GiaoNhanXeDAO giaoNhanXeDAO;
     private StringBuilder errorMessage = new StringBuilder();
-    // private HopDongDAO hopDongDAO; // Example for cross-validation
-    // private XeDAO xeDAO; // Example for cross-validation
-    // private NhanVienDAO nhanVienDAO; // Example for cross-validation
 
     public GiaoNhanXeService() {
         giaoNhanXeDAO = new GiaoNhanXeDAO();
-        // hopDongDAO = new HopDongDAO();
-        // xeDAO = new XeDAO();
-        // nhanVienDAO = new NhanVienDAO();
+      
     }
 
     public List<GiaoNhanXe> getAllGiaoNhanXe() {
@@ -34,8 +29,7 @@ public class GiaoNhanXeService {
             errorMessage.append(validationError);
             return null;
         }
-        // Additional business logic checks can be added here
-        // For example, check if the vehicle is available for handover, etc.
+     
         return giaoNhanXeDAO.addGiaoNhanXe(gn);
     }
 

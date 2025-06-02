@@ -25,7 +25,6 @@ public class CongNoService {
     }
     
     public boolean addLichSuCongNo(LichSuCongNo ls) {
-        // Validate input
         if (ls.getMaKH() == null || ls.getMaKH().trim().isEmpty()) {
             throw new IllegalArgumentException("Vui lòng chọn khách hàng");
         }
@@ -41,13 +40,10 @@ public class CongNoService {
         if (ls.getSoTien() <= 0) {
             throw new IllegalArgumentException("Số tiền phải lớn hơn 0");
         }
-        
-        // The trg_Update_ins_del_LSCN trigger will handle updating customer debt
-        // The trg_kiem_tra_thanhtoan trigger will validate payment amount
+    
         try {
             return congNoDAO.addLichSuCongNo(ls);
         } catch (Exception e) {
-            // Extract the Oracle error message
             String message = e.getMessage();
             if (message.contains("ORA-20003")) {
                 throw new IllegalArgumentException("Số tiền thanh toán vượt quá tổng công nợ của khách hàng");
@@ -61,7 +57,6 @@ public class CongNoService {
     }
     
     public boolean updateLichSuCongNo(LichSuCongNo ls) {
-        // Validate input
         if (ls.getMaLichSu() == null || ls.getMaLichSu().trim().isEmpty()) {
             throw new IllegalArgumentException("Mã lịch sử không được để trống");
         }
@@ -82,12 +77,10 @@ public class CongNoService {
             throw new IllegalArgumentException("Số tiền phải lớn hơn 0");
         }
         
-        // The trg_Update_ins_del_LSCN trigger will handle updating customer debt
-        // The trg_kiem_tra_thanhtoan trigger will validate payment amount
+    
         try {
             return congNoDAO.updateLichSuCongNo(ls);
         } catch (Exception e) {
-            // Extract the Oracle error message
             String message = e.getMessage();
             if (message.contains("ORA-20003")) {
                 throw new IllegalArgumentException("Số tiền thanh toán vượt quá tổng công nợ của khách hàng");
@@ -102,11 +95,9 @@ public class CongNoService {
     }
     
     public boolean deleteLichSuCongNo(String maLichSu) {
-        // The trg_Update_ins_del_LSCN trigger will handle updating customer debt
         try {
             return congNoDAO.deleteLichSuCongNo(maLichSu);
         } catch (Exception e) {
-            // Extract the Oracle error message
             String message = e.getMessage();
             if (message.contains("ORA-20011")) {
                 throw new IllegalArgumentException("Không thể xóa giao dịch: Công nợ sau sẽ âm");
@@ -126,7 +117,6 @@ public class CongNoService {
     public LichSuCongNo getLichSuCongNoByMa(String maLichSu) {
     return congNoDAO.getLichSuCongNoByMa(maLichSu);
 }
-    // CongNoService.java
     public boolean updateLichSuCongNoThongTinChung(LichSuCongNo ls) {
         boolean result = congNoDAO.updateLichSuCongNoThongTinChung(ls);
         return result;
