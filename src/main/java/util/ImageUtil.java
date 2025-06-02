@@ -35,7 +35,7 @@ public class ImageUtil {
         return "/img/cars/";
     }
     
-    // Tạo ImageIcon từ tên file
+ //    Tạo ImageIcon từ tên file
     public static ImageIcon createImageIcon(String fileName, int width, int height) {
         try {
             // Thử đọc từ filesystem trước
@@ -65,6 +65,7 @@ public class ImageUtil {
         }
         return null;
     }
+    
     
     // Phương thức lưu ảnh vào thư mục
     public static String saveImage(File sourceFile, String fileName) throws IOException {
@@ -120,59 +121,6 @@ public class ImageUtil {
         return resizedImage;
     }
     
-    // Phương thức hiển thị ảnh
-//    public static void displayImage(String imageName, JLabel label) {
-//        if (imageName == null || imageName.isEmpty()) {
-//            label.setIcon(null);
-//            label.setText("Không có ảnh");
-//            return;
-//        }
-//
-//        try {
-//            // In ra đường dẫn để debug
-//            String fullPath = getImageDirPath() + imageName;
-//            System.out.println("Đang tìm ảnh tại: " + fullPath);
-//
-//            // Tìm file ảnh từ filesystem
-//            File file = new File(fullPath);
-//            if (file.exists()) {
-//                System.out.println("Tìm thấy ảnh từ filesystem");
-//                ImageIcon icon = new ImageIcon(fullPath);
-//                Image scaledImg = icon.getImage().getScaledInstance(
-//                    label.getWidth() > 0 ? label.getWidth() : 250, 
-//                    label.getHeight() > 0 ? label.getHeight() : 200, 
-//                    Image.SCALE_SMOOTH);
-//                label.setIcon(new ImageIcon(scaledImg));
-//                label.setText("");
-//                return;
-//            }
-//
-//            // Nếu không tìm thấy từ filesystem, thử classpath
-//            System.out.println("Thử tìm ảnh từ classpath: " + getImageResourcePath() + imageName);
-//            java.net.URL url = ImageUtil.class.getResource(getImageResourcePath() + imageName);
-//            if (url != null) {
-//                System.out.println("Tìm thấy ảnh từ classpath");
-//                ImageIcon icon = new ImageIcon(url);
-//                Image img = icon.getImage();
-//                Image scaledImg = img.getScaledInstance(
-//                    label.getWidth() > 0 ? label.getWidth() : 250, 
-//                    label.getHeight() > 0 ? label.getHeight() : 200, 
-//                    Image.SCALE_SMOOTH);
-//                label.setIcon(new ImageIcon(scaledImg));
-//                label.setText("");
-//                return;
-//            }
-//
-//            // Không tìm thấy ảnh từ cả hai nguồn
-//            System.out.println("Không tìm thấy ảnh: " + imageName);
-//            label.setIcon(null);
-//            label.setText("Không tìm thấy ảnh");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            label.setIcon(null);
-//            label.setText("Lỗi hiển thị ảnh: " + e.getMessage());
-//        }
-//    }
     public static void displayImage(String imageName, JLabel label) {
         if (imageName == null || imageName.isEmpty()) {
             label.setIcon(null);
