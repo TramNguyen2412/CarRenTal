@@ -35,7 +35,6 @@ public List<ChiTietBaoDuong> getChiTietBaoDuongByPhieuBD(String maBD) {
                 ctbd.setMaBD(rs.getString("MaBD"));
                 ctbd.setMaDV(rs.getString("MaDV"));
                 ctbd.setSoLuong(rs.getInt("SoLuong"));
-                // Load phiếu bảo dưỡng và dịch vụ
 
                 chiTietBaoDuongs.add(ctbd);
             }

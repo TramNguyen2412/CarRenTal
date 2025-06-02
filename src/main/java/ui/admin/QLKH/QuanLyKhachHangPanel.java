@@ -290,8 +290,7 @@ public class QuanLyKhachHangPanel extends JPanel implements ActionListener {
                 int barWidth = 80;
                 int spacing = 50;
                 int chartHeight = getHeight() - 80;
-                // int chartWidth = getWidth() - 100; // Not directly used for bar placement
-                // logic here
+      
 
                 int yAxisEnd = getHeight() - 40;
                 int xAxisStart = 50;

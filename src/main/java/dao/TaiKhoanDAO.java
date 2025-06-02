@@ -157,16 +157,6 @@ public class TaiKhoanDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-
-            if (e.getMessage() != null && e.getMessage().contains("Closed Connection")) {
-//                try {
-//                    System.out.println("Attempting to reconnect in getAllTaiKhoanExtended");
-//                    DatabaseUtil.reconnect();
-//                    return getAllTaiKhoanExtended(); // Thử lại một lần
-//                } catch (SQLException ex) {
-//                    System.err.println("Failed to reconnect: " + ex.getMessage());
-//                }
-            }
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -499,7 +489,6 @@ public class TaiKhoanDAO {
         }
     }
     
-    // Xóa tài khoản (thận trọng vì có liên kết khóa ngoại)
     public boolean delete(String maTK) {
         // Trước khi xóa, cần set NULL cho các khóa ngoại trong NhanVien và KhachHang
         Connection conn = null;

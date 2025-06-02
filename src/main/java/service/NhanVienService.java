@@ -40,21 +40,21 @@ public class NhanVienService {
         errorMessage = new StringBuilder();
 
         // Validate dữ liệu trước khi thêm (không check MaTK)
-        String validationError = validateNhanVienData(nv, false); // false for add (MaNV is not set yet)
+        String validationError = validateNhanVienData(nv, false); 
         if (validationError != null) {
             errorMessage.append(validationError);
             return false;
         }
 
         // Kiểm tra trùng lặp SĐT
-        if (nhanVienDAO.isPhoneNumberExists(nv.getSdt(), null)) { // MaNV is null for new employee
+        if (nhanVienDAO.isPhoneNumberExists(nv.getSdt(), null)) { 
             errorMessage.append("Số điện thoại đã tồn tại trong hệ thống");
             return false;
         }
 
         // Kiểm tra trùng lặp Email
         if (nv.getEmail() != null && !nv.getEmail().isEmpty() &&
-                nhanVienDAO.isEmailExists(nv.getEmail(), null)) { // MaNV is null for new employee
+                nhanVienDAO.isEmailExists(nv.getEmail(), null)) {
             errorMessage.append("Email đã tồn tại trong hệ thống");
             return false;
         }
@@ -70,7 +70,7 @@ public class NhanVienService {
         errorMessage = new StringBuilder();
 
         // Validate dữ liệu trước khi cập nhật (check MaTK cho update)
-        String validationError = validateNhanVienData(nv, true); // true for update (MaNV should exist)
+        String validationError = validateNhanVienData(nv, true); 
         if (validationError != null) {
             errorMessage.append(validationError);
             return false;
@@ -190,11 +190,6 @@ public class NhanVienService {
         if (nv.getChucVu() == null || nv.getChucVu().trim().isEmpty()) {
             return "Chức vụ không được để trống";
         }
-
-        // Chỉ check MaTK khi update, không check khi thêm mới
-//        if (isUpdate && (nv.getMaTK() == null || nv.getMaTK().trim().isEmpty())) {
-//            return "Mã tài khoản không được để trống khi cập nhật";
-//        }
 
         return null; // Không có lỗi
     }

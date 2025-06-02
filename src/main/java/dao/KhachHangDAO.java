@@ -156,7 +156,6 @@ public class KhachHangDAO {
 
             if (rows > 0) {
                 // Lấy mã khách hàng mới nhất dựa trên SĐT và họ tên
-                // Đây là cách an toàn nhất để lấy đúng khách hàng vừa insert
                 String getIdSql = "SELECT MAKH FROM KHACHHANG " +
                                   "WHERE SDT = ? AND HOTEN = ? " +
                                   "ORDER BY MAKH DESC FETCH FIRST 1 ROW ONLY";

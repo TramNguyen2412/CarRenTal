@@ -32,13 +32,7 @@ public class RoundedPanelAdmin extends JPanel {
             g2.setColor(getBackground());
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
         }
-        
-        // Vẽ viền mỏng để dễ phân biệt (tùy chọn)
-//        if (isSelected) {
-//            g2.setColor(new Color(255, 193, 7, 150));
-//            g2.setStroke(new BasicStroke(2));
-//            g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, cornerRadius, cornerRadius);
-//        }
+       
            if (isSelected) {
                 g2.setColor(new Color(255, 255, 255, 150)); // Đổi từ vàng sang trắng mờ
                 g2.setStroke(new BasicStroke(2));

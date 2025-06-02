@@ -51,7 +51,6 @@ public class ThongKeController {
     public List<Map<String, Object>> getTop5HopDong(int year) {
         return HopDongDAO.getTop5HopDong(year);
     }
-   //  Thêm vào ThongKeController
     public void startReportView() {
         thongKeDAO.startReportView();
     }

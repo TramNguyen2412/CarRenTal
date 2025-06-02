@@ -301,7 +301,6 @@ public boolean deletePhieuBaoDuong(String maBD) {
         
         return list;
     }
-// Check if a car is in a contract on a specific date
     public boolean isCarInContract(String maXe, Date ngayBD) {
         String sql = "SELECT COUNT(*) FROM CTHD " +
                      "WHERE MaXe = ? AND ? BETWEEN NgayBatDau AND NgayKetThuc";
@@ -372,7 +371,6 @@ public boolean deletePhieuBaoDuong(String maBD) {
         ps.executeUpdate();
     } catch (Exception e) {
         e.printStackTrace();
-        // Có thể throw RuntimeException hoặc xử lý theo ý bạn
     }
 }
 public String addPhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong> chiTietList) throws SQLException {

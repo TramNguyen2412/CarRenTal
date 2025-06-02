@@ -49,7 +49,7 @@ public class SidebarMenuPanel extends JPanel {
     public SidebarMenuPanel(TaiKhoan taiKhoan, MenuClickListener listener) {
         this.taiKhoan = taiKhoan;
         this.clickListener = listener;
-        setOpaque(false); // Quan trọng để thấy gradient
+        setOpaque(false); 
         initComponents();
     }
     
@@ -71,8 +71,6 @@ public class SidebarMenuPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        // Sử dụng Color.decode() để xác định màu giống mẫu
-        // Các màu này dựa theo màu trong hình mẫu
         Color startColor = Color.decode("#E55D87"); 
         Color endColor = Color.decode("#5FC3E4");   
         // Tạo gradient từ trên xuống dưới
@@ -86,13 +84,11 @@ public class SidebarMenuPanel extends JPanel {
         
         g2.dispose();
         
-        // VỀ CƠ BẢN KHÔNG GỌI SUPER ĐỂ KHÔNG VẼ ĐÈ LÊN GRADIENT
     }
     
     // Phương thức tạo logo
     private void setupLogo() {
         JPanel logoPanel = new JPanel(new BorderLayout());
-       // logoPanel.setBackground(new Color(13, 25, 38)); // Màu tối cho logo
        logoPanel.setOpaque(false);
         logoPanel.setPreferredSize(new Dimension(250, 80));
         logoPanel.setMaximumSize(new Dimension(250, 80));
@@ -108,8 +104,7 @@ public class SidebarMenuPanel extends JPanel {
             if (resourceUrl != null) {
                 // Sử dụng FlatSVGIcon để hiển thị SVG
                 FlatSVGIcon svgIcon = new FlatSVGIcon(resourceUrl);
-                // Đặt kích thước cho icon - THÊM derive GIỐNG như các icon khác
-                svgIcon = svgIcon.derive(40, 40); // Thay vì chỉ gọi derive() mà không gán lại
+                svgIcon = svgIcon.derive(40, 40); 
 
                 JLabel iconLabel = new JLabel(svgIcon);
                 logoContentPanel.add(iconLabel);
@@ -136,11 +131,10 @@ public class SidebarMenuPanel extends JPanel {
     private void setupUserInfo() {
         // Panel thông tin người dùng
         JPanel userPanel = new JPanel(new BorderLayout());
-        userPanel.setOpaque(false); // QUAN TRỌNG: Đặt transparent để thấy gradient
+        userPanel.setOpaque(false); 
         userPanel.setPreferredSize(new Dimension(250, 60));
         userPanel.setMaximumSize(new Dimension(250, 60));
         
-        // Xử lý khi taiKhoan có thể null
         String username = "Admin";
         if (taiKhoan != null && taiKhoan.getTenDangNhap() != null) {
             username = taiKhoan.getTenDangNhap();
@@ -148,7 +142,7 @@ public class SidebarMenuPanel extends JPanel {
         
         // Tạo panel chứa avatar và thông tin
         JPanel avatarAndInfoPanel = new JPanel(new BorderLayout(10, 0));
-        avatarAndInfoPanel.setOpaque(false); // QUAN TRỌNG: Đặt transparent
+        avatarAndInfoPanel.setOpaque(false); 
         avatarAndInfoPanel.setBorder(new javax.swing.border.EmptyBorder(10, 20, 10, 20));
         
         // Tạo avatar
@@ -157,8 +151,7 @@ public class SidebarMenuPanel extends JPanel {
         URL resourceUrl = getClass().getResource("/img/admin.svg");
             if (resourceUrl != null) {
                 FlatSVGIcon svgIcon = new FlatSVGIcon(resourceUrl);
-                // Thêm gán lại giá trị sau khi derive
-                svgIcon = svgIcon.derive(40, 40); // Thay vì chỉ gọi derive()
+                svgIcon = svgIcon.derive(40, 40); 
                 avatarLabel = new JLabel(svgIcon);
             } else {
                 avatarLabel = new JLabel("A");
@@ -175,19 +168,17 @@ public class SidebarMenuPanel extends JPanel {
         // Panel chứa thông tin người dùng
         JPanel userInfoPanel = new JPanel();
         userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
-        userInfoPanel.setOpaque(false); // QUAN TRỌNG: Đặt transparent
+        userInfoPanel.setOpaque(false); 
         
         // Tên người dùng
         JLabel nameLabel = new JLabel(username);
         nameLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
-      //  nameLabel.setForeground(menuTextColor);
           nameLabel.setForeground(Color.WHITE);
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         // Vai trò
         JLabel roleLabel = new JLabel("Quản trị viên");
         roleLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 12));
-      //  roleLabel.setForeground(new Color(100, 100, 100));
          roleLabel.setForeground(new Color(220, 220, 220));
         roleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
@@ -207,9 +198,8 @@ public class SidebarMenuPanel extends JPanel {
         
         // Thêm đường phân cách
         JSeparator separator = new JSeparator();
-        //separator.setForeground(new Color(200, 200, 200));
-        //separator.setBackground(new Color(200, 200, 200));
-        separator.setForeground(new Color(255, 255, 255, 60)); // Đổi từ xám sang trắng mờ
+     
+        separator.setForeground(new Color(255, 255, 255, 60)); 
         separator.setBackground(new Color(255, 255, 255, 60));
         add(separator);
         
@@ -248,53 +238,23 @@ public class SidebarMenuPanel extends JPanel {
     public void addMenuItem(String text, String iconPath, String panelName) {
         // Panel chứa menu item
         RoundedPanelAdmin roundedPanel = new RoundedPanelAdmin();
-        roundedPanel.setOpaque(false); // Quan trọng: để thấy gradient từ sidebar
+        roundedPanel.setOpaque(false); 
         roundedPanel.setPreferredSize(new Dimension(230, menuItemHeight));
         roundedPanel.setMaximumSize(new Dimension(230, menuItemHeight));
         
         // Panel chứa nội dung (icon + text)
         JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
-        contentPanel.setOpaque(false); // Đặt transparent
+        contentPanel.setOpaque(false); 
         
-        // Thêm icon nếu có
-//        if (iconPath != null && !iconPath.isEmpty()) {
-//            try {
-//                URL resourceUrl = getClass().getResource("/img/" + iconPath);
-////                if (resourceUrl != null) {
-////                    ImageIcon icon = new ImageIcon(resourceUrl);
-////                    Image img = icon.getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH);
-////                    JLabel iconLabel = new JLabel(new ImageIcon(img));
-////                    contentPanel.add(iconLabel);
-////                }
-//                if (resourceUrl != null) {
-//                    ImageIcon icon = createHighQualityIcon(resourceUrl, iconSize, iconSize);
-//                    if (icon != null) {
-//                        JLabel iconLabel = new JLabel(icon);
-//                        contentPanel.add(iconLabel);
-//                    }
-//                }
-//            } catch (Exception e) {
-//                System.out.println("Không thể tải icon: " + iconPath);
-//            }
-//        }
-//        if (iconPath != null && !iconPath.isEmpty()) {
-//            FlatSVGIcon svgIcon = new FlatSVGIcon("img/" + iconPath);
-//            // Nếu muốn đặt kích thước cụ thể cho icon:
-//            svgIcon.derive(iconSize, iconSize); // hoặc dùng setScale() tùy trường hợp
-//
-//            JLabel iconLabel = new JLabel(svgIcon);
-//            contentPanel.add(iconLabel);
-//        }
+
         if (iconPath != null && !iconPath.isEmpty()) {
          try {
              // Tạo FlatSVGIcon với kích thước cố định
              URL resourceUrl = getClass().getResource("/img/" + iconPath);
 
              if (resourceUrl != null) {
-                 // *** QUAN TRỌNG: Set kích thước nhỏ khi tạo icon ***
                  FlatSVGIcon svgIcon = new FlatSVGIcon(resourceUrl);
 
-                 // Đặt kích thước nhỏ cố định (24x24)
                  svgIcon = svgIcon.derive(30, 30); 
 
                  JLabel iconLabel = new JLabel(svgIcon);
@@ -431,7 +391,6 @@ public class SidebarMenuPanel extends JPanel {
         }
     }
     
-    // Các setter để tùy chỉnh
     public void setMenuColor(Color color) {
         this.menuColor = color;
         
@@ -475,27 +434,5 @@ public class SidebarMenuPanel extends JPanel {
         removeAllMenuItems();
         addDefaultMenuItems();
     }
-    private ImageIcon createHighQualityIcon(URL resourceUrl, int width, int height) {
-        try {
-            BufferedImage originalImage = ImageIO.read(resourceUrl);
-            if (originalImage == null) return null;
 
-            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = resizedImage.createGraphics();
-
-            // Thiết lập chất lượng cao
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            // Vẽ lại ảnh với chất lượng cao
-            g2d.drawImage(originalImage, 0, 0, width, height, null);
-            g2d.dispose();
-
-            return new ImageIcon(resizedImage);
-        } catch (Exception e) {
-            System.out.println("Lỗi khi tạo icon: " + e.getMessage());
-            return null;
-        }
-    }
 }

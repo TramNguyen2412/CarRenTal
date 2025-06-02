@@ -169,9 +169,7 @@ public class GiaoNhanXePanel extends JPanel {
         if (maGiaoNhan != null) {
             GiaoNhanXe gn = giaoNhanXeController.getGiaoNhanXeByMa(maGiaoNhan);
             if (gn != null) {
-                // Add checks similar to HopDongPanel if certain states prevent editing
-                // For example: if ( "Đã hoàn thành".equals(gn.getTrangThaiGN()) ) { ... return;
-                // }
+     
                 showGiaoNhanXeDialog(gn, false); // false for editing
             } else {
                 JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin giao nhận để sửa.", "Lỗi",
@@ -186,10 +184,7 @@ public class GiaoNhanXePanel extends JPanel {
     private void deleteSelectedGiaoNhan() {
         String maGiaoNhan = tablePanel.getSelectedGiaoNhanXeId();
         if (maGiaoNhan != null) {
-            // Add checks similar to HopDongPanel if certain states prevent deletion
-            // For example: if ( "Đang thực hiện".equals(gn.getTrangThaiGN()) ) { ...
-            // return; }
-
+      
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Bạn có chắc muốn xóa bản ghi giao nhận này không? (Mã: " + maGiaoNhan + ")",
                     "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);

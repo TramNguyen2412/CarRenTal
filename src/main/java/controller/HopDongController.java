@@ -12,8 +12,6 @@ import model.NhanVien;
 import model.Xe;
 
 
-
-
 public class HopDongController {
     private HopDongDAO hopDongDAO;
     private ChiTietHDDao chiTietHDDAO;
