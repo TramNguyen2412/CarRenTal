@@ -51,6 +51,7 @@ public class ThongKeController {
     public List<Map<String, Object>> getTop5HopDong(int year) {
         return HopDongDAO.getTop5HopDong(year);
     }
+   //  Thêm vào ThongKeController
     public void startReportView() {
         thongKeDAO.startReportView();
     }
@@ -58,5 +59,12 @@ public class ThongKeController {
     public void endReportView() {
         thongKeDAO.endReportView();
     }
-    
+    public void setIsolationLevel(int level) {
+        ThongKeDAO.setIsolationLevel(level);
+    }
+    public int getIsolationLevel() {
+        return ThongKeDAO.getIsolationLevel();
+    }
+
+
 }
