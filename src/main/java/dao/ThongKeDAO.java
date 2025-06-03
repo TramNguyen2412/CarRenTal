@@ -2,6 +2,7 @@ package dao;
 
 import model.KhachHangDoanhThu;
 import model.XeDoanhThu;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import java.sql.*;
 import java.util.*;
@@ -11,6 +12,14 @@ public class ThongKeDAO {
     // Lấy số liệu tổng quan
    private static boolean reportViewLocked = false;
     private static Connection lockedConnection = null; 
+    
+    private static int isolationLevel = Connection.TRANSACTION_READ_COMMITTED; // Mặc định
+    public static void setIsolationLevel(int level) {
+        isolationLevel = level;
+        // Không reset kết nối ở đây để giữ nguyên phiên xem báo cáo nếu đang mở
+    }
+
+
     public Map<String, Number> getTongQuan() {
         Map<String, Number> result = new HashMap<>();
         Connection conn = null;
@@ -192,42 +201,92 @@ public class ThongKeDAO {
 //        return DatabaseUtil.getConnection();
 //    }
 //    
+//    private Connection getValidConnection() throws SQLException {
+//        if (reportViewLocked && lockedConnection != null && !lockedConnection.isClosed()) {
+//            // Nếu đang trong chế độ "xem báo cáo", trả về connection cũ
+//            return lockedConnection;
+//        }
+//
+//        // Ngược lại lấy connection mới
+//        Connection conn = DatabaseUtil.getConnection();
+//
+//        // Thiết lập TRANSACTION_READ_COMMITTED để cho phép phantom read
+//        if (reportViewLocked) {
+//            conn.setAutoCommit(false);
+//          //  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//          //  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+//            
+//            lockedConnection = conn;
+//        }
+//
+//        return conn;
+//    }
+//    private Connection getValidConnection() throws SQLException {
+//        if (reportViewLocked && lockedConnection != null && !lockedConnection.isClosed()) {
+//            return lockedConnection;
+//        }
+//
+//        // Nếu chưa có kết nối hoặc đã đóng, tạo mới
+//        Connection conn = DatabaseUtil.getConnection();
+//        if (reportViewLocked) {
+//            conn.setAutoCommit(false);
+//            conn.setTransactionIsolation(isolationLevel);
+//            lockedConnection = conn;
+//        }
+//        return conn;
+//    }
+    
     private Connection getValidConnection() throws SQLException {
         if (reportViewLocked && lockedConnection != null && !lockedConnection.isClosed()) {
-            // Nếu đang trong chế độ "xem báo cáo", trả về connection cũ
+            System.out.println("==== REUSING EXISTING CONNECTION: " + lockedConnection.hashCode() + " ====");
+            System.out.println("==== WITH ISOLATION LEVEL: " + 
+                (lockedConnection.getTransactionIsolation() == Connection.TRANSACTION_SERIALIZABLE ? 
+                "SERIALIZABLE" : "READ_COMMITTED") + " ====");
+
             return lockedConnection;
-        }
-
-        // Ngược lại lấy connection mới
-        Connection conn = DatabaseUtil.getConnection();
-
-        // Thiết lập TRANSACTION_READ_COMMITTED để cho phép phantom read
-        if (reportViewLocked) {
-            conn.setAutoCommit(false);
-          //  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-          //  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            
-            lockedConnection = conn;
-        }
-
-        return conn;
-    }
-
-    // Phương thức bắt đầu "xem báo cáo" - gọi khi vào tab thống kê
-    public static void startReportView() {
-        reportViewLocked = true;
-        try {
-            // Đảm bảo connection cũ được đóng
-            if (lockedConnection != null) {
-                try { lockedConnection.close(); } catch (Exception e) {}
-                lockedConnection = null;
+        } else {
+            Connection conn = DatabaseUtil.getConnection();
+            if (reportViewLocked) {
+                conn.setAutoCommit(false);
+                conn.setTransactionIsolation(isolationLevel);
+                System.out.println("==== CREATED NEW CONNECTION: " + conn.hashCode() + " ====");
+                System.out.println("==== SET ISOLATION LEVEL: " + 
+                    (isolationLevel == Connection.TRANSACTION_SERIALIZABLE ? 
+                    "SERIALIZABLE" : "READ_COMMITTED") + " ====");
+                lockedConnection = conn;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return conn;
         }
-        System.out.println("Đã bắt đầu chế độ xem báo cáo - phantom read có thể xảy ra");
+        
+
     }
+
+
+    public static void startReportView() {
+    reportViewLocked = true;
+    try {
+        // Đóng kết nối cũ nếu có
+        if (lockedConnection != null) {
+            try { lockedConnection.close(); } catch (Exception e) {}
+            lockedConnection = null;
+        }
+        
+        // Tạo kết nối mới và thiết lập isolation level
+        lockedConnection = DatabaseUtil.getConnection();
+        lockedConnection.setAutoCommit(false);
+        lockedConnection.setTransactionIsolation(isolationLevel);
+        
+        System.out.println("==== startReportView: NEW CONNECTION " + lockedConnection.hashCode() + " ====");
+        System.out.println("==== WITH ISOLATION LEVEL: " + 
+            (isolationLevel == Connection.TRANSACTION_SERIALIZABLE ? 
+            "SERIALIZABLE" : "READ_COMMITTED") + " ====");
+            
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
 
     // Phương thức kết thúc "xem báo cáo" - gọi khi thoát tab thống kê
     public static void endReportView() {
@@ -241,6 +300,9 @@ public class ThongKeDAO {
             e.printStackTrace();
         }
         System.out.println("Đã kết thúc chế độ xem báo cáo");
+    }
+    public static int getIsolationLevel() {
+        return isolationLevel;
     }
 
 }

@@ -26,6 +26,7 @@ import java.text.NumberFormat;
 
 import javax.swing.table.DefaultTableCellRenderer; 
 import java.awt.event.ItemEvent;
+import util.DatabaseUtil;
 
 
 import org.jfree.chart.axis.CategoryAxis;
@@ -59,6 +60,10 @@ import java.io.File;
 import java.io.IOException;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.ResultSet;
 
 public class ThongKePanel extends JPanel {
     private ThongKeController controller;
@@ -79,7 +84,9 @@ public class ThongKePanel extends JPanel {
     private JTable tblDoanhThuKhachHang;
     private ChartPanel chartPanelDoanhThuXe;
     private JTable tblDoanhThuXe;
-    
+    JButton btnTestPhantomRead = new JButton("Test Phantom Read");
+
+
     private NumberFormat currencyFormat;
     
     // Colors
@@ -89,13 +96,8 @@ public class ThongKePanel extends JPanel {
     private final Color HEADER_COLOR = new Color(33, 150, 243);
     private boolean isBarChart = true;
     
+//=====TRƯỜNG HỢP CẦN NÚT===/
     public ThongKePanel() {
-//        controller = new ThongKeController();
-//        
-//        currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-//        
-//        initComponents();
-//        loadData();
 
             controller = new ThongKeController();
         controller.startReportView(); // Bắt đầu chế độ xem báo cáo khi mở panel
@@ -114,6 +116,33 @@ public class ThongKePanel extends JPanel {
         });
     }
     
+    //============================THONGKEPANEL trường hợp không cần nút//
+//    public ThongKePanel() {
+//        controller = new ThongKeController();
+//
+//        // Thiết lập isolation level trực tiếp, thay thế cho UI
+//        // Uncomment dòng isolation level bạn muốn sử dụng:
+//
+//        // Sử dụng READ_COMMITTED (cho phép phantom read)
+//       // setDirectIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
+//
+//        // Sử dụng SERIALIZABLE (ngăn chặn phantom read)
+//        setDirectIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
+//
+//        currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+//
+//        initComponents();
+//        loadData();
+//
+//        // Đăng ký sự kiện khi panel bị hủy
+//        addComponentListener(new ComponentAdapter() {
+//            @Override
+//            public void componentHidden(ComponentEvent e) {
+//                controller.endReportView();
+//            }
+//        });
+//    }
+
     private void initComponents() {
         setLayout(new BorderLayout());
         setBackground(BACKGROUND_COLOR);
@@ -150,7 +179,30 @@ public class ThongKePanel extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
         panel.setBorder(new EmptyBorder(10, 15, 5, 15));
         panel.setBackground(Color.WHITE);
-        
+       
+        //THÊM ISOLATION NÚT ĐỂ THAY ĐỔI CHO TEST PHANTOM DỄ HƠN.
+        //-----------------------------------------------------------==//
+        JLabel lblIsolation = new JLabel("Isolation Level:");
+        lblIsolation.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        panel.add(lblIsolation);
+
+        JComboBox<String> cboIsolation = new JComboBox<>(new String[]{"READ_COMMITTED", "SERIALIZABLE"});
+        cboIsolation.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        panel.add(cboIsolation);
+
+        // Nút áp dụng isolation level
+        JButton btnApplyIsolation = new JButton("Áp dụng");
+        btnApplyIsolation.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnApplyIsolation.setBackground(new Color(0, 150, 136));
+        btnApplyIsolation.setForeground(Color.WHITE);
+        btnApplyIsolation.addActionListener(e -> {
+            String level = (String) cboIsolation.getSelectedItem();
+            applyIsolationLevel(level);
+        });
+        panel.add(btnApplyIsolation);
+
+//        //Tới đây là hết phần này. Nếu muốn bỏ thì chú thích lại nó đi
+//        //==============================================================//
         // Label Năm thống kê
         JLabel lblNamThongKe = new JLabel("Năm thống kê:");
         lblNamThongKe.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -201,45 +253,69 @@ public class ThongKePanel extends JPanel {
 
         return panel;
     }
-     public void refreshData() {
-//        try {
-//            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//
-//            // Lấy năm thống kê hiện tại
-//            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
-//
-//            // Cập nhật dữ liệu thống kê tổng quan
-//            Map<String, Number> tongQuan = controller.getTongQuan();
-//            lblTongSoXe.setText(String.valueOf(tongQuan.getOrDefault("tongSoXe", 0)));
-//            lblTongSoKhachHang.setText(String.valueOf(tongQuan.getOrDefault("tongSoKhachHang", 0)));
-//            lblTongSoHopDong.setText(String.valueOf(tongQuan.getOrDefault("tongSoHopDong", 0)));
-//            lblTongDoanhThu.setText(currencyFormat.format(tongQuan.getOrDefault("tongDoanhThu", 0)));
-//
-//            // Cập nhật bảng top 5 hợp đồng
-//            updateTopContractsTable(selectedYear);
-//
-//            // Cập nhật dữ liệu thống kê theo tháng, khách hàng, xe
-//            loadDataByYear(selectedYear);
-//
-//            JOptionPane.showMessageDialog(this, 
-//                "Đã cập nhật dữ liệu thống kê thành công!", 
-//                "Thông báo", 
-//                JOptionPane.INFORMATION_MESSAGE);
-//        } catch (Exception e) {
-//            JOptionPane.showMessageDialog(this, 
-//                "Lỗi khi làm mới dữ liệu: " + e.getMessage(), 
-//                "Lỗi", JOptionPane.ERROR_MESSAGE);
-//            e.printStackTrace();
-//        } finally {
-//            setCursor(Cursor.getDefaultCursor());
-//        }
+     private void applyIsolationLevel(String level) {
         try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-            // Kết thúc chế độ xem báo cáo trước khi làm mới dữ liệu
+            // Kết thúc phiên xem báo cáo cũ
             controller.endReportView();
 
-            // Lấy năm thống kê hiện tại
+            // Thiết lập isolation level mới
+            if ("SERIALIZABLE".equals(level)) {
+                controller.setIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
+            } else {
+                controller.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
+            }
+
+            // Bắt đầu phiên xem báo cáo mới với isolation level đã chọn
+            controller.startReportView();
+
+            // QUAN TRỌNG: Thực hiện ngay một truy vấn để bắt đầu transaction
+            // và thiết lập snapshot cho SERIALIZABLE
+            int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
+            controller.getTongQuan(); // Truy vấn đầu tiên để "khóa" snapshot
+
+            // Hiển thị thông báo và hướng dẫn
+            JOptionPane.showMessageDialog(this, 
+                "Đã áp dụng isolation level: " + level + "\n\n" +
+                "Hướng dẫn demo Phantom Read:\n" +
+                "1. ĐÃ tạo transaction với isolation level " + level + "\n" +
+                "2. Mở instance khác và thêm hợp đồng mới\n" +
+                "3. Quay lại đây và nhấn 'Làm mới dữ liệu'\n" +
+                "4. Với READ_COMMITTED: Sẽ thấy hợp đồng mới\n" +
+                "5. Với SERIALIZABLE: Sẽ KHÔNG thấy hợp đồng mới",
+                "Thiết lập thành công", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+        }
+    }
+     //Cái này để demo phantom read nhưng mà không cần 2 cái nút đó
+//     private void setDirectIsolationLevel(int level) {
+//        try {
+//            controller.endReportView();
+//            controller.setIsolationLevel(level);
+//            controller.startReportView();
+//
+//            // Thực hiện một truy vấn ngay lập tức để bắt đầu transaction
+//            controller.getTongQuan();
+//
+//            System.out.println("Đã thiết lập trực tiếp isolation level: " + 
+//                (level == Connection.TRANSACTION_SERIALIZABLE ? "SERIALIZABLE" : "READ_COMMITTED"));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+     ///===========================================================//
+    public void refreshData() {
+        try {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            
+            //Để demo khong cần nút nè:
+         // DEBUG MODE: Uncomment một trong hai dòng dưới đây để nhanh chóng chuyển đổi isolation level
+        // setDirectIsolationLevel(Connection.TRANSACTION_READ_COMMITTED); // Cho phép phantom read
+        // setDirectIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);   // Ngăn chặn phantom read
+        //
             int selectedYear = (Integer) cboNamThongKe.getSelectedItem();
 
             // Cập nhật dữ liệu thống kê tổng quan
@@ -255,11 +331,11 @@ public class ThongKePanel extends JPanel {
             // Cập nhật dữ liệu thống kê theo tháng, khách hàng, xe
             loadDataByYear(selectedYear);
 
-            // Bắt đầu lại chế độ xem báo cáo sau khi làm mới
-            controller.startReportView();
-
             JOptionPane.showMessageDialog(this, 
-                "Đã cập nhật dữ liệu thống kê thành công!", 
+                "Đã cập nhật dữ liệu thống kê với isolation level: " + 
+                (controller.getIsolationLevel() == Connection.TRANSACTION_SERIALIZABLE ? 
+                    "SERIALIZABLE (không thấy dữ liệu mới)" : 
+                    "READ_COMMITTED (có thể thấy dữ liệu mới)"), 
                 "Thông báo", 
                 JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
@@ -270,7 +346,6 @@ public class ThongKePanel extends JPanel {
         } finally {
             setCursor(Cursor.getDefaultCursor());
         }
-
     }
 
     private void addExportButtons() {
@@ -590,33 +665,6 @@ public class ThongKePanel extends JPanel {
     }
 
 
-
-    
-//    private JPanel createStatBoxPanel(String title, String value, Color color) {
-//        JPanel panel = new JPanel();
-//        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-//        panel.setBackground(Color.WHITE);
-//        panel.setBorder(BorderFactory.createLineBorder(color, 2));
-//        
-//        // Tiêu đề
-//        JLabel lblTitle = new JLabel(title);
-//        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-//        lblTitle.setForeground(color);
-//        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        lblTitle.setBorder(BorderFactory.createEmptyBorder(15, 10, 5, 10));
-//        
-//        // Giá trị
-//        JLabel lblValue = new JLabel(value);
-//        lblValue.setFont(new Font("Segoe UI", Font.BOLD, 28));
-//        lblValue.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        lblValue.setBorder(BorderFactory.createEmptyBorder(10, 10, 15, 10));
-//        
-//        panel.add(lblTitle);
-//        panel.add(lblValue);
-//        
-//        return panel;
-//    }
-    
     private JPanel createStatBoxPanel(String title, String value, Color color) {
         JPanel panel = new JPanel() {
             @Override
@@ -656,57 +704,6 @@ public class ThongKePanel extends JPanel {
         return panel;
     }
 
-    
-//    private JPanel createDoanhThuThangPanel() {
-//        JPanel panel = new JPanel(new BorderLayout(10, 10));
-//        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-//        panel.setBackground(BACKGROUND_COLOR);
-//        
-//        // Panel tiêu đề
-//        JPanel titlePanel = new JPanel(new BorderLayout());
-//        titlePanel.setBackground(Color.WHITE);
-//        titlePanel.setBorder(new CompoundBorder(
-//            BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
-//            BorderFactory.createEmptyBorder(15, 20, 15, 20)
-//        ));
-//        
-//        JLabel lblTitle = new JLabel("Doanh thu theo tháng");
-//        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
-//        lblTitle.setForeground(HEADER_COLOR);
-//        titlePanel.add(lblTitle, BorderLayout.CENTER);
-//        
-//        panel.add(titlePanel, BorderLayout.NORTH);
-//        
-//        // Panel biểu đồ
-//        JPanel chartPanel = new JPanel(new BorderLayout());
-//        chartPanel.setBackground(Color.WHITE);
-//        chartPanel.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
-//        
-//        // Tạo biểu đồ trống
-//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-//        JFreeChart chart = ChartFactory.createBarChart(
-//                "Biểu đồ doanh thu theo tháng", 
-//                "Tháng", 
-//                "Doanh thu (VNĐ)", 
-//                dataset,
-//                PlotOrientation.VERTICAL, 
-//                true, 
-//                true, 
-//                false);
-//        
-//        CategoryPlot plot = chart.getCategoryPlot();
-//        BarRenderer renderer = (BarRenderer) plot.getRenderer();
-//        renderer.setSeriesPaint(0, PRIMARY_COLOR);
-//        renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
-//        
-//        chartPanelDoanhThuThang = new ChartPanel(chart);
-//        chartPanelDoanhThuThang.setPreferredSize(new Dimension(700, 500));
-//        chartPanel.add(chartPanelDoanhThuThang, BorderLayout.CENTER);
-//        
-//        panel.add(chartPanel, BorderLayout.CENTER);
-//        
-//        return panel;
-//    }
     private JPanel createDoanhThuThangPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -969,25 +966,53 @@ public class ThongKePanel extends JPanel {
         }
     }
     
+//    private void loadDataByYear(int year) {
+//        try {
+//            // Load dữ liệu doanh thu theo tháng
+//            Map<Integer, Double> doanhThuThang = controller.getDoanhThuTheoThang(year);
+//            updateDoanhThuThangChart(doanhThuThang, year);
+//            
+//            // Load dữ liệu doanh thu theo khách hàng
+//            List<KhachHangDoanhThu> doanhThuKhachHang = controller.getDoanhThuTheoKhachHang(year);
+//            updateDoanhThuKhachHangChart(doanhThuKhachHang, year);
+//            updateDoanhThuKhachHangTable(doanhThuKhachHang);
+//            
+//            // Load dữ liệu doanh thu theo xe
+//            List<XeDoanhThu> doanhThuXe = controller.getDoanhThuTheoXe(year);
+//            updateDoanhThuXeChart(doanhThuXe, year);
+//            updateDoanhThuXeTable(doanhThuXe);
+//            
+//            // THÊM MỚI: Load và cập nhật dữ liệu top 5 hợp đồng
+//            updateTopContractsTable(year);
+//            
+//        } catch (Exception e) {
+//            JOptionPane.showMessageDialog(this, "Lỗi khi lấy dữ liệu năm " + year + ": " + e.getMessage(), 
+//                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+//            e.printStackTrace();
+//        }
+//    }
     private void loadDataByYear(int year) {
         try {
+            // Sử dụng cùng kết nối hiện có cho tất cả truy vấn
+            // Không tạo kết nối mới ở đây
+
             // Load dữ liệu doanh thu theo tháng
             Map<Integer, Double> doanhThuThang = controller.getDoanhThuTheoThang(year);
             updateDoanhThuThangChart(doanhThuThang, year);
-            
+
             // Load dữ liệu doanh thu theo khách hàng
             List<KhachHangDoanhThu> doanhThuKhachHang = controller.getDoanhThuTheoKhachHang(year);
             updateDoanhThuKhachHangChart(doanhThuKhachHang, year);
             updateDoanhThuKhachHangTable(doanhThuKhachHang);
-            
+
             // Load dữ liệu doanh thu theo xe
             List<XeDoanhThu> doanhThuXe = controller.getDoanhThuTheoXe(year);
             updateDoanhThuXeChart(doanhThuXe, year);
             updateDoanhThuXeTable(doanhThuXe);
-            
-            // THÊM MỚI: Load và cập nhật dữ liệu top 5 hợp đồng
+
+            // Load dữ liệu top 5 hợp đồng
             updateTopContractsTable(year);
-            
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Lỗi khi lấy dữ liệu năm " + year + ": " + e.getMessage(), 
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -996,97 +1021,6 @@ public class ThongKePanel extends JPanel {
     }
 
     
-//    private void updateDoanhThuThangChart(Map<Integer, Double> data, int year) {
-//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-//
-//        // Thêm dữ liệu vào dataset
-//        for (int i = 1; i <= 12; i++) {
-//            Double value = data.getOrDefault(i, 0.0);
-//            dataset.addValue(value, "Doanh thu", "Tháng " + i);
-//        }
-//
-//        JFreeChart chart = ChartFactory.createBarChart(
-//                "Biểu đồ doanh thu theo tháng năm " + year, 
-//                "Tháng", 
-//                "Doanh thu (VNĐ)", 
-//                dataset,
-//                PlotOrientation.VERTICAL, 
-//                true, 
-//                true, 
-//                false);
-//
-//        // Tùy chỉnh màu sắc và style
-//        CategoryPlot plot = chart.getCategoryPlot();
-//
-//        // Đổi màu nền plot thành màu xám nhạt
-//        plot.setBackgroundPaint(new Color(240, 240, 240));
-//
-//        // Đổi màu lưới thành trắng để tăng độ tương phản
-//        plot.setDomainGridlinePaint(Color.WHITE);
-//        plot.setRangeGridlinePaint(Color.WHITE);
-//
-//        // Đổi độ dày của lưới
-//        plot.setDomainGridlineStroke(new BasicStroke(1.0f));
-//        plot.setRangeGridlineStroke(new BasicStroke(1.0f));
-//
-//        // Tùy chỉnh renderer để làm đẹp các cột
-//        BarRenderer renderer = (BarRenderer) plot.getRenderer();
-//
-//        // Đổi màu cột thành gradient từ xanh đậm đến xanh nhạt
-//        GradientPaint gradientPaint = new GradientPaint(
-//                0, 0, new Color(30, 144, 255),  // Xanh đậm
-//                0, 500, new Color(135, 206, 250) // Xanh nhạt
-//        );
-//
-//        renderer.setSeriesPaint(0, gradientPaint);
-//
-//        // Bỏ đường viền đen xung quanh cột
-//        renderer.setDrawBarOutline(false);
-//
-//        // Làm tròn góc cột
-//        renderer.setBarPainter(new StandardBarPainter());
-//
-//        // Shadow effect cho các cột (tùy chọn)
-//        renderer.setShadowVisible(true);
-//        renderer.setShadowPaint(new Color(0, 0, 0, 50));
-//        renderer.setShadowXOffset(2.0);
-//        renderer.setShadowYOffset(2.0);
-//
-//        // THÊM CODE: Hiển thị giá trị bên trong các cột
-//        renderer.setDefaultItemLabelsVisible(true);
-//
-//        // Format số với dấu phân cách hàng nghìn
-//        NumberFormat formatter = NumberFormat.getIntegerInstance();
-//
-//        // Định dạng nhãn hiển thị trong cột
-//        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator(
-//                "{2}", formatter));
-//        renderer.setDefaultItemLabelFont(new Font("Segoe UI", Font.BOLD, 11));
-//
-//        // Đặt vị trí của nhãn ở GIỮA mỗi cột
-//        renderer.setDefaultPositiveItemLabelPosition(new ItemLabelPosition(
-//                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
-//
-//        // Đặt màu chữ trắng để nhìn rõ trên nền xanh
-//        renderer.setDefaultItemLabelPaint(Color.WHITE);
-//
-//        // Làm đẹp legend
-//        LegendTitle legend = chart.getLegend();
-//        legend.setBackgroundPaint(new Color(250, 250, 250));
-//        legend.setItemFont(new Font("Segoe UI", Font.PLAIN, 12));
-//
-//        // Làm đẹp tiêu đề biểu đồ
-//        chart.getTitle().setFont(new Font("Segoe UI", Font.BOLD, 16));
-//        chart.getTitle().setPaint(new Color(51, 51, 51));
-//
-//        // Làm đẹp font chữ cho các trục
-//        plot.getDomainAxis().setLabelFont(new Font("Segoe UI", Font.BOLD, 12));
-//        plot.getRangeAxis().setLabelFont(new Font("Segoe UI", Font.BOLD, 12));
-//        plot.getDomainAxis().setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
-//        plot.getRangeAxis().setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
-//
-//        chartPanelDoanhThuThang.setChart(chart);
-//    }
     private void updateDoanhThuThangChart(Map<Integer, Double> data, int year, boolean isBarChart) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
