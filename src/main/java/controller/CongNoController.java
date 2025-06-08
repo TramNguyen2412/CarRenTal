@@ -6,9 +6,11 @@ import java.util.List;
 import model.KhachHang;
 import model.LichSuCongNo;
 import service.CongNoService;
+import dao.CongNoDAO;
 
 public class CongNoController {
     private CongNoService congNoService;
+    private CongNoDAO congnoDao;
     
     public CongNoController() {
         congNoService = new CongNoService();
@@ -135,7 +137,7 @@ public class CongNoController {
     return congNoService.getLichSuCongNoByMa(maLichSu);
 } 
    // CongNoController.java
-public String updateLichSuCongNoThongTinChung(String maLS, String maKH, Date ngayGD, String ghiChu) {
+    public String updateLichSuCongNoThongTinChung(String maLS, String maKH, Date ngayGD, String ghiChu) {
     try {
         LichSuCongNo ls = new LichSuCongNo();
         ls.setMaLichSu(maLS);
@@ -163,11 +165,25 @@ public String updateLichSuCongNoThongTinChung(String maLS, String maKH, Date nga
         return "Lỗi hệ thống: " + msg;
     }
 }
-public List<LichSuCongNo> searchLichSuCongNo(String keyword) {
+
+    public List<LichSuCongNo> searchLichSuCongNo(String keyword) {
     return congNoService.searchLichSuCongNo(keyword);
 }
 
+       //  Thêm vào CongNoController
+    public void startReportView() {
+        congnoDao.startReportView();
+    }
 
+    public void endReportView() {
+        congnoDao.endReportView();
+    }
+    public void setIsolationLevel(int level) {
+        congnoDao.setIsolationLevel(level);
+    }
+    public int getIsolationLevel() {
+        return congnoDao.getIsolationLevel();
+    }
 
 
 }

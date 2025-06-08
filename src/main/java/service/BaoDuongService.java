@@ -4,6 +4,7 @@ import java.util.List;
 
 import dao.ChiTietBaoDuongDAO;
 import dao.KhachHangDAO;
+import dao.DichVuBDDAO;
 import dao.PhieuBaoDuongDAO;
 import dao.XeDAO;
 import model.ChiTietBaoDuong;
@@ -15,12 +16,14 @@ public class BaoDuongService {
     private ChiTietBaoDuongDAO chiTietBaoDuongDAO;
     private XeDAO xeDAO;
     private KhachHangDAO khachHangDAO;
+    private DichVuBDDAO dichVuBDDAO;
     
     public BaoDuongService() {
         phieuBaoDuongDAO = new PhieuBaoDuongDAO();
         chiTietBaoDuongDAO = new ChiTietBaoDuongDAO();
         xeDAO = new XeDAO();
         khachHangDAO = new KhachHangDAO();
+        dichVuBDDAO = new DichVuBDDAO();
     }
     
     public List<PhieuBaoDuong> getAllPhieuBaoDuong() {
@@ -199,13 +202,11 @@ public class BaoDuongService {
 
     // Lấy tất cả dịch vụ bảo dưỡng
     public List<model.DichVuBD> getAllDichVuBD() {
-        dao.DichVuBDDAO dichVuBDDAO = new dao.DichVuBDDAO();
         return dichVuBDDAO.getAllDichVuBD();
     }
 
     // Lấy dịch vụ bảo dưỡng theo mã
     public model.DichVuBD getDichVuBDById(String maDV) {
-        dao.DichVuBDDAO dichVuBDDAO = new dao.DichVuBDDAO();
         return dichVuBDDAO.getDichVuBDByMaDV(maDV);
     }
 

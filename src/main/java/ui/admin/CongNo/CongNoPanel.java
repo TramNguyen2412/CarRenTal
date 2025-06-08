@@ -38,10 +38,13 @@ import javax.swing.table.TableColumnModel;
 
 import controller.CongNoController;
 import controller.KhachHangController;
+import java.sql.Connection;
 import java.util.Date;
+import javax.swing.JComboBox;
 import model.HopDong;
 import model.KhachHang;
 import model.LichSuCongNo;
+import model.PhieuBaoDuong;
 
 public class CongNoPanel extends JPanel {
     private JTable tableCongNo;
@@ -66,6 +69,15 @@ public class CongNoPanel extends JPanel {
     private final String[] KHACH_HANG_COLUMNS = {
         "Mã KH", "Họ Tên", "Tổng Nợ"
     };
+    // ...existing code...
+    private List<LichSuCongNo> snapshotCongNo = null;
+    private List<KhachHang> snapshotKhachHang = null;
+
+    private List<PhieuBaoDuong> snapshotAllPBD = null;
+    private List<HopDong> snapshotAllHopDong = null;
+// ...existing code...
+    // ...existing code...
+    // ...existing code...
 
     public CongNoPanel() {
         congNoController = new CongNoController();
@@ -80,6 +92,7 @@ public class CongNoPanel extends JPanel {
     }
 
     private void initComponents() {
+        
         setLayout(new BorderLayout(10, 10));
         setBorder(new EmptyBorder(15, 15, 15, 15));
         
@@ -91,7 +104,7 @@ public class CongNoPanel extends JPanel {
         
         // Panel tìm kiếm
         JPanel pnlSearch = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        txtSearch = new JTextField(20);
+        txtSearch = new JTextField(10);
         btnRefresh = new JButton("Làm mới");
         btnExport = new JButton("Xuất Excel");
         
@@ -100,6 +113,26 @@ public class CongNoPanel extends JPanel {
         pnlSearch.add(btnRefresh);
         pnlSearch.add(btnExport);
         
+        //Đoạn thêm mới
+        // ==== THÊM ISOLATION LEVEL CHO TEST PHANTOM ==== //
+        JLabel lblIsolation = new JLabel("Isolation Level:");
+        lblIsolation.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        pnlSearch.add(lblIsolation);
+
+        JComboBox<String> cboIsolation = new JComboBox<>(new String[]{"READ_COMMITTED", "SERIALIZABLE"});
+        cboIsolation.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        pnlSearch.add(cboIsolation);
+
+        JButton btnApplyIsolation = new JButton("Áp dụng");
+        btnApplyIsolation.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnApplyIsolation.setBackground(new Color(0, 150, 136));
+        btnApplyIsolation.setForeground(Color.WHITE);
+        btnApplyIsolation.addActionListener(e -> {
+            String level = (String) cboIsolation.getSelectedItem();
+            applyIsolationLevel(level);
+        });
+        pnlSearch.add(btnApplyIsolation);
+        // ==== HẾT ISOLATION LEVEL ==== //
         pnlTitle.add(pnlSearch, BorderLayout.EAST);
         add(pnlTitle, BorderLayout.NORTH);
         
@@ -309,10 +342,39 @@ public class CongNoPanel extends JPanel {
                 loadKhachHangData();
             }
         });
-        btnRefresh.addActionListener(e -> {
-            loadCongNoData();
-            loadKhachHangData();
-        });
+        // ...existing code...
+            btnRefresh.addActionListener(e -> {
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try {
+                    int iso = congNoController.getIsolationLevel();
+                    if (iso == Connection.TRANSACTION_SERIALIZABLE) {
+                        if (snapshotCongNo == null || snapshotKhachHang == null
+                            || snapshotAllPBD == null || snapshotAllHopDong == null) {
+                            snapshotCongNo = congNoController.getAllLichSuCongNo();
+                            snapshotKhachHang = congNoController.getKhachHangCoCongNo();
+                            snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
+                            snapshotAllHopDong = hopDongController.getAllHopDong();
+                        }
+                        loadCongNoDataNon(snapshotCongNo);
+                        loadKhachHangDataNon(snapshotKhachHang);
+                    } else {
+                        snapshotCongNo = congNoController.getAllLichSuCongNo();
+                        snapshotKhachHang = congNoController.getKhachHangCoCongNo();
+                        snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
+                        snapshotAllHopDong = hopDongController.getAllHopDong();
+                        loadCongNoDataNon(snapshotCongNo);
+                        loadKhachHangDataNon(snapshotKhachHang);
+                        String msg = "Đã làm mới dữ liệu với isolation level: READ_COMMITTED (có thể thấy giao dịch mới thêm vào)";
+                        JOptionPane.showMessageDialog(this, msg, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi khi làm mới dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                } finally {
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            });
+        // ...existing code...
         btnExport.addActionListener(e -> exportToExcel());
         
         txtSearch.addActionListener(e -> searchCongNo());
@@ -360,72 +422,103 @@ public class CongNoPanel extends JPanel {
         }
     }
     
-public void showTongNoDetailDialog() {
-    int selectedRow = tableKhachHang.getSelectedRow();
-    if (selectedRow < 0) {
-        JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng để xem chi tiết tổng nợ!", "Thông báo", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    String maKH = tableKhachHang.getValueAt(selectedRow, 0).toString();
-    KhachHang kh = khachHangController.getKhachHangByMa(maKH);
-    if (kh == null) {
-        JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin khách hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-    List<HopDong> hopDongs = hopDongController.getHopDongByKhachHang(kh.getMaKH());
-    double tongTienHopDong = 0;
-    for (HopDong hd : hopDongs) {
-        tongTienHopDong += hd.getTongTien();
-    }
-    // Lấy danh sách phiếu bảo dưỡng loại "Khách gây hư hại"
-    List<model.PhieuBaoDuong> dsPBD = baoDuongController.getPhieuBaoDuongByKhachHangAndLoai(maKH, "Khách gây hư hại");
+    public void showTongNoDetailDialog() {
+        int selectedRow = tableKhachHang.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng để xem chi tiết tổng nợ!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String maKH = tableKhachHang.getValueAt(selectedRow, 0).toString();
+
+        int iso = congNoController.getIsolationLevel();
+        KhachHang kh;
+        if (iso == Connection.TRANSACTION_SERIALIZABLE && snapshotKhachHang != null) {
+            // Lấy khách hàng từ snapshot (KHÔNG truy vấn lại DB)
+            kh = snapshotKhachHang.stream()
+                    .filter(k -> maKH.equals(k.getMaKH()))
+                    .findFirst()
+                    .orElse(null);
+        } else {
+            // Lấy từ DB như cũ
+            kh = khachHangController.getKhachHangByMa(maKH);
+        }
+        if (kh == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin khách hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        List<HopDong> hopDongs;
+        List<PhieuBaoDuong> dsPBD;
+        List<LichSuCongNo> lichSu;
+
+        if (iso == Connection.TRANSACTION_SERIALIZABLE
+            && snapshotAllHopDong != null && snapshotAllPBD != null && snapshotCongNo != null) {
+            // Lọc từ snapshot
+            hopDongs = snapshotAllHopDong.stream()
+                .filter(hd -> maKH.equals(hd.getMaKH()))
+                .toList();
+            dsPBD = snapshotAllPBD.stream()
+                .filter(pbd -> maKH.equals(pbd.getMaKH()) && "Khách gây hư hại".equalsIgnoreCase(pbd.getLoaiBD()))
+                .toList();
+            lichSu = snapshotCongNo.stream()
+                .filter(ls -> maKH.equals(ls.getMaKH()))
+                .toList();
+        } else {
+            // Truy vấn DB như cũ
+            hopDongs = hopDongController.getHopDongByKhachHang(kh.getMaKH());
+            dsPBD = baoDuongController.getPhieuBaoDuongByKhachHangAndLoai(maKH, "Khách gây hư hại");
+            lichSu = congNoController.getLichSuCongNoByKhachHang(maKH);
+        }
+
+        double tongTienHopDong = 0;
+        for (HopDong hd : hopDongs) {
+            tongTienHopDong += hd.getTongTien();
+        }
         double tongTienPBD = 0;
-    DefaultTableModel modelPBD = new DefaultTableModel(new String[]{"Mã phiếu", "Ngày BD", "Xe", "Tổng tiền"}, 0) {
-        public boolean isCellEditable(int r, int c) { return false; }
-    };
-    for (model.PhieuBaoDuong pbd : dsPBD) {
-        if (pbd.getLoaiBD() != null && "Khách gây hư hại".equalsIgnoreCase(pbd.getLoaiBD().trim())) {
-            tongTienPBD += pbd.getTongTienBD();
-            modelPBD.addRow(new Object[]{
-                pbd.getMaBD(),
-                dateFormat.format(pbd.getNgayBD()),
-                pbd.getXe() != null ? pbd.getXe().getBienSo() : pbd.getMaXe(),
-                currencyFormat.format(pbd.getTongTienBD()) + " VNĐ"
-            });
+        DefaultTableModel modelPBD = new DefaultTableModel(new String[]{"Mã phiếu", "Ngày BD", "Xe", "Tổng tiền"}, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        for (PhieuBaoDuong pbd : dsPBD) {
+            if (pbd.getLoaiBD() != null && "Khách gây hư hại".equalsIgnoreCase(pbd.getLoaiBD().trim())) {
+                tongTienPBD += pbd.getTongTienBD();
+                modelPBD.addRow(new Object[]{
+                    pbd.getMaBD(),
+                    dateFormat.format(pbd.getNgayBD()),
+                    pbd.getXe() != null ? pbd.getXe().getBienSo() : pbd.getMaXe(),
+                    currencyFormat.format(pbd.getTongTienBD()) + " VNĐ"
+                });
+            }
         }
-    }
-    // Lấy lịch sử công nợ
-    List<LichSuCongNo> lichSu = congNoController.getLichSuCongNoByKhachHang(maKH);
-    // Phát sinh
-    double tongPhatSinh = 0;
-    DefaultTableModel modelPhatSinh = new DefaultTableModel(new String[]{"Mã LS", "Ngày GD", "Số tiền", "Ghi chú"}, 0) {
-        public boolean isCellEditable(int r, int c) { return false; }
-    };
-    // Thanh toán
-    double tongThanhToan = 0;
-    DefaultTableModel modelThanhToan = new DefaultTableModel(new String[]{"Mã LS", "Ngày GD", "Số tiền", "Ghi chú"}, 0) {
-        public boolean isCellEditable(int r, int c) { return false; }
-    };
-    for (LichSuCongNo ls : lichSu) {
-        if ("PHAT SINH".equalsIgnoreCase(ls.getLoaiGiaoDich())) {
-            tongPhatSinh += ls.getSoTien();
-            modelPhatSinh.addRow(new Object[]{
-                ls.getMaLichSu(),
-                dateFormat.format(ls.getNgayGiaoDich()),
-                currencyFormat.format(ls.getSoTien()) + " VNĐ",
-                ls.getGhiChu()
-            });
-        } else if ("THANH TOAN".equalsIgnoreCase(ls.getLoaiGiaoDich())) {
-            tongThanhToan += ls.getSoTien();
-            modelThanhToan.addRow(new Object[]{
-                ls.getMaLichSu(),
-                dateFormat.format(ls.getNgayGiaoDich()),
-                currencyFormat.format(ls.getSoTien()) + " VNĐ",
-                ls.getGhiChu()
-            });
+        // Lấy lịch sử công nợ
+        double tongPhatSinh = 0;
+        DefaultTableModel modelPhatSinh = new DefaultTableModel(new String[]{"Mã LS", "Ngày GD", "Số tiền", "Ghi chú"}, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        double tongThanhToan = 0;
+        DefaultTableModel modelThanhToan = new DefaultTableModel(new String[]{"Mã LS", "Ngày GD", "Số tiền", "Ghi chú"}, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        for (LichSuCongNo ls : lichSu) {
+            if ("PHAT SINH".equalsIgnoreCase(ls.getLoaiGiaoDich())) {
+                tongPhatSinh += ls.getSoTien();
+                modelPhatSinh.addRow(new Object[]{
+                    ls.getMaLichSu(),
+                    dateFormat.format(ls.getNgayGiaoDich()),
+                    currencyFormat.format(ls.getSoTien()) + " VNĐ",
+                    ls.getGhiChu()
+                });
+            } else if ("THANH TOAN".equalsIgnoreCase(ls.getLoaiGiaoDich())) {
+                tongThanhToan += ls.getSoTien();
+                modelThanhToan.addRow(new Object[]{
+                    ls.getMaLichSu(),
+                    dateFormat.format(ls.getNgayGiaoDich()),
+                    currencyFormat.format(ls.getSoTien()) + " VNĐ",
+                    ls.getGhiChu()
+                });
+            }
         }
-    }
-double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
+        double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
+
     // Tạo dialog chi tiết
     JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết tổng nợ", true);
     dialog.setSize(800, 650);
@@ -494,6 +587,7 @@ double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
     dialog.setContentPane(panel);
     dialog.setVisible(true);
 }
+    
     public void loadKhachHangData() {
         modelKhachHang.setRowCount(0); // Xóa dữ liệu cũ
         
@@ -552,11 +646,13 @@ double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
         CongNoDialog dialog = new CongNoDialog(SwingUtilities.getWindowAncestor(this), congNo, this);
         dialog.setVisible(true);
     }
+    
     public void showCapNhatCongNoDialog(LichSuCongNo congNo) {
         CapNhatCongNoDialog dialog = new CapNhatCongNoDialog(SwingUtilities.getWindowAncestor(this), congNo, this);
         dialog.setVisible(true);
-    }    
-private void exportToExcel() {
+    }   
+    
+    private void exportToExcel() {
     JFileChooser fileChooser = new JFileChooser();
     fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
     String defaultName = "CongNoExport_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".xlsx";
@@ -594,5 +690,72 @@ private void exportToExcel() {
     }
 }
     
+    //Đoạn thêm mới
+    // Thêm hàm applyIsolationLevel
+    private void applyIsolationLevel(String level) {
+        try {
+            // Kết thúc phiên xem báo cáo cũ
+            congNoController.endReportView();
 
+            // Thiết lập isolation level mới
+            if ("SERIALIZABLE".equals(level)) {
+                congNoController.setIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
+            } else {
+                congNoController.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
+            }
+
+
+            // Bắt đầu phiên xem báo cáo mới với isolation level đã chọn
+            congNoController.startReportView();
+
+            // QUAN TRỌNG: Thực hiện ngay một truy vấn để bắt đầu transaction
+            // và thiết lập snapshot cho SERIALIZABLE
+            congNoController.getAllLichSuCongNo();
+
+            // Hiển thị thông báo và hướng dẫn
+            JOptionPane.showMessageDialog(this,
+                "Đã áp dụng isolation level: " + level + "\n\n" +
+                "Hướng dẫn demo Phantom Read:\n" +
+                "1. ĐÃ tạo transaction với isolation level " + level + "\n" +
+                "2. Mở instance khác và thêm giao dịch mới\n" +
+                "3. Quay lại đây và nhấn 'Làm mới'\n" +
+                "4. Với READ_COMMITTED: Sẽ thấy giao dịch mới\n" +
+                "5. Với SERIALIZABLE: Sẽ KHÔNG thấy giao dịch mới",
+                "Thiết lập thành công", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+        }
+    }
+
+
+    // Hàm nạp dữ liệu từ snapshot hoặc từ DB
+public void loadCongNoDataNon(List<LichSuCongNo> danhSachCongNo) {
+    modelCongNo.setRowCount(0); // Xóa dữ liệu cũ
+    for (LichSuCongNo ls : danhSachCongNo) {
+        KhachHang kh = khachHangController.getKhachHangByMa(ls.getMaKH());
+        String maVaTenKH = kh != null ? (kh.getMaKH() + " - " + kh.getHoTen()) : ls.getMaKH();
+        modelCongNo.addRow(new Object[]{
+            ls.getMaLichSu(),
+            maVaTenKH,
+            dateFormat.format(ls.getNgayGiaoDich()),
+            ls.getLoaiGiaoDich(),
+            currencyFormat.format(ls.getSoTien()) + " VNĐ",
+            ls.getGhiChu(),
+            ""
+        });
+    }
+}
+
+public void loadKhachHangDataNon(List<KhachHang> danhSachKH) {
+    modelKhachHang.setRowCount(0); // Xóa dữ liệu cũ
+    for (KhachHang kh : danhSachKH) {
+        modelKhachHang.addRow(new Object[]{
+            kh.getMaKH(),
+            kh.getHoTen(),
+            currencyFormat.format(kh.getTongTienNo()) + " VNĐ"
+        });
+    }
+}
 }
