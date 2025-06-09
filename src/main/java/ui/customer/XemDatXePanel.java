@@ -387,7 +387,7 @@ public class XemDatXePanel extends JPanel {
         addInstruction(instructionPanel, "1", "Chọn ngày bắt đầu và kết thúc thuê xe");
         addInstruction(instructionPanel, "2", "Nhấn 'Tìm Xe Có Sẵn' để xem danh sách xe");
         addInstruction(instructionPanel, "3", "Lọc xe theo hãng xe, số chỗ hoặc sắp xếp theo ý muốn");
-        addInstruction(instructionPanel, "4", "Xem chi tiết và thêm xe vào giỏ hàng");
+        addInstruction(instructionPanel, "4", "Xem chi tiết và thêm xe vào giỏ xe");
         
         // Thêm tất cả vào panel thông báo
         messagePanel.add(Box.createVerticalGlue());
@@ -768,12 +768,12 @@ public class XemDatXePanel extends JPanel {
         Date ngayBatDau = ngayBatDauChooser.getDate();
         Date ngayKetThuc = ngayKetThucChooser.getDate();
 
-        // Thêm xe vào giỏ hàng
+        // Thêm xe vào giỏ xe
         boolean result = gioXeController.themXeVaoGio(xe.getMaXe(), khachHang.getMaKH(), ngayBatDau, ngayKetThuc);
 
         if (result) {
             JOptionPane.showMessageDialog(this,
-                "Đã thêm xe " + xe.getTenXe() + " vào giỏ hàng",
+                "Đã thêm xe " + xe.getTenXe() + " vào giỏ xe",
                 "Thành công",
                 JOptionPane.INFORMATION_MESSAGE);
 
@@ -781,7 +781,7 @@ public class XemDatXePanel extends JPanel {
             final XemDatXePanel thisPanel = this;
 
             // Tạo các nút tùy chỉnh với màu sắc
-            JButton cartButton = new JButton("Xem giỏ hàng");
+            JButton cartButton = new JButton("Xem giỏ xe");
             cartButton.setBackground(new Color(0, 122, 255)); // Màu xanh
             cartButton.setForeground(Color.WHITE);
             cartButton.setFocusPainted(false);
@@ -831,7 +831,7 @@ public class XemDatXePanel extends JPanel {
                     dialog.dispose();
                     
                     // In ra log cho việc debug
-                    System.out.println("Nút 'Xem giỏ hàng' được nhấn");
+                    System.out.println("Nút 'Xem giỏ xe' được nhấn");
 
                     // Tìm CustomerDashboard ở level cao hơn
                     Component comp = thisPanel;
@@ -850,7 +850,7 @@ public class XemDatXePanel extends JPanel {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                System.out.println("Chuyển đến trang giỏ hàng");
+                                System.out.println("Chuyển đến trang giỏ xe");
                                 finalDashboard.onMenuItemClicked("gioXe");
                             }
                         });
@@ -873,7 +873,7 @@ public class XemDatXePanel extends JPanel {
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this,
-                "Không thể thêm xe vào giỏ hàng: " + gioXeController.getErrorMessage(),
+                "Không thể thêm xe vào giỏ xe: " + gioXeController.getErrorMessage(),
                 "Lỗi",
                 JOptionPane.ERROR_MESSAGE);
         }

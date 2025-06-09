@@ -343,37 +343,86 @@ public class CongNoPanel extends JPanel {
             }
         });
         // ...existing code...
-            btnRefresh.addActionListener(e -> {
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                try {
-                    int iso = congNoController.getIsolationLevel();
-                    if (iso == Connection.TRANSACTION_SERIALIZABLE) {
-                        if (snapshotCongNo == null || snapshotKhachHang == null
-                            || snapshotAllPBD == null || snapshotAllHopDong == null) {
-                            snapshotCongNo = congNoController.getAllLichSuCongNo();
-                            snapshotKhachHang = congNoController.getKhachHangCoCongNo();
-                            snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
-                            snapshotAllHopDong = hopDongController.getAllHopDong();
-                        }
-                        loadCongNoDataNon(snapshotCongNo);
-                        loadKhachHangDataNon(snapshotKhachHang);
-                    } else {
-                        snapshotCongNo = congNoController.getAllLichSuCongNo();
-                        snapshotKhachHang = congNoController.getKhachHangCoCongNo();
-                        snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
-                        snapshotAllHopDong = hopDongController.getAllHopDong();
-                        loadCongNoDataNon(snapshotCongNo);
-                        loadKhachHangDataNon(snapshotKhachHang);
-                        String msg = "Đã làm mới dữ liệu với isolation level: READ_COMMITTED (có thể thấy giao dịch mới thêm vào)";
-                        JOptionPane.showMessageDialog(this, msg, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Lỗi khi làm mới dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-                    ex.printStackTrace();
-                } finally {
-                    setCursor(Cursor.getDefaultCursor());
+//            btnRefresh.addActionListener(e -> {
+//                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//                try {
+//                    int iso = congNoController.getIsolationLevel();
+//                    if (iso == Connection.TRANSACTION_SERIALIZABLE) {
+//                        if (snapshotCongNo == null || snapshotKhachHang == null
+//                            || snapshotAllPBD == null || snapshotAllHopDong == null) {
+//                            snapshotCongNo = congNoController.getAllLichSuCongNo();
+//                            snapshotKhachHang = congNoController.getKhachHangCoCongNo();
+//                            snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
+//                            snapshotAllHopDong = hopDongController.getAllHopDong();
+//                        }
+//                        loadCongNoDataNon(snapshotCongNo);
+//                        loadKhachHangDataNon(snapshotKhachHang);
+//                    } else {
+//                        snapshotCongNo = congNoController.getAllLichSuCongNo();
+//                        snapshotKhachHang = congNoController.getKhachHangCoCongNo();
+//                        snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
+//                        snapshotAllHopDong = hopDongController.getAllHopDong();
+//                        loadCongNoDataNon(snapshotCongNo);
+//                        loadKhachHangDataNon(snapshotKhachHang);
+//                        String msg = "Đã làm mới dữ liệu với isolation level: READ_COMMITTED (có thể thấy giao dịch mới thêm vào)";
+//                        JOptionPane.showMessageDialog(this, msg, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+//                    }
+//                } catch (Exception ex) {
+//                    JOptionPane.showMessageDialog(this, "Lỗi khi làm mới dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                    ex.printStackTrace();
+//                } finally {
+//                    setCursor(Cursor.getDefaultCursor());
+//                }
+//            });
+        btnRefresh.addActionListener(e -> {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            int iso = congNoController.getIsolationLevel();
+            if (iso == Connection.TRANSACTION_SERIALIZABLE) {
+                if (snapshotCongNo == null || snapshotKhachHang == null
+                    || snapshotAllPBD == null || snapshotAllHopDong == null) {
+                    // Trường hợp hiếm gặp: snapshot chưa được tạo
+                    snapshotCongNo = congNoController.getAllLichSuCongNo();
+                    snapshotKhachHang = congNoController.getKhachHangCoCongNo();
+                    snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
+                    snapshotAllHopDong = hopDongController.getAllHopDong();
                 }
-            });
+                // Hiển thị dữ liệu từ snapshot đã có
+                loadCongNoDataNon(snapshotCongNo);
+                loadKhachHangDataNon(snapshotKhachHang);
+
+                JOptionPane.showMessageDialog(this, 
+                    "Đã làm mới dữ liệu từ snapshot với isolation level: SERIALIZABLE\n" +
+                    "(KHÔNG thấy giao dịch mới thêm vào sau khi snapshot được tạo)", 
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Đối với READ_COMMITTED, luôn lấy dữ liệu mới nhất
+                List<LichSuCongNo> congNoList = congNoController.getAllLichSuCongNo();
+                List<KhachHang> khachHangList = congNoController.getKhachHangCoCongNo();
+
+                // Cập nhật lại snapshot để sử dụng trong tương lai nếu cần
+                snapshotCongNo = congNoList;
+                snapshotKhachHang = khachHangList;
+                snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
+                snapshotAllHopDong = hopDongController.getAllHopDong();
+
+                // Hiển thị dữ liệu mới
+                loadCongNoDataNon(congNoList);
+                loadKhachHangDataNon(khachHangList);
+
+                JOptionPane.showMessageDialog(this, 
+                    "Đã làm mới dữ liệu với isolation level: READ_COMMITTED\n" +
+                    "(Có thể thấy giao dịch mới thêm vào)", 
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi làm mới dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        } finally {
+            setCursor(Cursor.getDefaultCursor());
+        }
+    });
+
         // ...existing code...
         btnExport.addActionListener(e -> exportToExcel());
         
@@ -430,6 +479,7 @@ public class CongNoPanel extends JPanel {
         }
         String maKH = tableKhachHang.getValueAt(selectedRow, 0).toString();
 
+        // Phần isolation level từ TestDeadlock
         int iso = congNoController.getIsolationLevel();
         KhachHang kh;
         if (iso == Connection.TRANSACTION_SERIALIZABLE && snapshotKhachHang != null) {
@@ -447,6 +497,7 @@ public class CongNoPanel extends JPanel {
             return;
         }
 
+        // Phần lấy dữ liệu từ TestDeadlock
         List<HopDong> hopDongs;
         List<PhieuBaoDuong> dsPBD;
         List<LichSuCongNo> lichSu;
@@ -470,10 +521,15 @@ public class CongNoPanel extends JPanel {
             lichSu = congNoController.getLichSuCongNoByKhachHang(maKH);
         }
 
+        // Phần tính toán tổng tiền hợp đồng từ origin/tram (chỉ tính hợp đồng chưa hoàn thành)
         double tongTienHopDong = 0;
         for (HopDong hd : hopDongs) {
-            tongTienHopDong += hd.getTongTien();
+            if (!"Hoàn thành".equalsIgnoreCase(hd.getTrangThai())) {
+                tongTienHopDong += hd.getTongTien();
+            }
         }
+
+        // Phần xử lý phiếu bảo dưỡng (giữ nguyên)
         double tongTienPBD = 0;
         DefaultTableModel modelPBD = new DefaultTableModel(new String[]{"Mã phiếu", "Ngày BD", "Xe", "Tổng tiền"}, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
@@ -489,6 +545,7 @@ public class CongNoPanel extends JPanel {
                 });
             }
         }
+
         // Lấy lịch sử công nợ
         double tongPhatSinh = 0;
         DefaultTableModel modelPhatSinh = new DefaultTableModel(new String[]{"Mã LS", "Ngày GD", "Số tiền", "Ghi chú"}, 0) {
@@ -519,74 +576,77 @@ public class CongNoPanel extends JPanel {
         }
         double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
 
-    // Tạo dialog chi tiết
-    JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết tổng nợ", true);
-    dialog.setSize(800, 650);
-    dialog.setLocationRelativeTo(this);
-    JPanel panel = new JPanel(new BorderLayout(10, 10));
-    panel.setBorder(new EmptyBorder(15, 15, 15, 15));
-    // Thông tin KH
-    JPanel infoPanel = new JPanel(new GridLayout(0, 2, 10, 8));
-    infoPanel.setBorder(BorderFactory.createTitledBorder("Thông tin khách hàng"));
-    infoPanel.add(new JLabel("Mã KH:")); infoPanel.add(new JLabel(kh.getMaKH()));
-    infoPanel.add(new JLabel("Họ tên:")); infoPanel.add(new JLabel(kh.getHoTen()));
-    infoPanel.add(new JLabel("Tổng nợ hiện tại:")); infoPanel.add(new JLabel(currencyFormat.format(kh.getTongTienNo()) + " VNĐ"));
-    panel.add(infoPanel, BorderLayout.NORTH);
-    // Tabs chi tiết
-    javax.swing.JTabbedPane tabbedPane = new javax.swing.JTabbedPane();
-    // Tab phiếu bảo dưỡng
-    JPanel pbdPanel = new JPanel(new BorderLayout());
-    pbdPanel.add(new JLabel("Danh sách phiếu bảo dưỡng (Khách gây hư hại):", JLabel.LEFT), BorderLayout.NORTH);
-    JTable tablePBD = new JTable(modelPBD); tablePBD.setRowHeight(28);
-    pbdPanel.add(new JScrollPane(tablePBD), BorderLayout.CENTER);
-    pbdPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongTienPBD) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
-    tabbedPane.addTab("Phiếu bảo dưỡng", pbdPanel);
-    // Tab phát sinh
-    JPanel psPanel = new JPanel(new BorderLayout());
-    psPanel.add(new JLabel("Danh sách giao dịch PHÁT SINH:", JLabel.LEFT), BorderLayout.NORTH);
-    JTable tablePS = new JTable(modelPhatSinh); tablePS.setRowHeight(28);
-    psPanel.add(new JScrollPane(tablePS), BorderLayout.CENTER);
-    psPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongPhatSinh) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
-    tabbedPane.addTab("Phát sinh", psPanel);
-    // Tab thanh toán
-    JPanel ttPanel = new JPanel(new BorderLayout());
-    ttPanel.add(new JLabel("Danh sách giao dịch THANH TOÁN:", JLabel.LEFT), BorderLayout.NORTH);
-    JTable tableTT = new JTable(modelThanhToan); tableTT.setRowHeight(28);
-    ttPanel.add(new JScrollPane(tableTT), BorderLayout.CENTER);
-    ttPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongThanhToan) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
-    tabbedPane.addTab("Thanh toán", ttPanel);
-    // Tab hợp đồng
-    JPanel hdPanel = new JPanel(new BorderLayout());
-    DefaultTableModel modelHD = new DefaultTableModel(new String[]{"Mã HĐ", "Ngày lập", "Tổng tiền", "Trạng thái"}, 0) {
-        public boolean isCellEditable(int r, int c) { return false; }
-    };
-    for (HopDong hd : hopDongs) {
-        modelHD.addRow(new Object[]{
-            hd.getMaHD(),
-            hd.getNgayLap() != null ? dateFormat.format(hd.getNgayLap()) : "",
-            currencyFormat.format(hd.getTongTien()) + " VNĐ",
-            hd.getTrangThai()
-        });
+        // Tạo dialog chi tiết
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết tổng nợ", true);
+        dialog.setSize(800, 650);
+        dialog.setLocationRelativeTo(this);
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        // Thông tin KH
+        JPanel infoPanel = new JPanel(new GridLayout(0, 2, 10, 8));
+        infoPanel.setBorder(BorderFactory.createTitledBorder("Thông tin khách hàng"));
+        infoPanel.add(new JLabel("Mã KH:")); infoPanel.add(new JLabel(kh.getMaKH()));
+        infoPanel.add(new JLabel("Họ tên:")); infoPanel.add(new JLabel(kh.getHoTen()));
+        infoPanel.add(new JLabel("Tổng nợ hiện tại:")); infoPanel.add(new JLabel(currencyFormat.format(kh.getTongTienNo()) + " VNĐ"));
+        panel.add(infoPanel, BorderLayout.NORTH);
+        // Tabs chi tiết
+        javax.swing.JTabbedPane tabbedPane = new javax.swing.JTabbedPane();
+        // Tab phiếu bảo dưỡng
+        JPanel pbdPanel = new JPanel(new BorderLayout());
+        pbdPanel.add(new JLabel("Danh sách phiếu bảo dưỡng (Khách gây hư hại):", JLabel.LEFT), BorderLayout.NORTH);
+        JTable tablePBD = new JTable(modelPBD); tablePBD.setRowHeight(28);
+        pbdPanel.add(new JScrollPane(tablePBD), BorderLayout.CENTER);
+        pbdPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongTienPBD) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
+        tabbedPane.addTab("Phiếu bảo dưỡng", pbdPanel);
+        // Tab phát sinh
+        JPanel psPanel = new JPanel(new BorderLayout());
+        psPanel.add(new JLabel("Danh sách giao dịch PHÁT SINH:", JLabel.LEFT), BorderLayout.NORTH);
+        JTable tablePS = new JTable(modelPhatSinh); tablePS.setRowHeight(28);
+        psPanel.add(new JScrollPane(tablePS), BorderLayout.CENTER);
+        psPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongPhatSinh) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
+        tabbedPane.addTab("Phát sinh", psPanel);
+        // Tab thanh toán
+        JPanel ttPanel = new JPanel(new BorderLayout());
+        ttPanel.add(new JLabel("Danh sách giao dịch THANH TOÁN:", JLabel.LEFT), BorderLayout.NORTH);
+        JTable tableTT = new JTable(modelThanhToan); tableTT.setRowHeight(28);
+        ttPanel.add(new JScrollPane(tableTT), BorderLayout.CENTER);
+        ttPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongThanhToan) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
+        tabbedPane.addTab("Thanh toán", ttPanel);
+        // Tab hợp đồng (từ origin/tram - chỉ hiển thị hợp đồng chưa hoàn thành)
+        JPanel hdPanel = new JPanel(new BorderLayout());
+        DefaultTableModel modelHD = new DefaultTableModel(new String[]{"Mã HĐ", "Ngày lập", "Tổng tiền", "Trạng thái"}, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        for (HopDong hd : hopDongs) {
+            if (!"Hoàn thành".equalsIgnoreCase(hd.getTrangThai())) {
+                modelHD.addRow(new Object[]{
+                    hd.getMaHD(),
+                    hd.getNgayLap() != null ? dateFormat.format(hd.getNgayLap()) : "",
+                    currencyFormat.format(hd.getTongTien()) + " VNĐ",
+                    hd.getTrangThai()
+                });
+            }
+        }
+        JTable tableHD = new JTable(modelHD); tableHD.setRowHeight(28);
+        hdPanel.add(new JLabel("Danh sách hợp đồng:", JLabel.LEFT), BorderLayout.NORTH);
+        hdPanel.add(new JScrollPane(tableHD), BorderLayout.CENTER);
+        hdPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongTienHopDong) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
+        tabbedPane.addTab("Hợp đồng", hdPanel);
+        // Tổng kết
+        JPanel summaryPanel = new JPanel(new GridLayout(0, 1, 5, 5));
+        summaryPanel.setBorder(BorderFactory.createTitledBorder("Tổng kết"));
+        summaryPanel.add(new JLabel("Tổng tiền bảo dưỡng (Khách gây hư hại): +" + currencyFormat.format(tongTienPBD) + " VNĐ"));
+        summaryPanel.add(new JLabel("Tổng phát sinh: +" + currencyFormat.format(tongPhatSinh) + " VNĐ"));
+        summaryPanel.add(new JLabel("Tổng tiền hợp đồng: +" + currencyFormat.format(tongTienHopDong) + " VNĐ"));
+        summaryPanel.add(new JLabel("Tổng thanh toán: -" + currencyFormat.format(tongThanhToan) + " VNĐ"));
+        summaryPanel.add(new JLabel("--------------------------------------"));
+        summaryPanel.add(new JLabel("TỔNG NỢ: " + currencyFormat.format(tongNo) + " VNĐ", JLabel.RIGHT));
+        panel.add(tabbedPane, BorderLayout.CENTER);
+        panel.add(summaryPanel, BorderLayout.SOUTH);
+        dialog.setContentPane(panel);
+        dialog.setVisible(true);
     }
-    JTable tableHD = new JTable(modelHD); tableHD.setRowHeight(28);
-    hdPanel.add(new JLabel("Danh sách hợp đồng:", JLabel.LEFT), BorderLayout.NORTH);
-    hdPanel.add(new JScrollPane(tableHD), BorderLayout.CENTER);
-    hdPanel.add(new JLabel("Tổng cộng: " + currencyFormat.format(tongTienHopDong) + " VNĐ", JLabel.RIGHT), BorderLayout.SOUTH);
-    tabbedPane.addTab("Hợp đồng", hdPanel);
-    // Tổng kết
-    JPanel summaryPanel = new JPanel(new GridLayout(0, 1, 5, 5));
-    summaryPanel.setBorder(BorderFactory.createTitledBorder("Tổng kết"));
-    summaryPanel.add(new JLabel("Tổng tiền bảo dưỡng (Khách gây hư hại): +" + currencyFormat.format(tongTienPBD) + " VNĐ"));
-    summaryPanel.add(new JLabel("Tổng phát sinh: +" + currencyFormat.format(tongPhatSinh) + " VNĐ"));
-    summaryPanel.add(new JLabel("Tổng tiền hợp đồng: +" + currencyFormat.format(tongTienHopDong) + " VNĐ"));
-    summaryPanel.add(new JLabel("Tổng thanh toán: -" + currencyFormat.format(tongThanhToan) + " VNĐ"));
-    summaryPanel.add(new JLabel("--------------------------------------"));
-    summaryPanel.add(new JLabel("TỔNG NỢ: " + currencyFormat.format(tongNo) + " VNĐ", JLabel.RIGHT));
-    panel.add(tabbedPane, BorderLayout.CENTER);
-    panel.add(summaryPanel, BorderLayout.SOUTH);
-    dialog.setContentPane(panel);
-    dialog.setVisible(true);
-}
+
     
     public void loadKhachHangData() {
         modelKhachHang.setRowCount(0); // Xóa dữ liệu cũ
@@ -692,7 +752,43 @@ public class CongNoPanel extends JPanel {
     
     //Đoạn thêm mới
     // Thêm hàm applyIsolationLevel
-    private void applyIsolationLevel(String level) {
+//    private void applyIsolationLevel(String level) {
+//        try {
+//            // Kết thúc phiên xem báo cáo cũ
+//            congNoController.endReportView();
+//
+//            // Thiết lập isolation level mới
+//            if ("SERIALIZABLE".equals(level)) {
+//                congNoController.setIsolationLevel(Connection.TRANSACTION_SERIALIZABLE);
+//            } else {
+//                congNoController.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
+//            }
+//
+//
+//            // Bắt đầu phiên xem báo cáo mới với isolation level đã chọn
+//            congNoController.startReportView();
+//
+//            // QUAN TRỌNG: Thực hiện ngay một truy vấn để bắt đầu transaction
+//            // và thiết lập snapshot cho SERIALIZABLE
+//            congNoController.getAllLichSuCongNo();
+//
+//            // Hiển thị thông báo và hướng dẫn
+//            JOptionPane.showMessageDialog(this,
+//                "Đã áp dụng isolation level: " + level + "\n\n" +
+//                "Hướng dẫn demo Phantom Read:\n" +
+//                "1. ĐÃ tạo transaction với isolation level " + level + "\n" +
+//                "2. Mở instance khác và thêm giao dịch mới\n" +
+//                "3. Quay lại đây và nhấn 'Làm mới'\n" +
+//                "4. Với READ_COMMITTED: Sẽ thấy giao dịch mới\n" +
+//                "5. Với SERIALIZABLE: Sẽ KHÔNG thấy giao dịch mới",
+//                "Thiết lập thành công", JOptionPane.INFORMATION_MESSAGE);
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+//        }
+//    }
+     private void applyIsolationLevel(String level) {
         try {
             // Kết thúc phiên xem báo cáo cũ
             congNoController.endReportView();
@@ -704,23 +800,41 @@ public class CongNoPanel extends JPanel {
                 congNoController.setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
             }
 
-
             // Bắt đầu phiên xem báo cáo mới với isolation level đã chọn
             congNoController.startReportView();
 
-            // QUAN TRỌNG: Thực hiện ngay một truy vấn để bắt đầu transaction
+            // QUAN TRỌNG: Thực hiện ngay các truy vấn để bắt đầu transaction
             // và thiết lập snapshot cho SERIALIZABLE
-            congNoController.getAllLichSuCongNo();
+            if ("SERIALIZABLE".equals(level)) {
+                // Lấy dữ liệu và tạo snapshot ngay lập tức
+                snapshotCongNo = congNoController.getAllLichSuCongNo();
+                snapshotKhachHang = congNoController.getKhachHangCoCongNo();
+                snapshotAllPBD = baoDuongController.getAllPhieuBaoDuong();
+                snapshotAllHopDong = hopDongController.getAllHopDong();
+
+                // Hiển thị dữ liệu từ snapshot
+                loadCongNoDataNon(snapshotCongNo);
+                loadKhachHangDataNon(snapshotKhachHang);
+            } else {
+                // Đối với READ_COMMITTED, cũng lấy dữ liệu mới nhất nhưng không cần lưu snapshot
+                List<LichSuCongNo> congNoList = congNoController.getAllLichSuCongNo();
+                List<KhachHang> khachHangList = congNoController.getKhachHangCoCongNo();
+
+                // Hiển thị dữ liệu mới
+                loadCongNoDataNon(congNoList);
+                loadKhachHangDataNon(khachHangList);
+            }
 
             // Hiển thị thông báo và hướng dẫn
             JOptionPane.showMessageDialog(this,
                 "Đã áp dụng isolation level: " + level + "\n\n" +
                 "Hướng dẫn demo Phantom Read:\n" +
-                "1. ĐÃ tạo transaction với isolation level " + level + "\n" +
+                "1. ĐÃ tạo transaction với isolation level " + level + 
+                (("SERIALIZABLE".equals(level)) ? " và snapshot dữ liệu đã được tạo" : "") + "\n" +
                 "2. Mở instance khác và thêm giao dịch mới\n" +
                 "3. Quay lại đây và nhấn 'Làm mới'\n" +
                 "4. Với READ_COMMITTED: Sẽ thấy giao dịch mới\n" +
-                "5. Với SERIALIZABLE: Sẽ KHÔNG thấy giao dịch mới",
+                "5. Với SERIALIZABLE: Sẽ KHÔNG thấy giao dịch mới vì đang sử dụng snapshot",
                 "Thiết lập thành công", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (Exception e) {
