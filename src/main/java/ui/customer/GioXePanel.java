@@ -157,17 +157,17 @@ public class GioXePanel extends JPanel {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBorder(new LineBorder(new Color(230, 230, 230)));
         
-        // Panel hiển thị khi giỏ hàng trống
+        // Panel hiển thị khi giỏ xe trống
         emptyCartPanel = new JPanel();
         emptyCartPanel.setLayout(new BoxLayout(emptyCartPanel, BoxLayout.Y_AXIS));
         emptyCartPanel.setOpaque(false);
         
-        JLabel emptyLabel = new JLabel("Giỏ hàng trống", JLabel.CENTER);
+        JLabel emptyLabel = new JLabel("Giỏ xe trống", JLabel.CENTER);
         emptyLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 18));
         emptyLabel.setForeground(new Color(120, 120, 120));
         emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        JLabel suggestLabel = new JLabel("Hãy thêm xe vào giỏ hàng để đặt thuê", JLabel.CENTER);
+        JLabel suggestLabel = new JLabel("Hãy thêm xe vào giỏ xe để đặt thuê", JLabel.CENTER);
         suggestLabel.setFont(new Font(FlatRobotoFont.FAMILY, Font.ITALIC, 16));
         suggestLabel.setForeground(new Color(120, 120, 120));
         suggestLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -212,7 +212,7 @@ public class GioXePanel extends JPanel {
         emptyCartPanel.add(Box.createVerticalStrut(20));
         emptyCartPanel.add(Box.createVerticalGlue());
         
-        // Card layout để hiển thị bảng hoặc thông báo giỏ hàng trống
+        // Card layout để hiển thị bảng hoặc thông báo giỏ xe trống
         centerPanel = new JPanel(new CardLayout());
         centerPanel.setOpaque(false);
         centerPanel.add(scrollPane, "table");
@@ -249,7 +249,7 @@ public class GioXePanel extends JPanel {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonsPanel.setOpaque(false);
         
-        clearCartButton = new JButton("Xóa Giỏ Hàng");
+        clearCartButton = new JButton("Xóa Giỏ xe");
         clearCartButton.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 14));
         clearCartButton.setForeground(new Color(222, 0, 0));
         clearCartButton.setFocusPainted(false);
@@ -308,7 +308,7 @@ public class GioXePanel extends JPanel {
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                "Lỗi khi tải giỏ hàng: " + e.getMessage(),
+                "Lỗi khi tải giỏ xe: " + e.getMessage(),
                 "Lỗi",
                 JOptionPane.ERROR_MESSAGE
             );
@@ -331,7 +331,7 @@ public class GioXePanel extends JPanel {
         totalItemsLabel.setText(totalItems + " xe");
         totalPriceLabel.setText(moneyFormat.format(totalPrice) + " VND");
         
-        // Kích hoạt/vô hiệu hóa nút thanh toán và xóa giỏ hàng
+        // Kích hoạt/vô hiệu hóa nút thanh toán và xóa giỏ xe
         boolean hasItems = totalItems > 0;
         checkoutButton.setEnabled(hasItems);
         clearCartButton.setEnabled(hasItems);
@@ -348,7 +348,7 @@ public class GioXePanel extends JPanel {
         
         GioXe gioXe = danhSachGioXe.get(rowIndex);
         
-        // Mở dialog xem chi tiết xe từ giỏ hàng
+        // Mở dialog xem chi tiết xe từ giỏ xe
         XemChiTietXeDialog dialog = new XemChiTietXeDialog(
             (JFrame) SwingUtilities.getWindowAncestor(this),
             gioXe
@@ -369,8 +369,8 @@ public class GioXePanel extends JPanel {
         
         if (danhSachGioXe.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                "Giỏ hàng trống. Vui lòng thêm xe vào giỏ hàng trước khi đặt xe.",
-                "Giỏ hàng trống",
+                "Giỏ xe trống. Vui lòng thêm xe vào giỏ xe trước khi đặt xe.",
+                "Giỏ xe trống",
                 JOptionPane.INFORMATION_MESSAGE
             );
             return;
@@ -496,7 +496,7 @@ public class GioXePanel extends JPanel {
         }
         
         int confirm = JOptionPane.showConfirmDialog(this,
-            "Bạn có chắc chắn muốn xóa tất cả xe trong giỏ hàng?",
+            "Bạn có chắc chắn muốn xóa tất cả xe trong giỏ xe?",
             "Xác nhận xóa",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.QUESTION_MESSAGE
@@ -507,14 +507,14 @@ public class GioXePanel extends JPanel {
             
             if (result) {
                 JOptionPane.showMessageDialog(this,
-                    "Đã xóa tất cả xe trong giỏ hàng.",
+                    "Đã xóa tất cả xe trong giỏ xe.",
                     "Thành công",
                     JOptionPane.INFORMATION_MESSAGE
                 );
                 loadData();
             } else {
                 JOptionPane.showMessageDialog(this,
-                    "Không thể xóa giỏ hàng: " + gioXeController.getErrorMessage(),
+                    "Không thể xóa giỏ xe: " + gioXeController.getErrorMessage(),
                     "Lỗi",
                     JOptionPane.ERROR_MESSAGE
                 );
@@ -530,7 +530,7 @@ public class GioXePanel extends JPanel {
         GioXe gioXe = danhSachGioXe.get(rowIndex);
         
         int confirm = JOptionPane.showConfirmDialog(this,
-            "Xóa xe " + gioXe.getTenXe() + " khỏi giỏ hàng?",
+            "Xóa xe " + gioXe.getTenXe() + " khỏi giỏ xe?",
             "Xác nhận xóa",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.QUESTION_MESSAGE
@@ -543,7 +543,7 @@ public class GioXePanel extends JPanel {
                 loadData();
             } else {
                 JOptionPane.showMessageDialog(this,
-                    "Không thể xóa xe khỏi giỏ hàng: " + gioXeController.getErrorMessage(),
+                    "Không thể xóa xe khỏi giỏ xe: " + gioXeController.getErrorMessage(),
                     "Lỗi",
                     JOptionPane.ERROR_MESSAGE
                 );

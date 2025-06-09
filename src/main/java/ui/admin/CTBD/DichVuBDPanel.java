@@ -227,43 +227,92 @@ public class DichVuBDPanel extends JPanel {
         dialog.setVisible(true);
     }
     
-private void exportToExcel() {
-    JFileChooser fileChooser = new JFileChooser();
-    fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
-    String defaultName = "DichVuBDExport_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date()) + ".xlsx";
-    fileChooser.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop/" + defaultName));
-    int userSelection = fileChooser.showSaveDialog(this);
-    if (userSelection != JFileChooser.APPROVE_OPTION) return;
-    File fileToSave = fileChooser.getSelectedFile();
-    try (Workbook workbook = new XSSFWorkbook()) {
-        Sheet sheet = workbook.createSheet("DichVuBD");
-        // Header
-        Row headerRow = sheet.createRow(0);
-        for (int i = 0; i < modelDichVu.getColumnCount(); i++) {
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(modelDichVu.getColumnName(i));
-        }
-        // Data
-        for (int row = 0; row < modelDichVu.getRowCount(); row++) {
-            Row excelRow = sheet.createRow(row + 1);
-            for (int col = 0; col < modelDichVu.getColumnCount(); col++) {
-                Object value = modelDichVu.getValueAt(row, col);
-                excelRow.createCell(col).setCellValue(value != null ? value.toString() : "");
+//private void exportToExcel() {
+//    JFileChooser fileChooser = new JFileChooser();
+//    fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+//    String defaultName = "DichVuBDExport_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date()) + ".xlsx";
+//    fileChooser.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop/" + defaultName));
+//    int userSelection = fileChooser.showSaveDialog(this);
+//    if (userSelection != JFileChooser.APPROVE_OPTION) return;
+//    File fileToSave = fileChooser.getSelectedFile();
+//    try (Workbook workbook = new XSSFWorkbook()) {
+//        Sheet sheet = workbook.createSheet("DichVuBD");
+//        // Header
+//        Row headerRow = sheet.createRow(0);
+//        for (int i = 0; i < modelDichVu.getColumnCount(); i++) {
+//            Cell cell = headerRow.createCell(i);
+//            cell.setCellValue(modelDichVu.getColumnName(i));
+//        }
+//        // Data
+//        for (int row = 0; row < modelDichVu.getRowCount(); row++) {
+//            Row excelRow = sheet.createRow(row + 1);
+//            for (int col = 0; col < modelDichVu.getColumnCount(); col++) {
+//                Object value = modelDichVu.getValueAt(row, col);
+//                excelRow.createCell(col).setCellValue(value != null ? value.toString() : "");
+//            }
+//        }
+//        // Auto-size columns
+//        for (int i = 0; i < modelDichVu.getColumnCount(); i++) {
+//            sheet.autoSizeColumn(i);
+//        }
+//        try (FileOutputStream fos = new FileOutputStream(fileToSave)) {
+//            workbook.write(fos);
+//        }
+//        JOptionPane.showMessageDialog(this, "Xuất Excel thành công:\n" + fileToSave.getAbsolutePath(), "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+//    } catch (IOException ex) {
+//        ex.printStackTrace();
+//        JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+//    }
+    private void exportToExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+        String defaultName = "DichVuBDExport_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date()) + ".xlsx";
+        fileChooser.setSelectedFile(new File(System.getProperty("user.home") + "/Desktop/" + defaultName));
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection != JFileChooser.APPROVE_OPTION) return;
+        File fileToSave = fileChooser.getSelectedFile();
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("DichVuBD");
+
+            // Những cột cần xuất (loại bỏ cột "Thao tác")
+            String[] exportColumns = {"Mã DV", "Tên Dịch Vụ", "Giá Dịch Vụ"};
+
+            // Tạo header
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < exportColumns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(exportColumns[i]);
             }
+
+            // Đổ dữ liệu - chỉ lấy 3 cột đầu, bỏ cột "Thao tác"
+            for (int row = 0; row < modelDichVu.getRowCount(); row++) {
+                Row excelRow = sheet.createRow(row + 1);
+                // Chỉ lấy 3 cột đầu tiên (0, 1, 2)
+                for (int col = 0; col < 3; col++) {
+                    Object value = null;
+                    if (row < modelDichVu.getRowCount() && col < modelDichVu.getColumnCount()) {
+                        value = modelDichVu.getValueAt(row, col);
+                    }
+                    excelRow.createCell(col).setCellValue(value != null ? value.toString() : "");
+                }
+            }
+
+            // Auto-size columns
+            for (int i = 0; i < exportColumns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(fileToSave)) {
+                workbook.write(fos);
+            }
+            JOptionPane.showMessageDialog(this, "Xuất Excel thành công:\n" + fileToSave.getAbsolutePath(), "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
-        // Auto-size columns
-        for (int i = 0; i < modelDichVu.getColumnCount(); i++) {
-            sheet.autoSizeColumn(i);
-        }
-        try (FileOutputStream fos = new FileOutputStream(fileToSave)) {
-            workbook.write(fos);
-        }
-        JOptionPane.showMessageDialog(this, "Xuất Excel thành công:\n" + fileToSave.getAbsolutePath(), "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-    } catch (IOException ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
-}
+
+
     
     // Inner class for DichVu Dialog
     class DichVuDialog extends JDialog {

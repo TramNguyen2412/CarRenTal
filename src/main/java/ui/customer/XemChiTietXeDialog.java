@@ -18,7 +18,7 @@ public class XemChiTietXeDialog extends JDialog {
     private DecimalFormat moneyFormat = new DecimalFormat("#,###");
     
     public XemChiTietXeDialog(JFrame parent, GioXe gioXe) {
-        super(parent, "Chi tiết xe trong giỏ hàng", true);
+        super(parent, "Chi tiết xe trong giỏ xe", true);
         this.gioXe = gioXe;
         
         initComponents();

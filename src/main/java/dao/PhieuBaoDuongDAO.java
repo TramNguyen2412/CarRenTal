@@ -437,15 +437,15 @@ public String updatePhieuBaoDuongFull(PhieuBaoDuong phieu, List<ChiTietBaoDuong>
         conn.setAutoCommit(false);
 
         // Update phiếu
-        String sqlUpdatePhieu = "UPDATE PhieuBaoDuong SET MaXe=?, MaKH=?, NgayBD=?, MaNV=?, LoaiBD=?, TongTienBD=? WHERE MaBD=?";
+        String sqlUpdatePhieu = "UPDATE PhieuBaoDuong SET MaXe=?, MaKH=?, NgayBD=?, MaNV=?, LoaiBD=? WHERE MaBD=?";
         try (PreparedStatement psPhieu = conn.prepareStatement(sqlUpdatePhieu)) {
             psPhieu.setString(1, phieu.getMaXe());
             psPhieu.setString(2, phieu.getMaKH());
             psPhieu.setDate(3, new java.sql.Date(phieu.getNgayBD().getTime()));
             psPhieu.setString(4, phieu.getMaNV());
             psPhieu.setString(5, phieu.getLoaiBD());
-            psPhieu.setDouble(6, phieu.getTongTienBD());
-            psPhieu.setString(7, phieu.getMaBD());
+         //   psPhieu.setDouble(6, phieu.getTongTienBD());
+            psPhieu.setString(6, phieu.getMaBD());
             psPhieu.executeUpdate();
         }
 

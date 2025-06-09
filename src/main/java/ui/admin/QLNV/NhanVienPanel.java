@@ -505,6 +505,56 @@ public class NhanVienPanel extends JPanel {
         tablePanel.updateData(dsNV);
     }
 
+//    private void exportToCsv() {
+//        JFileChooser chooser = new JFileChooser();
+//        chooser.setDialogTitle("Chọn nơi lưu file CSV");
+//        chooser.setFileFilter(new FileNameExtensionFilter("CSV file", "csv"));
+//        chooser.setSelectedFile(new File("DanhSachNhanVien.csv"));
+//
+//        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+//            File file = chooser.getSelectedFile();
+//            String path = file.getAbsolutePath();
+//            if (!path.toLowerCase().endsWith(".csv")) {
+//                path += ".csv";
+//                file = new File(path);
+//            }
+//            try (FileWriter writer = new FileWriter(file)) {
+//                DefaultTableModel model = (DefaultTableModel) tablePanel.getTable().getModel();
+//                // header
+//                for (int c = 0; c < model.getColumnCount(); c++) {
+//                    writer.append(model.getColumnName(c));
+//                    if (c < model.getColumnCount() - 1)
+//                        writer.append(",");
+//                }
+//                writer.append("\n");
+//                // rows
+//                for (int r = 0; r < model.getRowCount(); r++) {
+//                    for (int c = 0; c < model.getColumnCount(); c++) {
+//                        Object val = model.getValueAt(r, c);
+//                        String cellValue = (val == null) ? "" : val.toString();
+//                        // Escape commas and quotes in cell value
+//                        if (cellValue.contains(",") || cellValue.contains("\"") || cellValue.contains("\n")) {
+//                            cellValue = "\"" + cellValue.replace("\"", "\"\"") + "\"";
+//                        }
+//                        writer.append(cellValue);
+//                        if (c < model.getColumnCount() - 1)
+//                            writer.append(",");
+//                    }
+//                    writer.append("\n");
+//                }
+//                JOptionPane.showMessageDialog(this,
+//                        "Xuất danh sách thành công!\nFile được lưu tại: " + path,
+//                        "Thông báo",
+//                        JOptionPane.INFORMATION_MESSAGE);
+//            } catch (Exception ex) {
+//                JOptionPane.showMessageDialog(this,
+//                        "Lỗi khi xuất file: " + ex.getMessage(),
+//                        "Lỗi",
+//                        JOptionPane.ERROR_MESSAGE);
+//                ex.printStackTrace();
+//            }
+//        }
+//    }
     private void exportToCsv() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Chọn nơi lưu file CSV");
@@ -518,30 +568,38 @@ public class NhanVienPanel extends JPanel {
                 path += ".csv";
                 file = new File(path);
             }
+
             try (FileWriter writer = new FileWriter(file)) {
                 DefaultTableModel model = (DefaultTableModel) tablePanel.getTable().getModel();
-                // header
-                for (int c = 0; c < model.getColumnCount(); c++) {
+                int columnCount = model.getColumnCount();
+                int lastColumnIndex = columnCount - 1; // Thường là cột "Thao tác"
+
+                // Header - bỏ qua cột cuối (Thao tác)
+                for (int c = 0; c < lastColumnIndex; c++) {
                     writer.append(model.getColumnName(c));
-                    if (c < model.getColumnCount() - 1)
+                    if (c < lastColumnIndex - 1)
                         writer.append(",");
                 }
                 writer.append("\n");
-                // rows
+
+                // Rows - bỏ qua cột cuối (Thao tác)
                 for (int r = 0; r < model.getRowCount(); r++) {
-                    for (int c = 0; c < model.getColumnCount(); c++) {
+                    for (int c = 0; c < lastColumnIndex; c++) {
                         Object val = model.getValueAt(r, c);
                         String cellValue = (val == null) ? "" : val.toString();
+
                         // Escape commas and quotes in cell value
                         if (cellValue.contains(",") || cellValue.contains("\"") || cellValue.contains("\n")) {
                             cellValue = "\"" + cellValue.replace("\"", "\"\"") + "\"";
                         }
+
                         writer.append(cellValue);
-                        if (c < model.getColumnCount() - 1)
+                        if (c < lastColumnIndex - 1)
                             writer.append(",");
                     }
                     writer.append("\n");
                 }
+
                 JOptionPane.showMessageDialog(this,
                         "Xuất danh sách thành công!\nFile được lưu tại: " + path,
                         "Thông báo",
@@ -555,4 +613,5 @@ public class NhanVienPanel extends JPanel {
             }
         }
     }
+
 }

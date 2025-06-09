@@ -375,7 +375,11 @@ public void showTongNoDetailDialog() {
     List<HopDong> hopDongs = hopDongController.getHopDongByKhachHang(kh.getMaKH());
     double tongTienHopDong = 0;
     for (HopDong hd : hopDongs) {
-        tongTienHopDong += hd.getTongTien();
+        if (!"Hoàn thành".equalsIgnoreCase(hd.getTrangThai())) {
+            tongTienHopDong += hd.getTongTien();
+        }
+      //  tongTienHopDong += hd.getTongTien();
+      
     }
     // Lấy danh sách phiếu bảo dưỡng loại "Khách gây hư hại"
     List<model.PhieuBaoDuong> dsPBD = baoDuongController.getPhieuBaoDuongByKhachHangAndLoai(maKH, "Khách gây hư hại");
@@ -468,12 +472,14 @@ double tongNo = tongTienPBD + tongPhatSinh - tongThanhToan + tongTienHopDong;
         public boolean isCellEditable(int r, int c) { return false; }
     };
     for (HopDong hd : hopDongs) {
-        modelHD.addRow(new Object[]{
-            hd.getMaHD(),
-            hd.getNgayLap() != null ? dateFormat.format(hd.getNgayLap()) : "",
-            currencyFormat.format(hd.getTongTien()) + " VNĐ",
-            hd.getTrangThai()
-        });
+        if (!"Hoàn thành".equalsIgnoreCase(hd.getTrangThai())) {
+            modelHD.addRow(new Object[]{
+                hd.getMaHD(),
+                hd.getNgayLap() != null ? dateFormat.format(hd.getNgayLap()) : "",
+                currencyFormat.format(hd.getTongTien()) + " VNĐ",
+                hd.getTrangThai()
+            });
+        }
     }
     JTable tableHD = new JTable(modelHD); tableHD.setRowHeight(28);
     hdPanel.add(new JLabel("Danh sách hợp đồng:", JLabel.LEFT), BorderLayout.NORTH);
