@@ -177,16 +177,36 @@ public class GiaoNhanXeDAO {
 
     public List<GiaoNhanXe> searchGiaoNhanXe(String keyword) {
         List<GiaoNhanXe> danhSachGiaoNhan = new ArrayList<>();
-        String sql = "SELECT * FROM GIAONHANXE WHERE UPPER(MaGiaoNhan) LIKE ? OR UPPER(MaHD) LIKE ? OR UPPER(MaXe) LIKE ? OR UPPER(MaNV) LIKE ? OR UPPER(TrangThaiXe) LIKE ? OR UPPER(TrangThaiGN) LIKE ?";
-        String searchKeyword = "%" + (keyword == null ? "" : keyword.toUpperCase()) + "%";
+        
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllGiaoNhanXe();
+        }
+        
+        // Tách keyword thành các từ riêng biệt
+        String[] keywords = keyword.trim().split("\\s+");
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM GIAONHANXE WHERE ");
+        
+        List<String> conditions = new ArrayList<>();
+        for (int i = 0; i < keywords.length; i++) {
+            conditions.add("(UPPER(MaGiaoNhan) LIKE ? OR UPPER(MaHD) LIKE ? OR UPPER(MaXe) LIKE ? OR UPPER(MaNV) LIKE ? OR UPPER(TrangThaiXe) LIKE ? OR UPPER(TrangThaiGN) LIKE ?)");
+        }
+        
+        sqlBuilder.append(String.join(" AND ", conditions));
+        
         try (Connection conn = getValidConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, searchKeyword);
-            pstmt.setString(2, searchKeyword);
-            pstmt.setString(3, searchKeyword);
-            pstmt.setString(4, searchKeyword);
-            pstmt.setString(5, searchKeyword);
-            pstmt.setString(6, searchKeyword);
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+            
+            int paramIndex = 1;
+            for (String word : keywords) {
+                String searchWord = "%" + word.toUpperCase() + "%";
+                pstmt.setString(paramIndex++, searchWord); // MaGiaoNhan
+                pstmt.setString(paramIndex++, searchWord); // MaHD
+                pstmt.setString(paramIndex++, searchWord); // MaXe
+                pstmt.setString(paramIndex++, searchWord); // MaNV
+                pstmt.setString(paramIndex++, searchWord); // TrangThaiXe
+                pstmt.setString(paramIndex++, searchWord); // TrangThaiGN
+            }
+            
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     GiaoNhanXe gn = new GiaoNhanXe();

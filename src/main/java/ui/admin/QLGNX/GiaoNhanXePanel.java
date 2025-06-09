@@ -2,6 +2,7 @@ package ui.admin.QLGNX;
 
 import controller.GiaoNhanXeController;
 import model.GiaoNhanXe;
+import ui.admin.QLGNX.GiaoNhanXeDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,11 +72,17 @@ public class GiaoNhanXePanel extends JPanel {
             loadDataToTable();
         });
 
+        // Thêm nút Demo Concurrency
+        JButton btnDemoConcurrency = new JButton("Demo Concurrency");
+        styleButton(btnDemoConcurrency, new Color(156, 39, 176), 140); // Purple color
+        btnDemoConcurrency.addActionListener(e -> showConcurrencyDemo());
+
         pnlBottomButtons.add(btnThem);
         pnlBottomButtons.add(btnSua);
         pnlBottomButtons.add(btnXoa);
         pnlBottomButtons.add(btnXemChiTiet);
         pnlBottomButtons.add(btnRefresh);
+        pnlBottomButtons.add(btnDemoConcurrency); // Thêm nút mới
         add(pnlBottomButtons, BorderLayout.SOUTH);
     }
 
@@ -169,7 +176,7 @@ public class GiaoNhanXePanel extends JPanel {
         if (maGiaoNhan != null) {
             GiaoNhanXe gn = giaoNhanXeController.getGiaoNhanXeByMa(maGiaoNhan);
             if (gn != null) {
-     
+
                 showGiaoNhanXeDialog(gn, false); // false for editing
             } else {
                 JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin giao nhận để sửa.", "Lỗi",
@@ -184,7 +191,7 @@ public class GiaoNhanXePanel extends JPanel {
     private void deleteSelectedGiaoNhan() {
         String maGiaoNhan = tablePanel.getSelectedGiaoNhanXeId();
         if (maGiaoNhan != null) {
-      
+
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Bạn có chắc muốn xóa bản ghi giao nhận này không? (Mã: " + maGiaoNhan + ")",
                     "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -204,6 +211,21 @@ public class GiaoNhanXePanel extends JPanel {
         } else if (tablePanel.getTable().getSelectedRow() != -1) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn một bản ghi giao nhận để xóa.", "Thông báo",
                     JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void showConcurrencyDemo() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có muốn mở Demo Concurrency Control không?\n" +
+                        "Chức năng này sẽ mở 2 giao dịch đồng thời để demo các vấn đề concurrency\n" +
+                        "như Deadlock, Lock Wait, Dirty Read, Phantom Read, etc.",
+                "Xác nhận Demo Concurrency",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            GiaoNhanXeConcurrencyDemo launcher = new GiaoNhanXeConcurrencyDemo();
+            launcher.setVisible(true);
         }
     }
 }

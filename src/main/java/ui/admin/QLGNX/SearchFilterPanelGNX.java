@@ -2,70 +2,81 @@ package ui.admin.QLGNX;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 
 public class SearchFilterPanelGNX extends JPanel {
     private JTextField txtSearch;
-    private JComboBox<String> cboTrangThaiGNFilter;
-    private JButton btnSearchAction;
-    private GiaoNhanXePanel parentPanel; // To call the search/filter method on the parent
+    private JComboBox<String> cboTrangThaiFilter;
+    private GiaoNhanXePanel parentPanel;
 
-    // Consistent styling colors
-    private static final Color PRIMARY_COLOR = new Color(41, 121, 255);
-    private static final Color TEXT_FIELD_BACKGROUND = new Color(255, 255, 255);
-    private static final Color BORDER_COLOR = new Color(200, 200, 200);
+    private static final Color BACKGROUND_COLOR = new Color(248, 249, 250);
+    private static final Font LABEL_FONT = new Font("Segoe UI", Font.BOLD, 13);
+    private static final Font FIELD_FONT = new Font("Segoe UI", Font.PLAIN, 13);
 
-    public SearchFilterPanelGNX(GiaoNhanXePanel parentPanel) {
-        this.parentPanel = parentPanel;
+    public SearchFilterPanelGNX(GiaoNhanXePanel parent) {
+        this.parentPanel = parent;
         initComponents();
     }
 
     private void initComponents() {
-        setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10)); // Added some vertical padding
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0,0,1,0, BORDER_COLOR), // Bottom border
-            new EmptyBorder(10,5,10,5) // Padding around content
-        ));
+        setLayout(new BorderLayout(10, 10));
+        setBackground(BACKGROUND_COLOR);
+        setBorder(new EmptyBorder(15, 15, 15, 15));
 
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        searchPanel.setBackground(BACKGROUND_COLOR);
 
         JLabel lblSearch = new JLabel("Tìm kiếm:");
-        lblSearch.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        add(lblSearch);
+        lblSearch.setFont(LABEL_FONT);
+        searchPanel.add(lblSearch);
 
-        txtSearch = new JTextField(25); // Increased width
-        txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txtSearch = new JTextField(25);
+        txtSearch.setFont(FIELD_FONT);
         txtSearch.setPreferredSize(new Dimension(250, 32));
-        txtSearch.setBackground(TEXT_FIELD_BACKGROUND);
         txtSearch.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(0, 5, 0, 5) 
-        ));
-        add(txtSearch);
+                BorderFactory.createLineBorder(new Color(204, 204, 204), 1),
+                new EmptyBorder(0, 8, 0, 8)));
+        txtSearch.setToolTipText("Nhập từ khóa để tìm kiếm (Mã giao nhận, mã hợp đồng, mã xe, nhân viên...)");
+        
+        // Thêm DocumentListener để tìm kiếm real-time
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                performSearch();
+            }
 
-        JLabel lblFilter = new JLabel("Trạng thái Giao Nhận:");
-        lblFilter.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        add(lblFilter);
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                performSearch();
+            }
 
-        cboTrangThaiGNFilter = new JComboBox<>(new String[]{"Tất cả", "Đã giao", "Đã nhận về"});
-        cboTrangThaiGNFilter.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cboTrangThaiGNFilter.setPreferredSize(new Dimension(180, 32));
-        cboTrangThaiGNFilter.setBackground(Color.WHITE);
-        add(cboTrangThaiGNFilter);
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                performSearch();
+            }
+        });
+        
+        searchPanel.add(txtSearch);
 
-        btnSearchAction = new JButton("Lọc/Tìm kiếm");
-        styleButton(btnSearchAction, PRIMARY_COLOR, 140, 32);
-        btnSearchAction.addActionListener(e -> parentPanel.searchAndFilterGiaoNhan());
-        add(btnSearchAction);
+        JLabel lblTrangThai = new JLabel("Trạng thái:");
+        lblTrangThai.setFont(LABEL_FONT);
+        searchPanel.add(lblTrangThai);
+
+        cboTrangThaiFilter = new JComboBox<>(new String[]{"Tất cả", "Đã giao", "Đã nhận về"});
+        cboTrangThaiFilter.setFont(FIELD_FONT);
+        cboTrangThaiFilter.setPreferredSize(new Dimension(150, 32));
+        cboTrangThaiFilter.addActionListener(e -> performSearch());
+        searchPanel.add(cboTrangThaiFilter);
+
+        add(searchPanel, BorderLayout.CENTER);
     }
 
-    private void styleButton(JButton button, Color color, int width, int height) {
-        button.setBackground(color);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        button.setPreferredSize(new Dimension(width, height));
-        button.setBorder(BorderFactory.createEmptyBorder(5,15,5,15));
+    private void performSearch() {
+        if (parentPanel != null) {
+            parentPanel.searchAndFilterGiaoNhan();
+        }
     }
 
     public String getSearchKeyword() {
@@ -73,14 +84,11 @@ public class SearchFilterPanelGNX extends JPanel {
     }
 
     public String getSelectedTrangThaiFilter() {
-        if (cboTrangThaiGNFilter.getSelectedIndex() == -1) {
-            return "Tất cả"; // Default or handle as error
-        }
-        return cboTrangThaiGNFilter.getSelectedItem().toString();
+        return (String) cboTrangThaiFilter.getSelectedItem();
     }
-    
+
     public void resetFilters() {
         txtSearch.setText("");
-        cboTrangThaiGNFilter.setSelectedIndex(0); // Select "Tất cả"
+        cboTrangThaiFilter.setSelectedIndex(0);
     }
 }

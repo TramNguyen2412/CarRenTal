@@ -85,7 +85,7 @@ public class HopDongController {
         return hopDongDAO.deleteHopDong(maHD, customErrorMessage);
     }
     
-    public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
+    public List<ChiTietHD> getChiTietHopDong(String maHD) {
         return chiTietHDDAO.getChiTietHDByMaHD(maHD);
     }
     
@@ -314,5 +314,10 @@ public List<HopDong> getHopDongByKhachHang(String maKH) {
         }
     }
     return result;
+}
+
+public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getChiTietHDByMaHD'");
 }
 }
