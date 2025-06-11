@@ -27,12 +27,12 @@ public class ChiTietHDDao {
     private Connection getValidConnection() throws SQLException {
     Connection conn = DatabaseUtil.getConnection();
     
-    // Kiểm tra kết nối còn hợp lệ không
-    if (!conn.isValid(2)) { // timeout 2 giây
-        System.out.println("Connection invalidated, reconnecting...");
-        conn = DatabaseUtil.reconnect(conn); // Truyền conn hiện tại và nhận conn mới
-    }
-    
+//    // Kiểm tra kết nối còn hợp lệ không
+//    if (!conn.isValid(2)) { // timeout 2 giây
+//        System.out.println("Connection invalidated, reconnecting...");
+//        conn = DatabaseUtil.reconnect(conn); // Truyền conn hiện tại và nhận conn mới
+//    }
+//    
     return conn;
   }
     

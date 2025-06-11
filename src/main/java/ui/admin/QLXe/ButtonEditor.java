@@ -1,8 +1,9 @@
 
-package ui.admin.QLNV;
+package ui.admin.QLXe;
 
-import ui.admin.QLNV.NhanVienPanel;
-import model.NhanVien;
+import ui.admin.QLXe.XePanel;
+import controller.XeController;
+import model.Xe;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,13 +11,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
-public class ButtonEditorNV extends DefaultCellEditor {
+public class ButtonEditor extends DefaultCellEditor {
     private JPanel panel;
     private JButton btnView, btnEdit, btnDelete;
-    private String maNV;
-    private NhanVienPanel parent;
-    
-    public ButtonEditorNV(NhanVienPanel parent) {
+    private String maXe;
+    private XePanel parent;
+  
+    public ButtonEditor(XePanel parent) {
         super(new JCheckBox());
         this.parent = parent;
         
@@ -40,17 +41,17 @@ public class ButtonEditorNV extends DefaultCellEditor {
         panel.add(btnEdit, gbc);
         panel.add(btnDelete, gbc);
         
-        // Cải tiến xử lý sự kiện cho các nút
+        // Cải tiến code xử lý sự kiện cho các nút
         btnView.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Hủy chế độ chỉnh sửa trước khi mở dialog
                 SwingUtilities.invokeLater(() -> fireEditingCanceled());
                 
-                if (maNV != null && !maNV.isEmpty()) {
-                    NhanVien nv = parent.getNhanVienById(maNV);
-                    if (nv != null) {
-                        parent.showNhanVienDetailDialog(nv);
+                if (maXe != null && !maXe.isEmpty()) {
+                    Xe xe = parent.getXeById(maXe);
+                    if (xe != null) {
+                        parent.showXeDetailDialog(xe);
                     }
                 }
             }
@@ -62,10 +63,10 @@ public class ButtonEditorNV extends DefaultCellEditor {
                 // Hủy chế độ chỉnh sửa trước khi mở dialog
                 SwingUtilities.invokeLater(() -> fireEditingCanceled());
                 
-                if (maNV != null && !maNV.isEmpty()) {
-                    NhanVien nv = parent.getNhanVienById(maNV);
-                    if (nv != null) {
-                        parent.showNhanVienDialog(nv);
+                if (maXe != null && !maXe.isEmpty()) {
+                    Xe xe = parent.getXeById(maXe);
+                    if (xe != null) {
+                        parent.showXeDialog(xe);
                     }
                 }
             }
@@ -77,28 +78,28 @@ public class ButtonEditorNV extends DefaultCellEditor {
                 // Hủy chế độ chỉnh sửa trước khi xử lý sự kiện
                 SwingUtilities.invokeLater(() -> fireEditingCanceled());
                 
-                if (maNV != null && !maNV.isEmpty()) {
+                if (maXe != null && !maXe.isEmpty()) {
                     int confirm = JOptionPane.showConfirmDialog(
                             SwingUtilities.getWindowAncestor(parent),
-                            "Bạn có chắc chắn muốn xóa nhân viên này?",
+                            "Bạn có chắc chắn muốn xóa xe này?",
                             "Xác nhận xóa",
                             JOptionPane.YES_NO_OPTION);
                     
                     if (confirm == JOptionPane.YES_OPTION) {
                         // Thực hiện xóa và cập nhật UI sau khi xóa
                         SwingUtilities.invokeLater(() -> {
-                            boolean success = parent.deleteNhanVien(maNV);
+                            boolean success = parent.deleteXe(maXe);
                             if (success) {
                                 JOptionPane.showMessageDialog(
                                         SwingUtilities.getWindowAncestor(parent),
-                                        "Xóa nhân viên thành công!",
+                                        "Xóa xe thành công!",
                                         "Thông báo",
                                         JOptionPane.INFORMATION_MESSAGE);
                                 parent.loadDataToTable();
                             } else {
                                 JOptionPane.showMessageDialog(
                                         SwingUtilities.getWindowAncestor(parent),
-                                        "Xóa nhân viên thất bại! Nhân viên đang liên quan đến dữ liệu khác.",
+                                        "Xóa xe thất bại! Xe đang được sử dụng.",
                                         "Lỗi",
                                         JOptionPane.ERROR_MESSAGE);
                             }
@@ -125,16 +126,16 @@ public class ButtonEditorNV extends DefaultCellEditor {
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected, int row, int column) {
         // Kiểm tra giới hạn trước khi truy cập
-        maNV = null;
+        maXe = null;
         if (table != null && row >= 0 && row < table.getRowCount() && 
             0 < table.getColumnCount()) {
             try {
-                Object maNVObj = table.getValueAt(row, 0);
-                if (maNVObj != null) {
-                    maNV = maNVObj.toString();
+                Object maXeObj = table.getValueAt(row, 0);
+                if (maXeObj != null) {
+                    maXe = maXeObj.toString();
                 }
             } catch (Exception ex) {
-                System.err.println("Lỗi khi lấy mã nhân viên: " + ex.getMessage());
+                System.err.println("Lỗi khi lấy mã xe: " + ex.getMessage());
             }
         }
         

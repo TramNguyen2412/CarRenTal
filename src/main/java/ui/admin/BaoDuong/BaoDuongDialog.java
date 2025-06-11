@@ -211,95 +211,233 @@ private void updateTongTien() {
     lblTongTien.setText(String.format("%,.0f VNĐ", tong));
 }
 
+//    private void savePhieuBaoDuong() {
+//            // Lấy dữ liệu từ form
+//            String maBD = txtMaBD.getText().trim();
+//            String maXe = null;
+//            if (cboXe.getSelectedItem() != null) {
+//                String xeItem = cboXe.getSelectedItem().toString();
+//                if (xeItem.contains("-")) {
+//                    maXe = xeItem.split("-")[0].trim();
+//                } else {
+//                    maXe = xeItem.trim();
+//                }
+//            }
+//            String khachHangItem = cboKhachHang.getSelectedItem() != null ? cboKhachHang.getSelectedItem().toString() : null;
+//            String maKH = null;
+//            if (khachHangItem != null && khachHangItem.contains(" - ")) {
+//                maKH = khachHangItem.split(" - ")[0].trim();
+//            } else {
+//                maKH = khachHangItem;
+//            }
+//            String nhanVienItem = cboNhanVien.getSelectedItem() != null ? cboNhanVien.getSelectedItem().toString() : null;
+//            String maNV = null;
+//            if (nhanVienItem != null && nhanVienItem.contains(" - ")) {
+//                maNV = nhanVienItem.split(" - ")[0].trim();
+//            } else {
+//                maNV = nhanVienItem;
+//            }
+//            String loaiBD = cboLoaiBD.getSelectedItem() != null ? cboLoaiBD.getSelectedItem().toString() : null;
+//            java.util.Date ngayBD = dateNgayBD.getDate();
+//            double tongTien = 0;
+//            for (ChiTietBaoDuong ct : chiTietList) {
+//                DichVuBD dv = baoDuongController.getDichVuBDById(ct.getMaDV());
+//                if (dv != null) {
+//                    tongTien += ct.getSoLuong() * dv.getGiaDV();
+//                }
+//            }
+//
+//            // Kiểm tra hợp lệ
+//            if (maXe == null || maXe.isEmpty()) {
+//                JOptionPane.showMessageDialog(this, "Vui lòng chọn xe!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//            if (loaiBD == null || loaiBD.isEmpty()) {
+//                JOptionPane.showMessageDialog(this, "Vui lòng chọn loại bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//            if (ngayBD == null) {
+//                JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//
+//            if (tongTien < 0) {
+//                JOptionPane.showMessageDialog(this, "Tổng tiền phải lớn hơn 0!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//            if (chiTietList == null || chiTietList.isEmpty()) {
+//                JOptionPane.showMessageDialog(this, "Phiếu bảo dưỡng phải có ít nhất 1 chi tiết bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//
+//        boolean success = false;
+//        String result = null;
+//        if (phieu == null) {
+//            // Nếu loại bảo dưỡng là Định Kỳ thì mã khách hàng là null
+//            if ("Định Kỳ".equalsIgnoreCase(loaiBD)) {
+//                maKH = null;
+//            }
+//            result = baoDuongController.addPhieuBaoDuongFull(
+//                maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
+//            );
+//        } else {
+//            // Cập nhật phiếu + chi tiết
+//            result = baoDuongController.updatePhieuBaoDuongFull(
+//                maBD, maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
+//            );
+//        }
+//        // Chỉ thành công nếu result là mã phiếu (bắt đầu bằng "BD") hoặc chứa "thành công"
+//        if (result != null && (result.trim().startsWith("BD") || result.toLowerCase().contains("thành công"))) {
+//            success = true;
+//        }
+//        if (success) {
+//            JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thành công!");
+//            parentPanel.loadDataToTable();
+//            dispose();
+//        } else if (result != null && !result.trim().isEmpty()) {
+//            JOptionPane.showMessageDialog(this, result, "Lỗi nghiệp vụ", JOptionPane.ERROR_MESSAGE);
+//        } else {
+//            JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//        }
+//        }
+    
     private void savePhieuBaoDuong() {
-            // Lấy dữ liệu từ form
-            String maBD = txtMaBD.getText().trim();
-            String maXe = null;
-            if (cboXe.getSelectedItem() != null) {
-                String xeItem = cboXe.getSelectedItem().toString();
-                if (xeItem.contains("-")) {
-                    maXe = xeItem.split("-")[0].trim();
-                } else {
-                    maXe = xeItem.trim();
-                }
-            }
-            String khachHangItem = cboKhachHang.getSelectedItem() != null ? cboKhachHang.getSelectedItem().toString() : null;
-            String maKH = null;
-            if (khachHangItem != null && khachHangItem.contains(" - ")) {
-                maKH = khachHangItem.split(" - ")[0].trim();
+        // Lấy dữ liệu từ form
+        String maBD = txtMaBD.getText().trim();
+        String maXe = null;
+        if (cboXe.getSelectedItem() != null) {
+            String xeItem = cboXe.getSelectedItem().toString();
+            if (xeItem.contains("-")) {
+                maXe = xeItem.split("-")[0].trim();
             } else {
-                maKH = khachHangItem;
+                maXe = xeItem.trim();
             }
-            String nhanVienItem = cboNhanVien.getSelectedItem() != null ? cboNhanVien.getSelectedItem().toString() : null;
-            String maNV = null;
-            if (nhanVienItem != null && nhanVienItem.contains(" - ")) {
-                maNV = nhanVienItem.split(" - ")[0].trim();
-            } else {
-                maNV = nhanVienItem;
+        }
+        String khachHangItem = cboKhachHang.getSelectedItem() != null ? cboKhachHang.getSelectedItem().toString() : null;
+        String maKH = null;
+        if (khachHangItem != null && !khachHangItem.equals("Không có") && khachHangItem.contains(" - ")) {
+            maKH = khachHangItem.split(" - ")[0].trim();
+        } else if (khachHangItem != null && !khachHangItem.equals("Không có")) {
+            maKH = khachHangItem;
+        }
+        String nhanVienItem = cboNhanVien.getSelectedItem() != null ? cboNhanVien.getSelectedItem().toString() : null;
+        String maNV = null;
+        if (nhanVienItem != null && nhanVienItem.contains(" - ")) {
+            maNV = nhanVienItem.split(" - ")[0].trim();
+        } else {
+            maNV = nhanVienItem;
+        }
+        String loaiBD = cboLoaiBD.getSelectedItem() != null ? cboLoaiBD.getSelectedItem().toString() : null;
+        java.util.Date ngayBD = dateNgayBD.getDate();
+        double tongTien = 0;
+        for (ChiTietBaoDuong ct : chiTietList) {
+            DichVuBD dv = baoDuongController.getDichVuBDById(ct.getMaDV());
+            if (dv != null) {
+                tongTien += ct.getSoLuong() * dv.getGiaDV();
             }
-            String loaiBD = cboLoaiBD.getSelectedItem() != null ? cboLoaiBD.getSelectedItem().toString() : null;
-            java.util.Date ngayBD = dateNgayBD.getDate();
-            double tongTien = 0;
-            for (ChiTietBaoDuong ct : chiTietList) {
-                DichVuBD dv = baoDuongController.getDichVuBDById(ct.getMaDV());
-                if (dv != null) {
-                    tongTien += ct.getSoLuong() * dv.getGiaDV();
-                }
-            }
+        }
 
-            // Kiểm tra hợp lệ
-            if (maXe == null || maXe.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn xe!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (loaiBD == null || loaiBD.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn loại bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (ngayBD == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+        // Kiểm tra hợp lệ
+        if (maXe == null || maXe.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn xe!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (loaiBD == null || loaiBD.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn loại bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (ngayBD == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-            if (tongTien < 0) {
-                JOptionPane.showMessageDialog(this, "Tổng tiền phải lớn hơn 0!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (chiTietList == null || chiTietList.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Phiếu bảo dưỡng phải có ít nhất 1 chi tiết bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+        if (tongTien < 0) {
+            JOptionPane.showMessageDialog(this, "Tổng tiền phải lớn hơn 0!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (chiTietList == null || chiTietList.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Phiếu bảo dưỡng phải có ít nhất 1 chi tiết bảo dưỡng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Nếu loại bảo dưỡng là Định Kỳ thì mã khách hàng là null
+        if ("Định Kỳ".equalsIgnoreCase(loaiBD)) {
+            maKH = null;
+        } else if (maKH == null || maKH.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Phiếu bảo dưỡng do khách hàng gây hư hại phải có thông tin khách hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         boolean success = false;
         String result = null;
-        if (phieu == null) {
-            // Nếu loại bảo dưỡng là Định Kỳ thì mã khách hàng là null
-            if ("Định Kỳ".equalsIgnoreCase(loaiBD)) {
-                maKH = null;
+
+        try {
+            if (phieu == null) {
+                result = baoDuongController.addPhieuBaoDuongFull(
+                    maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
+                );
+            } else {
+                // Cập nhật phiếu + chi tiết
+                result = baoDuongController.updatePhieuBaoDuongFull(
+                    maBD, maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
+                );
             }
-            result = baoDuongController.addPhieuBaoDuongFull(
-                maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
-            );
-        } else {
-            // Cập nhật phiếu + chi tiết
-            result = baoDuongController.updatePhieuBaoDuongFull(
-                maBD, maXe, maKH, ngayBD, maNV, loaiBD, tongTien, chiTietList
-            );
+
+            // Chỉ thành công nếu result là mã phiếu (bắt đầu bằng "BD") hoặc chứa "thành công"
+            if (result != null && (result.trim().startsWith("BD") || result.toLowerCase().contains("thành công"))) {
+                success = true;
+            }
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thành công!");
+                parentPanel.loadDataToTable();
+                dispose();
+            } else if (result != null && !result.trim().isEmpty()) {
+                // Xử lý các lỗi cụ thể từ trigger
+                if (result.contains("ORA-20017") || result.contains("xe đã được thuê")) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Không thể bảo dưỡng xe " + maXe + " vào ngày " + 
+                        (ngayBD != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(ngayBD) : "") + 
+                        " vì xe đã được thuê trong thời gian này.", 
+                        "Lỗi xung đột lịch trình", JOptionPane.ERROR_MESSAGE);
+                } else if (result.contains("ORA-20050") || result.contains("đã có phiếu bảo dưỡng khác")) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Xe " + maXe + " đã có phiếu bảo dưỡng khác trong ngày " + 
+                        (ngayBD != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(ngayBD) : "") + 
+                        ". Vui lòng gộp các công việc vào cùng phiếu.",
+                        "Lỗi trùng lịch bảo dưỡng", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, result, "Lỗi nghiệp vụ", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            String errorMsg = e.getMessage();
+
+            if (errorMsg != null) {
+                // Xử lý lỗi từ các trigger bảo dưỡng
+                if (errorMsg.contains("ORA-20017")) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Không thể bảo dưỡng xe " + maXe + " vào ngày " + 
+                        (ngayBD != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(ngayBD) : "") + 
+                        " vì xe đã được thuê trong thời gian này.", 
+                        "Lỗi xung đột lịch trình", JOptionPane.ERROR_MESSAGE);
+                } else if (errorMsg.contains("ORA-20050")) {
+                    JOptionPane.showMessageDialog(this, 
+                        "Xe " + maXe + " đã có phiếu bảo dưỡng khác trong ngày " + 
+                        (ngayBD != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(ngayBD) : "") + 
+                        ". Vui lòng gộp các công việc vào cùng phiếu.",
+                        "Lỗi trùng lịch bảo dưỡng", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    // Hiển thị thông báo lỗi chung
+                    JOptionPane.showMessageDialog(this, "Lỗi: " + errorMsg, "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi không xác định!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+            }
         }
-        // Chỉ thành công nếu result là mã phiếu (bắt đầu bằng "BD") hoặc chứa "thành công"
-        if (result != null && (result.trim().startsWith("BD") || result.toLowerCase().contains("thành công"))) {
-            success = true;
-        }
-        if (success) {
-            JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thành công!");
-            parentPanel.loadDataToTable();
-            dispose();
-        } else if (result != null && !result.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, result, "Lỗi nghiệp vụ", JOptionPane.ERROR_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Lưu phiếu bảo dưỡng thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-        }
+    }
 
 }
 // ...existing code...

@@ -1,4 +1,4 @@
-package ui.admin;
+package ui.admin.QLXe;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

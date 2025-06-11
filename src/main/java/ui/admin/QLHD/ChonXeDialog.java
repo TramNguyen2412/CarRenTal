@@ -1,6 +1,8 @@
+
 package ui.admin.QLHD;
 
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import com.toedter.calendar.JDateChooser; // Add this import for JCalendar
 import controller.XeController;
 import model.ChiTietHD;
 import model.Xe;
@@ -13,8 +15,10 @@ import java.util.Date;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.MaskFormatter;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.text.NumberFormat;
 import java.util.Locale;
 import controller.HopDongController;
@@ -23,8 +27,8 @@ public class ChonXeDialog extends JDialog {
     private XeController xeController;
     private List<ChiTietHD> selectedXeList;
     
-   private HopDongController hopDongController;
-   private String maHDHienTai; // Mã HD hiện tại (nếu đang sửa HD)
+    private HopDongController hopDongController;
+    private String maHDHienTai; // Mã HD hiện tại (nếu đang sửa HD)
    
     // UI Components
     private JTable tblXe;
@@ -33,21 +37,12 @@ public class ChonXeDialog extends JDialog {
     private JComboBox<String> cboHangXe;
     private JComboBox<String> cboSoCho;
     
-//    public ChonXeDialog(Window owner) {
-//        super(owner, "Chọn xe thuê", ModalityType.APPLICATION_MODAL);
-//        this.xeController = new XeController();
-//        this.selectedXeList = new ArrayList<>();
-//        this.hopDongController = new HopDongController();
-//        initComponents();
-//        loadDataToTable();
-//    }
-//    
     public ChonXeDialog(Window owner, String maHD) {
         super(owner, "Chọn xe thuê", ModalityType.APPLICATION_MODAL);
         this.hopDongController = new HopDongController();
         this.maHDHienTai = maHD;
-         this.xeController = new XeController();
-       this.selectedXeList = new ArrayList<>();
+        this.xeController = new XeController();
+        this.selectedXeList = new ArrayList<>();
        
         initComponents();
         loadDataToTable();
@@ -96,7 +91,7 @@ public class ChonXeDialog extends JDialog {
                 if (columnIndex == 0) {
                     return Boolean.class;
                 }
-                return String.class;
+                return Object.class; // Changed to Object to handle Date objects
             }
             
             @Override
@@ -108,43 +103,13 @@ public class ChonXeDialog extends JDialog {
         tblXe = new JTable(modelXe);
         tblXe.getTableHeader().setReorderingAllowed(false);
         
-        // Tạo cell editor cho cột ngày
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        Date today = new Date();
-        Date tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        // Set custom editor for date columns
+        tblXe.getColumnModel().getColumn(7).setCellEditor(new DateChooserCellEditor());
+        tblXe.getColumnModel().getColumn(8).setCellEditor(new DateChooserCellEditor());
         
-        try {
-            // Editor cho cột Từ ngày (cột 7)
-            MaskFormatter dateMask = new MaskFormatter("##/##/####");
-            dateMask.setPlaceholderCharacter('_');
-            JFormattedTextField txtFromDate = new JFormattedTextField(dateMask);
-            txtFromDate.setText(dateFormat.format(today));
-            DefaultCellEditor fromDateEditor = new DefaultCellEditor(txtFromDate) {
-                @Override
-                public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-                    if (value == null)
-                        value = dateFormat.format(today);
-                    return super.getTableCellEditorComponent(table, value, isSelected, row, column);
-                }
-            };
-            tblXe.getColumnModel().getColumn(7).setCellEditor(fromDateEditor);
-            
-            // Editor cho cột Đến ngày (cột 8)
-            JFormattedTextField txtToDate = new JFormattedTextField(dateMask);
-            txtToDate.setText(dateFormat.format(tomorrow));
-            DefaultCellEditor toDateEditor = new DefaultCellEditor(txtToDate) {
-                @Override
-                public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-                    if (value == null)
-                        value = dateFormat.format(tomorrow);
-                    return super.getTableCellEditorComponent(table, value, isSelected, row, column);
-                }
-            };
-            tblXe.getColumnModel().getColumn(8).setCellEditor(toDateEditor);
-        
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        // Set custom renderer for date columns
+        tblXe.getColumnModel().getColumn(7).setCellRenderer(new DateChooserCellRenderer());
+        tblXe.getColumnModel().getColumn(8).setCellRenderer(new DateChooserCellRenderer());
         
         JScrollPane scrollPane = new JScrollPane(tblXe);
         pnlTable.add(scrollPane, BorderLayout.CENTER);
@@ -182,18 +147,66 @@ public class ChonXeDialog extends JDialog {
         // Sự kiện nút hủy
         btnCancel.addActionListener(e -> dispose());
     }
+    
+    // Custom cell editor using JDateChooser
+    class DateChooserCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private JDateChooser dateChooser;
+        
+        public DateChooserCellEditor() {
+            dateChooser = new JDateChooser();
+            dateChooser.setDateFormatString("dd/MM/yyyy");
+            dateChooser.setDate(new Date()); // Default to today
+        }
+        
+        @Override
+        public Object getCellEditorValue() {
+            return dateChooser.getDate();
+        }
+        
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, 
+                boolean isSelected, int row, int column) {
+            if (value instanceof Date) {
+                dateChooser.setDate((Date) value);
+            } else if (value instanceof String) {
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    dateChooser.setDate(sdf.parse((String) value));
+                } catch (ParseException e) {
+                    dateChooser.setDate(new Date());
+                }
+            } else {
+                dateChooser.setDate(new Date());
+            }
+            return dateChooser;
+        }
+    }
+    
+    // Custom renderer for dates
+    class DateChooserCellRenderer extends DefaultTableCellRenderer {
+        private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            if (value instanceof Date) {
+                value = dateFormat.format((Date) value);
+            }
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+    }
+    
     private void loadDataToTable() {
         // Xóa dữ liệu cũ
         modelXe.setRowCount(0);
 
         // Format để hiển thị số tiền
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
         Date today = new Date();
         Date tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
-        // Lấy danh sách tất cả xe (không chỉ xe có trạng thái "Sẵn sàng")
+        // Lấy danh sách tất cả xe
         List<Xe> danhSachXe = xeController.getAllXe();
 
         // Thêm dữ liệu vào bảng
@@ -206,8 +219,8 @@ public class ChonXeDialog extends JDialog {
                 xe.getHangXe(),
                 xe.getSoCho(),
                 currencyFormat.format(xe.getGiaThueNgay()),
-                dateFormat.format(today),
-                dateFormat.format(tomorrow)
+                today,  // Now using Date objects directly
+                tomorrow
             });
         }
     }
@@ -223,7 +236,6 @@ public class ChonXeDialog extends JDialog {
 
         // Format để hiển thị số tiền
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
         Date today = new Date();
         Date tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
@@ -245,15 +257,14 @@ public class ChonXeDialog extends JDialog {
                     xe.getHangXe(),
                     xe.getSoCho(),
                     currencyFormat.format(xe.getGiaThueNgay()),
-                    dateFormat.format(today),
-                    dateFormat.format(tomorrow)
+                    today,  // Now using Date objects directly
+                    tomorrow
                 });
             }
         }
     }
    
     private void addSelectedXe() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         // Kiểm tra có xe nào được chọn không
         boolean hasSelected = false;
 
@@ -268,12 +279,9 @@ public class ChonXeDialog extends JDialog {
                 hasSelected = true;
 
                 try {
-                    // Lấy thông tin ngày thuê
-                    String fromDateStr = tblXe.getValueAt(i, 7).toString();
-                    String toDateStr = tblXe.getValueAt(i, 8).toString();
-
-                    Date fromDate = dateFormat.parse(fromDateStr);
-                    Date toDate = dateFormat.parse(toDateStr);
+                    // Lấy thông tin ngày thuê - now directly as Date objects
+                    Date fromDate = (Date) tblXe.getValueAt(i, 7);
+                    Date toDate = (Date) tblXe.getValueAt(i, 8);
 
                     if (toDate.before(fromDate)) {
                         JOptionPane.showMessageDialog(this, 
@@ -288,7 +296,7 @@ public class ChonXeDialog extends JDialog {
                     String tenXe = tblXe.getValueAt(i, 2).toString();
                     String bienSo = tblXe.getValueAt(i, 3).toString();
 
-                    // THÊM MỚI: Kiểm tra xe có thể thuê được không
+                    // Kiểm tra xe có thể thuê được không
                     String xeError = hopDongController.kiemTraXeThueDuoc(
                         maXe, fromDate, toDate, maHDHienTai);
 
@@ -302,7 +310,7 @@ public class ChonXeDialog extends JDialog {
                     String hangXe = tblXe.getValueAt(i, 4).toString();
                     int soCho = Integer.parseInt(tblXe.getValueAt(i, 5).toString());
 
-                    // Lấy giá thuê từ cột giá thuê/ngày (cần parse từ string định dạng tiền tệ)
+                    // Lấy giá thuê từ cột giá thuê/ngày
                     String giaThueStr = tblXe.getValueAt(i, 6).toString().replaceAll("[^\\d]", "");
                     double giaThueNgay = Double.parseDouble(giaThueStr);
 
@@ -319,12 +327,6 @@ public class ChonXeDialog extends JDialog {
 
                     validCars.add(ct);
 
-                } catch (ParseException e) {
-                    JOptionPane.showMessageDialog(this, 
-                            "Vui lòng nhập đúng định dạng ngày (dd/MM/yyyy) ở xe: " + tblXe.getValueAt(i, 2).toString(), 
-                            "Lỗi", 
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
                 } catch (NumberFormatException e) {
                     JOptionPane.showMessageDialog(this, 
                             "Lỗi khi xử lý giá thuê xe: " + tblXe.getValueAt(i, 2).toString(), 
@@ -360,6 +362,7 @@ public class ChonXeDialog extends JDialog {
         selectedXeList = validCars;
         dispose();
     }
+    
     public List<ChiTietHD> getSelectedXeList() {
         return selectedXeList;
     }

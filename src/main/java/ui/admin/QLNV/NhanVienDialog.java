@@ -1,3 +1,4 @@
+
 package ui.admin.QLNV;
 
 import java.awt.BorderLayout;
@@ -33,7 +34,7 @@ import model.NhanVien;
 public class NhanVienDialog extends JDialog {
     // Các thành phần giao diện
     private JTextField txtMaNV, txtHoTen, txtSDT, txtEmail;
-    private JComboBox<String> cboChucVu; // <-- Để nhập/chọn chức vụ
+    private JComboBox<String> cboChucVu;
     private NhanVien nhanVien;
     private NhanVienPanel parent;
     private NhanVienController nhanVienController;
@@ -74,7 +75,7 @@ public class NhanVienDialog extends JDialog {
         layout.setAutoCreateContainerGaps(true);
 
         // Các label
-        JLabel lblTitle = new JLabel(nhanVien.getMaNV() == null ? "THÊM NV" : "CHỈNH SỬA NV");
+        JLabel lblTitle = new JLabel(nhanVien.getMaNV() == null ? "THÊM NHÂN VIÊN MỚI" : "CHỈNH SỬA THÔNG TIN NHÂN VIÊN");
         lblTitle.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 20));
         lblTitle.setForeground(new Color(33, 150, 243));
 
@@ -90,28 +91,36 @@ public class NhanVienDialog extends JDialog {
         txtSDT = createStyledTextField();
         txtEmail = createStyledTextField();
 
-        // Cập nhật txtMaNV dựa trên việc thêm mới hay chỉnh sửa
+        // Combobox chức vụ
+        DefaultComboBoxModel<String> m = new DefaultComboBoxModel<>();
+        List<String> chucVuList = nhanVienController.getAllChucVu();
+        for (String cv : chucVuList) {
+            m.addElement(cv);
+        }
+        cboChucVu = new JComboBox<>(m);
+        cboChucVu.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 16));
+        cboChucVu.setPreferredSize(new Dimension(250, 35));
+
+        // Cập nhật thông tin từ đối tượng nhân viên vào form
         if (nhanVien != null && nhanVien.getMaNV() != null && !nhanVien.getMaNV().isEmpty()) {
             // Chế độ chỉnh sửa: hiển thị MaNV và không cho sửa
             txtMaNV.setText(nhanVien.getMaNV());
             txtMaNV.setEditable(false);
             txtMaNV.setBackground(new Color(230, 230, 230)); // Màu nền cho trường không sửa được
-            lblTitle.setText("CHỈNH SỬA THÔNG TIN NHÂN VIÊN");
+            
+            // Hiển thị thông tin nhân viên hiện có vào form
+            txtHoTen.setText(nhanVien.getHoTen());
+            txtSDT.setText(nhanVien.getSdt());
+            txtEmail.setText(nhanVien.getEmail());
+            
+            // Chọn chức vụ tương ứng trong combobox
+            cboChucVu.setSelectedItem(nhanVien.getChucVu());
         } else {
             // Chế độ thêm mới: hiển thị "Tự động tạo" và không cho sửa
             txtMaNV.setText("Tự động tạo");
             txtMaNV.setEditable(false);
             txtMaNV.setBackground(new Color(230, 230, 230)); // Màu nền cho trường không sửa được
-            lblTitle.setText("THÊM NHÂN VIÊN MỚI");
         }
-
-        // Combobox chức vụ
-        DefaultComboBoxModel<String> m = new DefaultComboBoxModel<>();
-        nhanVienController.getAllChucVu()
-                .forEach(m::addElement);
-        cboChucVu = new JComboBox<>(m);
-        cboChucVu.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 16));
-        cboChucVu.setPreferredSize(new Dimension(250, 35));
 
         // Nhóm ngang
         layout.setHorizontalGroup(

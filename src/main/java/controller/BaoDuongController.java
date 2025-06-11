@@ -277,35 +277,72 @@ public class BaoDuongController {
     baoDuongService.updateTongTienPhieuBaoDuong(maBD, tongTien);
 }
     
-public String addPhieuBaoDuongFull(String maXe, String maKH, Date ngayBD, String maNV, String loaiBD, double tongTien, List<ChiTietBaoDuong> chiTietList) {
-    try {
-        PhieuBaoDuong phieu = new PhieuBaoDuong();
-        phieu.setMaXe(maXe);
-        phieu.setMaKH(maKH);
-        phieu.setNgayBD(ngayBD);
-        phieu.setMaNV(maNV);
-        phieu.setLoaiBD(loaiBD);
-        phieu.setTongTienBD(tongTien);
-        return baoDuongService.addPhieuBaoDuongFull(phieu, chiTietList);
-    } catch (Exception e) {
-        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
-        String msg = e.getMessage();
-        if (msg != null && msg.contains("ORA-200")) {
-            String[] lines = msg.split("\\r?\\n");
-            for (String line : lines) {
-                if (line.contains("ORA-200")) {
-                    int idx = line.indexOf(":");
-                    if (idx > 0 && idx < line.length() - 1) {
-                        return line.substring(idx + 1).trim();
+//public String addPhieuBaoDuongFull(String maXe, String maKH, Date ngayBD, String maNV, String loaiBD, double tongTien, List<ChiTietBaoDuong> chiTietList) {
+//    try {
+//        PhieuBaoDuong phieu = new PhieuBaoDuong();
+//        phieu.setMaXe(maXe);
+//        phieu.setMaKH(maKH);
+//        phieu.setNgayBD(ngayBD);
+//        phieu.setMaNV(maNV);
+//        phieu.setLoaiBD(loaiBD);
+//        phieu.setTongTienBD(tongTien);
+//        return baoDuongService.addPhieuBaoDuongFull(phieu, chiTietList);
+//    } catch (Exception e) {
+//        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
+//        String msg = e.getMessage();
+//        if (msg != null && msg.contains("ORA-200")) {
+//            String[] lines = msg.split("\\r?\\n");
+//            for (String line : lines) {
+//                if (line.contains("ORA-200")) {
+//                    int idx = line.indexOf(":");
+//                    if (idx > 0 && idx < line.length() - 1) {
+//                        return line.substring(idx + 1).trim();
+//                    }
+//                    return line.trim();
+//                }
+//            }
+//            return msg;
+//        }
+//        return "Lỗi hệ thống: " + msg;
+//    }
+//}
+    public String addPhieuBaoDuongFull(String maXe, String maKH, Date ngayBD, String maNV, String loaiBD, double tongTien, List<ChiTietBaoDuong> chiTietList) {
+        try {
+            PhieuBaoDuong phieu = new PhieuBaoDuong();
+            phieu.setMaXe(maXe);
+            phieu.setMaKH(maKH);
+            phieu.setNgayBD(ngayBD);
+            phieu.setMaNV(maNV);
+            phieu.setLoaiBD(loaiBD);
+            phieu.setTongTienBD(tongTien);
+            return baoDuongService.addPhieuBaoDuongFull(phieu, chiTietList);
+        } catch (Exception e) {
+            // Khi có lỗi xảy ra, trả về thông báo lỗi chi tiết
+            String msg = e.getMessage();
+            if (msg != null) {
+                if (msg.contains("ORA-20017")) {
+                    return "Xe đã được thuê trong thời gian bảo dưỡng";
+                } else if (msg.contains("ORA-20050")) {
+                    return "Xe đã có phiếu bảo dưỡng khác trong ngày này";
+                } else if (msg.contains("ORA-200")) {
+                    // Xử lý các lỗi ORA-200xx khác nếu có
+                    String[] lines = msg.split("\\r?\\n");
+                    for (String line : lines) {
+                        if (line.contains("ORA-200")) {
+                            int idx = line.indexOf(":");
+                            if (idx > 0 && idx < line.length() - 1) {
+                                return line.substring(idx + 1).trim();
+                            }
+                            return line.trim();
+                        }
                     }
-                    return line.trim();
                 }
             }
-            return msg;
+            // Nếu không phân tích được lỗi cụ thể, trả về toàn bộ thông báo lỗi
+            return e.getMessage();
         }
-        return "Lỗi hệ thống: " + msg;
     }
-}
+
 
     public void deleteAllChiTietBaoDuong(String maBD) {
     baoDuongService.deleteAllChiTietBaoDuong(maBD);
@@ -313,6 +350,36 @@ public String addPhieuBaoDuongFull(String maXe, String maKH, Date ngayBD, String
 
 
     // Cập nhật phiếu + chi tiết trong 1 transaction
+//    public String updatePhieuBaoDuongFull(String maBD, String maXe, String maKH, java.util.Date ngayBD, String maNV, String loaiBD, double tongTien, List<ChiTietBaoDuong> chiTietList) {
+//        try {
+//            PhieuBaoDuong phieu = new PhieuBaoDuong();
+//            phieu.setMaBD(maBD);
+//            phieu.setMaXe(maXe);
+//            phieu.setMaKH(maKH);
+//            phieu.setNgayBD(ngayBD);
+//            phieu.setMaNV(maNV);
+//            phieu.setLoaiBD(loaiBD);
+//            phieu.setTongTienBD(tongTien);
+//            return baoDuongService.updatePhieuBaoDuongFull(phieu, chiTietList);
+//        } catch (Exception e) {
+//        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
+//        String msg = e.getMessage();
+//        if (msg != null && msg.contains("ORA-200")) {
+//            String[] lines = msg.split("\\r?\\n");
+//            for (String line : lines) {
+//                if (line.contains("ORA-200")) {
+//                    int idx = line.indexOf(":");
+//                    if (idx > 0 && idx < line.length() - 1) {
+//                        return line.substring(idx + 1).trim();
+//                    }
+//                    return line.trim();
+//                }
+//            }
+//            return msg;
+//        }
+//        return "Lỗi hệ thống: " + msg;
+//        }
+//    }
     public String updatePhieuBaoDuongFull(String maBD, String maXe, String maKH, java.util.Date ngayBD, String maNV, String loaiBD, double tongTien, List<ChiTietBaoDuong> chiTietList) {
         try {
             PhieuBaoDuong phieu = new PhieuBaoDuong();
@@ -325,22 +392,29 @@ public String addPhieuBaoDuongFull(String maXe, String maKH, Date ngayBD, String
             phieu.setTongTienBD(tongTien);
             return baoDuongService.updatePhieuBaoDuongFull(phieu, chiTietList);
         } catch (Exception e) {
-        // NÊN lấy message nghiệp vụ như ở Service (bên dưới), không chỉ e.printStackTrace()
-        String msg = e.getMessage();
-        if (msg != null && msg.contains("ORA-200")) {
-            String[] lines = msg.split("\\r?\\n");
-            for (String line : lines) {
-                if (line.contains("ORA-200")) {
-                    int idx = line.indexOf(":");
-                    if (idx > 0 && idx < line.length() - 1) {
-                        return line.substring(idx + 1).trim();
+            // Khi có lỗi xảy ra, trả về thông báo lỗi chi tiết
+            String msg = e.getMessage();
+            if (msg != null) {
+                if (msg.contains("ORA-20017")) {
+                    return "Xe đã được thuê trong thời gian bảo dưỡng";
+                } else if (msg.contains("ORA-20050")) {
+                    return "Xe đã có phiếu bảo dưỡng khác trong ngày này";
+                } else if (msg.contains("ORA-200")) {
+                    // Xử lý các lỗi ORA-200xx khác nếu có
+                    String[] lines = msg.split("\\r?\\n");
+                    for (String line : lines) {
+                        if (line.contains("ORA-200")) {
+                            int idx = line.indexOf(":");
+                            if (idx > 0 && idx < line.length() - 1) {
+                                return line.substring(idx + 1).trim();
+                            }
+                            return line.trim();
+                        }
                     }
-                    return line.trim();
                 }
             }
-            return msg;
-        }
-        return "Lỗi hệ thống: " + msg;
+            // Nếu không phân tích được lỗi cụ thể, trả về toàn bộ thông báo lỗi
+            return e.getMessage();
         }
     }
 // Thêm vào BaoDuongController

@@ -58,10 +58,13 @@
 //            }
 //        }
 //    }
+
+
 //
 //
-////
-////
+
+//
+//
 package util;
 
 import java.sql.*;
@@ -73,6 +76,7 @@ public class DatabaseUtil {
     // Vẫn giữ tên và tham số y nguyên - Lấy connection từ shared pool hoặc tạo mới nếu cần
     public static Connection getConnection() throws SQLException {
         try {
+          
             // Nếu chưa có connection hoặc connection đã đóng, tạo mới
             if (sharedConnection == null || sharedConnection.isClosed()) {
                 Class.forName(DatabaseConfig.DRIVER);
@@ -83,6 +87,7 @@ public class DatabaseUtil {
                 );
                 System.out.println("Đã tạo kết nối mới đến database");
             }
+           
             return sharedConnection;
         } catch (ClassNotFoundException e) {
             throw new SQLException("Oracle JDBC Driver không tìm thấy", e);

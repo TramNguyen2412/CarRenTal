@@ -1,3 +1,4 @@
+
 package ui.admin.QLGNX;
 
 import controller.GiaoNhanXeController;
@@ -15,6 +16,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -202,12 +204,14 @@ public class GiaoNhanXeDialog extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    // Thêm method để tự động điền thông tin khách hàng
+    // Thêm method để tự động điền thông tin khách hàng và cập nhật danh sách xe
     private void autoFillCustomerInfo() {
         if (cboMaHD.getSelectedIndex() <= 0) {
             // Reset thông tin khách hàng nếu không chọn hợp đồng
             txtMaKH.setText("");
             txtTenKH.setText("");
+            // Reset danh sách xe
+            loadXeComboBox(null);
             return;
         }
 
@@ -224,6 +228,9 @@ public class GiaoNhanXeDialog extends JDialog {
                 // Điền thông tin khách hàng
                 txtMaKH.setText(hd.getMaKH() != null ? hd.getMaKH() : "");
                 txtTenKH.setText(hd.getTenKH() != null ? hd.getTenKH() : "");
+                
+                // Cập nhật danh sách xe dựa trên hợp đồng
+                loadXeComboBox(maHD);
                 break;
             }
         }
@@ -297,16 +304,11 @@ public class GiaoNhanXeDialog extends JDialog {
             }
         }
 
+        // Load tất cả xe để có sẵn dữ liệu
         danhSachXe = xeController.getAllXe();
-        cboMaXe.addItem("--- Chọn Mã Xe ---");
-        if (danhSachXe != null) {
-            for (Xe xe : danhSachXe) {
-                if (xe == null)
-                    continue;
-                // Corrected to use getBienSo() from Xe.java model
-                cboMaXe.addItem(xe.getMaXe() + " - " + xe.getTenXe() + " (" + xe.getBienSo() + ")");
-            }
-        }
+        
+        // Khởi tạo ComboBox xe trống
+        loadXeComboBox(null);
 
         danhSachNhanVien = nhanVienController.getAllNhanVien();
         cboMaNV.addItem("--- Chọn Nhân Viên ---");
@@ -319,6 +321,47 @@ public class GiaoNhanXeDialog extends JDialog {
         }
     }
 
+    // Thêm method mới để load xe theo hợp đồng
+    private void loadXeComboBox(String maHD) {
+        cboMaXe.removeAllItems();
+        cboMaXe.addItem("--- Chọn Mã Xe ---");
+        
+        if (maHD == null || danhSachXe == null) {
+            return;
+        }
+
+        // Lấy danh sách xe từ chi tiết hợp đồng
+        List<String> maXeTrongHD = getXeInHopDong(maHD);
+        
+        for (Xe xe : danhSachXe) {
+            if (xe == null) continue;
+            
+            // Chỉ thêm xe nếu có trong hợp đồng
+            if (maXeTrongHD.contains(xe.getMaXe())) {
+                cboMaXe.addItem(xe.getMaXe() + " - " + xe.getTenXe() + " (" + xe.getBienSo() + ")");
+            }
+        }
+    }
+
+    // Thêm method để lấy danh sách xe trong hợp đồng
+    private List<String> getXeInHopDong(String maHD) {
+        List<String> maXeList = new ArrayList<>();
+        try {
+            // Sử dụng controller để lấy chi tiết hợp đồng
+            List<ChiTietHD> chiTietList = hopDongController.getChiTietHopDong(maHD);
+            if (chiTietList != null) {
+                for (ChiTietHD ct : chiTietList) {
+                    if (ct != null && ct.getMaXe() != null) {
+                        maXeList.add(ct.getMaXe());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting xe in hop dong: " + e.getMessage());
+        }
+        return maXeList;
+    }
+
     private void loadDataToForm() {
         if (currentGiaoNhanXe != null) {
             txtMaGiaoNhan.setText(currentGiaoNhanXe.getMaGiaoNhan());
@@ -327,14 +370,13 @@ public class GiaoNhanXeDialog extends JDialog {
                     danhSachHopDong != null ? danhSachHopDong.stream().filter(java.util.Objects::nonNull)
                             .map(HopDong::getMaHD).collect(Collectors.toList()) : null);
 
-            // Tự động điền thông tin khách hàng sau khi chọn hợp đồng
+            // Tự động điền thông tin khách hàng và load xe sau khi chọn hợp đồng
             autoFillCustomerInfo();
 
+            // Sau khi load xe theo hợp đồng, chọn xe hiện tại
             selectComboBoxItemByValue(cboMaXe, currentGiaoNhanXe.getMaXe(),
-                    danhSachXe != null
-                            ? danhSachXe.stream().filter(java.util.Objects::nonNull).map(Xe::getMaXe)
-                                    .collect(Collectors.toList())
-                            : null);
+                    getXeInHopDong(currentGiaoNhanXe.getMaHD()));
+                    
             selectComboBoxItemByValue(cboMaNV, currentGiaoNhanXe.getMaNV(),
                     danhSachNhanVien != null
                             ? danhSachNhanVien.stream().filter(java.util.Objects::nonNull).map(NhanVien::getMaNV)

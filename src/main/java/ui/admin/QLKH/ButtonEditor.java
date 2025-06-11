@@ -1,3 +1,4 @@
+
 package ui.admin.QLKH;
 
 import java.awt.Color;
@@ -30,19 +31,21 @@ public class ButtonEditor extends DefaultCellEditor {
     private String maKH;
     private KhachHang currentKhachHang;
     private QuanLyKhachHangPanel parentPanel;
+    private boolean isEditing = false;
+    private JTable table = null;
 
     private JButton createStyledButton(String text, Color bgColor) {
         JButton button = new JButton(text);
-        button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 11)); // Giảm font size
+        button.setFont(new Font(FlatRobotoFont.FAMILY, Font.BOLD, 11)); 
         button.setForeground(Color.WHITE);
         button.setBackground(bgColor);
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setPreferredSize(new Dimension(50, 28)); // Tăng kích thước
+        button.setPreferredSize(new Dimension(50, 28)); 
         button.setMinimumSize(new Dimension(50, 28));
         button.setMaximumSize(new Dimension(50, 28));
-        button.setMargin(new Insets(2, 4, 2, 4)); // Thêm margin
+        button.setMargin(new Insets(2, 4, 2, 4)); 
         return button;
     }
 
@@ -58,7 +61,7 @@ public class ButtonEditor extends DefaultCellEditor {
         btnDelete = createStyledButton("Xóa", new Color(220, 53, 69));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 1, 2, 1); // Giảm khoảng cách
+        gbc.insets = new Insets(2, 1, 2, 1); 
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
 
@@ -68,28 +71,37 @@ public class ButtonEditor extends DefaultCellEditor {
 
         btnView.addActionListener(e -> {
             if (currentKhachHang != null) {
+                // Trước khi mở dialog, dừng chế độ chỉnh sửa
+                SwingUtilities.invokeLater(() -> fireEditingCanceled());
+                
+                // Sau đó mở dialog
                 ChiTietKhachHangDialog dialog = new ChiTietKhachHangDialog(
                         SwingUtilities.getWindowAncestor(parentPanel), currentKhachHang, parentPanel);
                 dialog.setVisible(true);
             }
-            fireEditingStopped();
         });
 
         btnEdit.addActionListener(e -> {
             if (currentKhachHang != null) {
+                // Trước khi mở dialog, dừng chế độ chỉnh sửa
+                SwingUtilities.invokeLater(() -> fireEditingCanceled());
+                
+                // Sau đó mở dialog
                 SuaKhachHangDialog dialog = new SuaKhachHangDialog(
                         SwingUtilities.getWindowAncestor(parentPanel), currentKhachHang, parentPanel.getController());
                 dialog.setVisible(true);
                 if (dialog.isSuccessfullyUpdated()) {
-                    parentPanel.loadData();
+                    SwingUtilities.invokeLater(() -> parentPanel.loadData());
                 }
             }
-            fireEditingStopped();
         });
 
         btnDelete.addActionListener(e -> {
             if (currentKhachHang != null) {
                 String maKH = currentKhachHang.getMaKH();
+
+                // Trước khi xử lý, dừng chế độ chỉnh sửa
+                SwingUtilities.invokeLater(() -> fireEditingCanceled());
 
                 // Kiểm tra công nợ trước khi hiển thị dialog xác nhận
                 if (currentKhachHang.getTongTienNo() > 0) {
@@ -121,30 +133,36 @@ public class ButtonEditor extends DefaultCellEditor {
                                 "Xóa khách hàng thành công!",
                                 "Thông báo",
                                 JOptionPane.INFORMATION_MESSAGE);
-                        parentPanel.loadData();
+                        SwingUtilities.invokeLater(() -> parentPanel.loadData());
                     }
-                    // Nếu không thành công, error message đã được hiển thị trong
-                    // parentPanel.xoaKhachHang
                 }
             }
-            fireEditingStopped();
         });
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.table = table;
+        this.isEditing = true;
+        
         if (value instanceof KhachHang) {
             this.currentKhachHang = (KhachHang) value;
             this.maKH = this.currentKhachHang.getMaKH();
         } else {
             this.currentKhachHang = null;
             this.maKH = null;
-            Object maKhFromCol0 = table.getModel().getValueAt(row, 0);
-            if (maKhFromCol0 instanceof String) {
-                this.maKH = (String) maKhFromCol0;
-                // Attempt to get the full KhachHang object if MaKH is found
-                if (parentPanel != null && parentPanel.getController() != null) {
-                    this.currentKhachHang = parentPanel.getController().getKhachHangByMa(this.maKH);
+            
+            // Kiểm tra hàng/cột có tồn tại trước khi truy cập
+            if (row >= 0 && row < table.getModel().getRowCount() && 
+                0 < table.getModel().getColumnCount()) {
+                
+                Object maKhFromCol0 = table.getModel().getValueAt(row, 0);
+                if (maKhFromCol0 instanceof String) {
+                    this.maKH = (String) maKhFromCol0;
+                    // Attempt to get the full KhachHang object if MaKH is found
+                    if (parentPanel != null && parentPanel.getController() != null) {
+                        this.currentKhachHang = parentPanel.getController().getKhachHangByMa(this.maKH);
+                    }
                 }
             }
         }
@@ -161,4 +179,17 @@ public class ButtonEditor extends DefaultCellEditor {
     public Object getCellEditorValue() {
         return currentKhachHang != null ? currentKhachHang : maKH;
     }
+    
+    @Override
+    public boolean stopCellEditing() {
+        isEditing = false;
+        return super.stopCellEditing();
+    }
+    
+    @Override
+    public void cancelCellEditing() {
+        isEditing = false;
+        super.cancelCellEditing();
+    }
 }
+

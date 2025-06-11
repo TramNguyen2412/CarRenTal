@@ -101,4 +101,5 @@
             </plugin>
         </plugins>
     </build>
+    <name>JaVa_CarRenTal_DemoNon</name>
 </project>

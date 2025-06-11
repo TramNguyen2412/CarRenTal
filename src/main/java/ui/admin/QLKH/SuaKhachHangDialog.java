@@ -1,3 +1,4 @@
+
 package ui.admin.QLKH;
 
 import java.awt.BorderLayout;
@@ -76,7 +77,7 @@ public class SuaKhachHangDialog extends JDialog {
         JLabel lblEmail = createLabel("Email:");
         JLabel lblCCCD = createLabel("CCCD:");
         JLabel lblDiaChi = createLabel("Địa chỉ:");
-        JLabel lblTongTienNo = createLabel("Tổng nợ:"); // Thêm label công nợ
+        JLabel lblTongTienNo = createLabel("Tổng nợ:");
 
         txtMaKH = createStyledTextField();
         txtMaKH.setEditable(false);
@@ -88,9 +89,11 @@ public class SuaKhachHangDialog extends JDialog {
         txtCCCD = createStyledTextField();
         txtDiaChi = createStyledTextField();
 
-        // Thêm trường tổng tiền nợ - có thể chỉnh sửa
+        // Thay đổi phần này: Tạo và thiết lập txtTongTienNo làm không thể chỉnh sửa
         txtTongTienNo = createStyledTextField();
         txtTongTienNo.setHorizontalAlignment(JTextField.RIGHT);
+        txtTongTienNo.setEditable(false);
+        txtTongTienNo.setBackground(new Color(230, 230, 230));
 
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
@@ -101,7 +104,7 @@ public class SuaKhachHangDialog extends JDialog {
                                 .addComponent(lblEmail)
                                 .addComponent(lblCCCD)
                                 .addComponent(lblDiaChi)
-                                .addComponent(lblTongTienNo)) // Thêm vào layout
+                                .addComponent(lblTongTienNo))
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(txtMaKH)
                                 .addComponent(txtHoTen)
@@ -109,7 +112,7 @@ public class SuaKhachHangDialog extends JDialog {
                                 .addComponent(txtEmail)
                                 .addComponent(txtCCCD)
                                 .addComponent(txtDiaChi)
-                                .addComponent(txtTongTienNo))); // Thêm vào layout
+                                .addComponent(txtTongTienNo)));
 
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
@@ -133,7 +136,7 @@ public class SuaKhachHangDialog extends JDialog {
                                 .addComponent(txtDiaChi))
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(lblTongTienNo)
-                                .addComponent(txtTongTienNo))); // Thêm vào layout
+                                .addComponent(txtTongTienNo)));
 
         mainPanel.add(formPanel, BorderLayout.CENTER);
 
@@ -189,8 +192,10 @@ public class SuaKhachHangDialog extends JDialog {
             txtEmail.setText(khachHang.getEmail() != null ? khachHang.getEmail() : "");
             txtCCCD.setText(khachHang.getCccd() != null ? khachHang.getCccd() : "");
             txtDiaChi.setText(khachHang.getDiaChi() != null ? khachHang.getDiaChi() : "");
-            // Hiển thị tổng tiền nợ với format tiền tệ hoặc số thường
-            txtTongTienNo.setText(String.valueOf(khachHang.getTongTienNo()));
+            
+            // Thay đổi phần này: Hiển thị tổng tiền nợ với định dạng tiền tệ
+            double tongTienNo = khachHang.getTongTienNo();
+            txtTongTienNo.setText(currencyFormatter.format(tongTienNo));
         }
     }
 
@@ -200,7 +205,9 @@ public class SuaKhachHangDialog extends JDialog {
         String email = txtEmail.getText().trim();
         String cccd = txtCCCD.getText().trim();
         String diaChi = txtDiaChi.getText().trim();
-        String tongTienNoStr = txtTongTienNo.getText().trim();
+        
+        // Không cần đọc giá trị từ txtTongTienNo vì nó là read-only
+        // và giá trị tổng nợ không thay đổi trong dialog này
 
         if (hoTen.isEmpty()) {
             showError("Họ tên không được để trống.", txtHoTen);
@@ -215,7 +222,6 @@ public class SuaKhachHangDialog extends JDialog {
             return;
         }
 
-        // Sửa regex email - đã có lỗi chính tả "ZaZ"
         if (!email.isEmpty() && !email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
             showError("Email không hợp lệ.", txtEmail);
             return;
@@ -223,21 +229,6 @@ public class SuaKhachHangDialog extends JDialog {
 
         if (!cccd.isEmpty() && !cccd.matches("^[0-9]{12}$")) {
             showError("CCCD không hợp lệ (phải đủ 12 số).", txtCCCD);
-            return;
-        }
-
-        // Kiểm tra và parse tổng tiền nợ
-        double tongTienNo = 0;
-        try {
-            if (!tongTienNoStr.isEmpty()) {
-                tongTienNo = Double.parseDouble(tongTienNoStr.replace(",", ""));
-                if (tongTienNo < 0) {
-                    showError("Tổng tiền nợ không được âm.", txtTongTienNo);
-                    return;
-                }
-            }
-        } catch (NumberFormatException ex) {
-            showError("Tổng tiền nợ không hợp lệ.", txtTongTienNo);
             return;
         }
 
@@ -274,7 +265,7 @@ public class SuaKhachHangDialog extends JDialog {
         khachHang.setEmail(email.isEmpty() ? null : email);
         khachHang.setCccd(cccd.isEmpty() ? null : cccd);
         khachHang.setDiaChi(diaChi.isEmpty() ? null : diaChi);
-        khachHang.setTongTienNo(tongTienNo);
+        // Không thay đổi tổng tiền nợ ở đây
 
         if (controller.updateKhachHang(khachHang)) {
             successfullyUpdated = true;

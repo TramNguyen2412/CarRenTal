@@ -3,10 +3,11 @@ package controller;
 import model.GiaoNhanXe;
 import service.GiaoNhanXeService;
 import java.util.List;
-
+import dao.HopDongDAO;
+import model.ChiTietHD;
 public class GiaoNhanXeController {
     private GiaoNhanXeService giaoNhanXeService;
-
+    private HopDongDAO hopDongDAO;
     public GiaoNhanXeController() {
         this.giaoNhanXeService = new GiaoNhanXeService();
     }
@@ -41,5 +42,8 @@ public class GiaoNhanXeController {
 
     public String getErrorMessage() {
         return giaoNhanXeService.getErrorMessage();
+    }
+    public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
+        return hopDongDAO.getChiTietHDByMaHD(maHD);
     }
 }
