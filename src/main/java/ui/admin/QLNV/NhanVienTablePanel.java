@@ -22,7 +22,7 @@ import javax.swing.table.TableColumnModel;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 import model.NhanVien;
-import ui.admin.ButtonRenderer;
+import ui.admin.QLXe.ButtonRenderer;
 
 public class NhanVienTablePanel extends JPanel {
     private JTable tableNhanVien;

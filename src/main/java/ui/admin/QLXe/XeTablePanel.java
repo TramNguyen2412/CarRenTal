@@ -1,8 +1,6 @@
 package ui.admin.QLXe;
 
 import model.Xe;
-import ui.admin.ButtonEditor;
-import ui.admin.ButtonRenderer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

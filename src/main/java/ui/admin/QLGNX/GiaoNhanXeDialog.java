@@ -9,17 +9,15 @@ import model.GiaoNhanXe;
 import model.HopDong;
 import model.NhanVien;
 import model.Xe;
-import model.ChiTietHD;
+import model.ChiTietHD; // Assuming ChiTietHD is in the model package
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class GiaoNhanXeDialog extends JDialog {
@@ -35,8 +33,8 @@ public class GiaoNhanXeDialog extends JDialog {
 
     private JTextField txtMaGiaoNhan;
     private JComboBox<String> cboMaHD;
-    private JTextField txtMaKH;
-    private JTextField txtTenKH;
+    private JTextField txtMaKH; // Thêm trường mã khách hàng
+    private JTextField txtTenKH; // Thêm trường tên khách hàng
     private JComboBox<String> cboMaXe;
     private JComboBox<String> cboMaNV;
     private JTextArea txtAreaTrangThaiXe;
@@ -47,7 +45,6 @@ public class GiaoNhanXeDialog extends JDialog {
     private List<HopDong> danhSachHopDong;
     private List<Xe> danhSachXe;
     private List<NhanVien> danhSachNhanVien;
-    private Map<String, List<ChiTietHD>> mapHDtoXe = new HashMap<>(); // Map hợp đồng đến danh sách xe
 
     private static final Color PRIMARY_COLOR = new Color(41, 121, 255);
     private static final Color ACCENT_COLOR = new Color(108, 117, 125);
@@ -113,11 +110,10 @@ public class GiaoNhanXeDialog extends JDialog {
         formPanel.add(createStyledLabel("Mã Hợp Đồng (*):"), gbc);
         gbc.gridx = 1;
         cboMaHD = createStyledComboBox();
-        // ActionListener để cập nhật danh sách xe và thông tin khách hàng khi chọn hợp đồng
+        // Thêm ActionListener để tự động điền thông tin khách hàng
         cboMaHD.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                updateMaXeComboBox();
                 autoFillCustomerInfo();
             }
         });
@@ -208,78 +204,20 @@ public class GiaoNhanXeDialog extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    // Phương thức mới để cập nhật combobox Mã Xe dựa trên hợp đồng đã chọn
-    private void updateMaXeComboBox() {
-        if (cboMaHD.getSelectedIndex() <= 0) {
-            // Nếu không chọn hợp đồng hoặc chọn mục mặc định, xóa danh sách xe
-            cboMaXe.removeAllItems();
-            cboMaXe.addItem("--- Chọn Mã Xe ---");
-            return;
-        }
-
-        String selectedItem = (String) cboMaHD.getSelectedItem();
-        if (selectedItem == null) return;
-
-        // Lấy mã hợp đồng từ item đã chọn
-        String maHD = selectedItem.split(" - ")[0].trim();
-
-        // Nếu đã có cache cho hợp đồng này, sử dụng lại
-        if (!mapHDtoXe.containsKey(maHD)) {
-            // Lấy danh sách chi tiết hợp đồng (xe) theo mã hợp đồng
-            List<ChiTietHD> chiTietList = hopDongController.getChiTietHDByMaHD(maHD);
-            mapHDtoXe.put(maHD, chiTietList);
-        }
-
-        // Lấy danh sách xe từ chi tiết hợp đồng
-        List<ChiTietHD> chiTietList = mapHDtoXe.get(maHD);
-        
-        // Xóa tất cả các item hiện tại
-        cboMaXe.removeAllItems();
-        cboMaXe.addItem("--- Chọn Mã Xe ---");
-
-        // Nếu không có xe nào trong hợp đồng
-        if (chiTietList == null || chiTietList.isEmpty()) {
-            return;
-        }
-
-        // Thêm xe từ chi tiết hợp đồng vào combobox
-        for (ChiTietHD chiTiet : chiTietList) {
-            if (chiTiet == null || chiTiet.getMaXe() == null) continue;
-            
-            // Tìm thông tin xe đầy đủ từ danh sách xe
-            Xe xe = findXeByMa(chiTiet.getMaXe());
-            if (xe != null) {
-                cboMaXe.addItem(xe.getMaXe() + " - " + xe.getTenXe() + " (" + xe.getBienSo() + ")");
-            } else {
-                // Nếu không tìm thấy xe trong danh sách toàn bộ xe, sử dụng thông tin từ chi tiết hợp đồng
-                cboMaXe.addItem(chiTiet.getMaXe() + " - " + chiTiet.getTenXe() + " (" + chiTiet.getBienSo() + ")");
-            }
-        }
-    }
-
-    // Phương thức để tìm xe theo mã
-    private Xe findXeByMa(String maXe) {
-        if (danhSachXe == null || maXe == null) return null;
-        
-        for (Xe xe : danhSachXe) {
-            if (xe != null && maXe.equals(xe.getMaXe())) {
-                return xe;
-            }
-        }
-        return null;
-    }
-
-    // Thêm method để tự động điền thông tin khách hàng
+    // Thêm method để tự động điền thông tin khách hàng và cập nhật danh sách xe
     private void autoFillCustomerInfo() {
         if (cboMaHD.getSelectedIndex() <= 0) {
             // Reset thông tin khách hàng nếu không chọn hợp đồng
             txtMaKH.setText("");
             txtTenKH.setText("");
+            // Reset danh sách xe
+            loadXeComboBox(null);
             return;
         }
 
         String selectedItem = (String) cboMaHD.getSelectedItem();
-        if (selectedItem == null) return;
+        if (selectedItem == null)
+            return;
 
         // Lấy mã hợp đồng từ ComboBox
         String maHD = selectedItem.split(" - ")[0].trim();
@@ -290,6 +228,9 @@ public class GiaoNhanXeDialog extends JDialog {
                 // Điền thông tin khách hàng
                 txtMaKH.setText(hd.getMaKH() != null ? hd.getMaKH() : "");
                 txtTenKH.setText(hd.getTenKH() != null ? hd.getTenKH() : "");
+                
+                // Cập nhật danh sách xe dựa trên hợp đồng
+                loadXeComboBox(maHD);
                 break;
             }
         }
@@ -350,55 +291,92 @@ public class GiaoNhanXeDialog extends JDialog {
     }
 
     private void loadComboBoxData() {
-        // Load danh sách hợp đồng
         danhSachHopDong = hopDongController.getAllHopDong();
         cboMaHD.addItem("--- Chọn Mã Hợp Đồng ---");
         if (danhSachHopDong != null) {
             for (HopDong hd : danhSachHopDong) {
-                if (hd == null) continue; 
+                if (hd == null)
+                    continue; // Defensive check
 
-                // Hiển thị mã hợp đồng và tên khách hàng
+                // Chỉ hiển thị mã hợp đồng và tên khách hàng
                 String khTen = hd.getTenKH() != null ? hd.getTenKH() : "N/A";
                 cboMaHD.addItem(hd.getMaHD() + " - " + khTen);
             }
         }
 
-        // Load tất cả xe cho reference
+        // Load tất cả xe để có sẵn dữ liệu
         danhSachXe = xeController.getAllXe();
         
-        // ComboBox Mã Xe sẽ được cập nhật khi chọn hợp đồng, ban đầu chỉ hiển thị mục mặc định
-        cboMaXe.addItem("--- Chọn Mã Xe ---");
+        // Khởi tạo ComboBox xe trống
+        loadXeComboBox(null);
 
-        // Load danh sách nhân viên
         danhSachNhanVien = nhanVienController.getAllNhanVien();
         cboMaNV.addItem("--- Chọn Nhân Viên ---");
         if (danhSachNhanVien != null) {
             for (NhanVien nv : danhSachNhanVien) {
-                if (nv == null) continue;
+                if (nv == null)
+                    continue;
                 cboMaNV.addItem(nv.getMaNV() + " - " + nv.getHoTen());
             }
         }
+    }
+
+    // Thêm method mới để load xe theo hợp đồng
+    private void loadXeComboBox(String maHD) {
+        cboMaXe.removeAllItems();
+        cboMaXe.addItem("--- Chọn Mã Xe ---");
+        
+        if (maHD == null || danhSachXe == null) {
+            return;
+        }
+
+        // Lấy danh sách xe từ chi tiết hợp đồng
+        List<String> maXeTrongHD = getXeInHopDong(maHD);
+        
+        for (Xe xe : danhSachXe) {
+            if (xe == null) continue;
+            
+            // Chỉ thêm xe nếu có trong hợp đồng
+            if (maXeTrongHD.contains(xe.getMaXe())) {
+                cboMaXe.addItem(xe.getMaXe() + " - " + xe.getTenXe() + " (" + xe.getBienSo() + ")");
+            }
+        }
+    }
+
+    // Thêm method để lấy danh sách xe trong hợp đồng
+    private List<String> getXeInHopDong(String maHD) {
+        List<String> maXeList = new ArrayList<>();
+        try {
+            // Sử dụng controller để lấy chi tiết hợp đồng
+            List<ChiTietHD> chiTietList = hopDongController.getChiTietHopDong(maHD);
+            if (chiTietList != null) {
+                for (ChiTietHD ct : chiTietList) {
+                    if (ct != null && ct.getMaXe() != null) {
+                        maXeList.add(ct.getMaXe());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting xe in hop dong: " + e.getMessage());
+        }
+        return maXeList;
     }
 
     private void loadDataToForm() {
         if (currentGiaoNhanXe != null) {
             txtMaGiaoNhan.setText(currentGiaoNhanXe.getMaGiaoNhan());
 
-            // Chọn hợp đồng
             selectComboBoxItemByValue(cboMaHD, currentGiaoNhanXe.getMaHD(),
                     danhSachHopDong != null ? danhSachHopDong.stream().filter(java.util.Objects::nonNull)
                             .map(HopDong::getMaHD).collect(Collectors.toList()) : null);
 
-            // Cập nhật danh sách xe theo hợp đồng đã chọn
-            updateMaXeComboBox();
-            
-            // Tự động điền thông tin khách hàng
+            // Tự động điền thông tin khách hàng và load xe sau khi chọn hợp đồng
             autoFillCustomerInfo();
 
-            // Chọn xe trong danh sách đã được lọc
-            selectComboBoxItemByValue(cboMaXe, currentGiaoNhanXe.getMaXe(), null);
-
-            // Chọn nhân viên
+            // Sau khi load xe theo hợp đồng, chọn xe hiện tại
+            selectComboBoxItemByValue(cboMaXe, currentGiaoNhanXe.getMaXe(),
+                    getXeInHopDong(currentGiaoNhanXe.getMaHD()));
+                    
             selectComboBoxItemByValue(cboMaNV, currentGiaoNhanXe.getMaNV(),
                     danhSachNhanVien != null
                             ? danhSachNhanVien.stream().filter(java.util.Objects::nonNull).map(NhanVien::getMaNV)
@@ -518,7 +496,8 @@ public class GiaoNhanXeDialog extends JDialog {
             if (success) {
                 message = "Thêm biên bản giao nhận xe thành công! (Mã GN: " + newMaGN + ")";
                 txtMaGiaoNhan.setText(newMaGN);
-                // Fetch the newly added GiaoNhanXe to ensure currentGiaoNhanXe is up-to-date if needed later
+                // Fetch the newly added GiaoNhanXe to ensure currentGiaoNhanXe is up-to-date if
+                // needed later
                 this.currentGiaoNhanXe = giaoNhanXeController.getGiaoNhanXeByMa(newMaGN);
                 this.isEditMode = true;
                 setTitle("Sửa Thông Tin Giao Nhận Xe");

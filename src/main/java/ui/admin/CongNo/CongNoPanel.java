@@ -393,7 +393,7 @@ public class CongNoPanel extends JPanel {
 
                 JOptionPane.showMessageDialog(this, 
                     "Đã làm mới dữ liệu từ snapshot với isolation level: SERIALIZABLE\n" +
-                    "(KHÔNG thấy giao dịch mới thêm vào sau khi snapshot được tạo)", 
+                    "(KHÔNG thấy giao dịch mới thêm vào)", 
                     "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 // Đối với READ_COMMITTED, luôn lấy dữ liệu mới nhất
@@ -830,11 +830,11 @@ public class CongNoPanel extends JPanel {
                 "Đã áp dụng isolation level: " + level + "\n\n" +
                 "Hướng dẫn demo Phantom Read:\n" +
                 "1. ĐÃ tạo transaction với isolation level " + level + 
-                (("SERIALIZABLE".equals(level)) ? " và snapshot dữ liệu đã được tạo" : "") + "\n" +
+                (("SERIALIZABLE".equals(level)) ? "" : "") + "\n" +
                 "2. Mở instance khác và thêm giao dịch mới\n" +
                 "3. Quay lại đây và nhấn 'Làm mới'\n" +
                 "4. Với READ_COMMITTED: Sẽ thấy giao dịch mới\n" +
-                "5. Với SERIALIZABLE: Sẽ KHÔNG thấy giao dịch mới vì đang sử dụng snapshot",
+                "5. Với SERIALIZABLE: Sẽ KHÔNG thấy giao dịch mới",
                 "Thiết lập thành công", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (Exception e) {
