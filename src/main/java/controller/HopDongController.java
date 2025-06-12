@@ -317,7 +317,6 @@ public List<HopDong> getHopDongByKhachHang(String maKH) {
 }
 
 public List<ChiTietHD> getChiTietHDByMaHD(String maHD) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getChiTietHDByMaHD'");
+    return chiTietHDDAO.getChiTietHDByMaHD(maHD);
 }
 }
