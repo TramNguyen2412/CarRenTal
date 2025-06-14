@@ -106,8 +106,9 @@ public class XeDialog extends JDialog {
         
         // Tạo combobox với style đẹp hơn
         cboHangXe = createStyledComboBox(new String[]{"Toyota", "Honda", "Hyundai", "KIA", "Mazda", "Ford", "Chevrolet", "Mercedes-Benz", "BMW", "Audi", "Lamborghini", "Roll Royce", "Khác"});
-        cboTrangThai = createStyledComboBox(new String[]{"Sẵn sàng", "Đang thuê", "Bảo dưỡng"});
-        
+        //cboTrangThai = createStyledComboBox(new String[]{"Sẵn sàng", "Đang thuê", "Bảo dưỡng"});
+        cboTrangThai = createStyledComboBox(new String[]{"Sẵn sàng", "Đang thuê", "Bảo dưỡng", "Không khả dụng"});
+
         // === PANEL HÌNH ẢNH BÊN PHẢI ===
         JPanel imagePanel = new JPanel(new BorderLayout(0, 15));
         imagePanel.setBackground(Color.WHITE);

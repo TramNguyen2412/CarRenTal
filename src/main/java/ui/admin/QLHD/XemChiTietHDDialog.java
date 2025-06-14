@@ -355,6 +355,9 @@ public class XemChiTietHDDialog extends JDialog {
             case "đang thuê":
                 bgColor = new Color(33, 150, 243); // Blue
                 break;
+            case "vi phạm":
+                bgColor = new Color(255, 87, 34); // Màu đỏ cam cho vi phạm
+                break;
             case "đã hoàn thành":
                 bgColor = new Color(46, 204, 113); // Green
                 break;
@@ -364,6 +367,7 @@ public class XemChiTietHDDialog extends JDialog {
             default:
                 bgColor = new Color(158, 158, 158); // Grey
         }
+
         
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);

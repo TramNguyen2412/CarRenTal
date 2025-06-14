@@ -20,7 +20,8 @@ public class SearchFilterPanel extends JPanel {
         
         // Khởi tạo components
         txtSearch = new JTextField(20);
-        cboFilter = new JComboBox<>(new String[]{"Tất cả", "Đang thuê", "Sẵn sàng", "Bảo dưỡng"});
+        cboFilter = new JComboBox<>(new String[]{"Tất cả", "Đang thuê", "Sẵn sàng", "Bảo dưỡng", "Không khả dụng"});
+
         btnRefresh = new JButton("Làm mới");
    
         

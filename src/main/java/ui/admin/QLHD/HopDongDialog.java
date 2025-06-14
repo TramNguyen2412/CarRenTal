@@ -245,8 +245,11 @@ public class HopDongDialog extends JDialog {
         formPanel.add(lblTrangThai, gbc);
         
         gbc.gridx = 1;
+//        cboTrangThai = new JComboBox<>(new String[]{
+//            "Chờ xác nhận", "Đã xác nhận", "Đang thuê", "Đã trả xe", "Đã hủy", "Hoàn thành"
+//        });
         cboTrangThai = new JComboBox<>(new String[]{
-            "Chờ xác nhận", "Đã xác nhận", "Đang thuê", "Đã trả xe", "Đã hủy", "Hoàn thành"
+            "Chờ xác nhận", "Đã xác nhận", "Đang thuê", "Vi phạm", "Đã hủy", "Hoàn thành"
         });
         cboTrangThai.setFont(new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 14));
         cboTrangThai.setPreferredSize(new Dimension(0, 40));

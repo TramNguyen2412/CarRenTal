@@ -79,7 +79,7 @@ public class HopDongPanel extends JPanel {
         
         pnlSearch.add(new JLabel("Trạng thái:"));
         cboTrangThai = new JComboBox<>(new String[]{
-            "Tất cả", "Chờ xác nhận", "Đã xác nhận", "Đang thuê", "Đã trả xe", "Đã hủy", "Hoàn thành"
+            "Tất cả", "Chờ xác nhận", "Đã xác nhận", "Đang thuê", "Vi phạm", "Đã hủy", "Hoàn thành"
         });
         cboTrangThai.setPreferredSize(new Dimension(150, 30));
         pnlSearch.add(cboTrangThai);
@@ -362,16 +362,15 @@ public class HopDongPanel extends JPanel {
                 
                 if (hopDong != null) {
                     // Kiểm tra trạng thái hợp đồng
-                    if ("Đã trả xe".equals(hopDong.getTrangThai()) || 
+                   if ("Vi phạm".equals(hopDong.getTrangThai()) || 
                         "Đã hủy".equals(hopDong.getTrangThai()) ||
                         "Hoàn thành".equals(hopDong.getTrangThai())) {
                         JOptionPane.showMessageDialog(this,
-                                "Không thể sửa hợp đồng đã trả xe, đã hủy hoặc đã hoàn thành!",
+                                "Không thể sửa hợp đồng vi phạm, đã hủy hoặc đã hoàn thành!",
                                 "Thông báo",
                                 JOptionPane.WARNING_MESSAGE);
                         return;
                     }
-                    
                     showHopDongDialog(hopDong);
                 } else {
                     JOptionPane.showMessageDialog(this,

@@ -66,7 +66,8 @@ public class TaiKhoanPanel extends JPanel {
             }
         });
         
-        cboFilter = new JComboBox<>(new String[]{"Tất cả", "Hoạt động", "Không hoạt động"});
+        cboFilter = new JComboBox<>(new String[]{"Tất cả", "Chờ kích hoạt", "Hoạt động", "Vô hiệu hóa", "Bị khóa"});
+
         cboFilter.setPreferredSize(new Dimension(150, 30));
         cboFilter.addActionListener(e -> filterTaiKhoan());
         
@@ -147,11 +148,18 @@ public class TaiKhoanPanel extends JPanel {
                     String status = value.toString();
                     if ("Hoạt động".equals(status)) {
                         setForeground(new Color(46, 125, 50)); // Màu xanh cho hoạt động
+                    } else if ("Chờ kích hoạt".equals(status)) {
+                        setForeground(new Color(255, 152, 0)); // Màu cam cho chờ kích hoạt
+                    } else if ("Vô hiệu hóa".equals(status)) {
+                        setForeground(new Color(158, 158, 158)); // Màu xám cho vô hiệu hóa
+                    } else if ("Bị khóa".equals(status)) {
+                        setForeground(new Color(211, 47, 47)); // Màu đỏ cho bị khóa
                     } else {
-                        setForeground(new Color(211, 47, 47)); // Màu đỏ cho không hoạt động
+                        setForeground(new Color(211, 47, 47)); // Màu đỏ mặc định cho các trạng thái khác
                     }
                     setHorizontalAlignment(SwingConstants.CENTER);
-                } else if (column == 4) {
+                }
+                else if (column == 4) {
                     // Màu cho loại user
                     String userType = value.toString();
                     if ("NV".equals(userType)) {
@@ -233,14 +241,31 @@ public class TaiKhoanPanel extends JPanel {
         int selectedIndex = cboFilter.getSelectedIndex();
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
         tblTaiKhoan.setRowSorter(sorter);
-        
+
         if (selectedIndex == 0) {
             sorter.setRowFilter(null);
         } else {
-            String trangThai = selectedIndex == 1 ? "Hoạt động" : "Không hoạt động";
+            String trangThai;
+            switch (selectedIndex) {
+                case 1:
+                    trangThai = "Chờ kích hoạt";
+                    break;
+                case 2:
+                    trangThai = "Hoạt động";
+                    break;
+                case 3:
+                    trangThai = "Vô hiệu hóa";
+                    break;
+                case 4:
+                    trangThai = "Bị khóa";
+                    break;
+                default:
+                    trangThai = "";
+            }
             sorter.setRowFilter(RowFilter.regexFilter("^" + trangThai + "$", 3));
         }
     }
+
     
     public void showTaiKhoanDialog(TaiKhoanExtended taiKhoan) {
         TaiKhoanDialog dialog = new TaiKhoanDialog(SwingUtilities.getWindowAncestor(this), taiKhoan, this);

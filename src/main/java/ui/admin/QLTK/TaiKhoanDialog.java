@@ -148,7 +148,9 @@ public class TaiKhoanDialog extends JDialog {
         cboVaiTro.setFont(new Font("Arial", Font.PLAIN, 16));
         cboVaiTro.setPreferredSize(new Dimension(250, 35));
         
-        cboTrangThai = new JComboBox<>(new String[]{"Hoạt động", "Không hoạt động"});
+      //  cboTrangThai = new JComboBox<>(new String[]{"Hoạt động", "Không hoạt động"});
+        cboTrangThai = new JComboBox<>(new String[]{"Chờ kích hoạt", "Hoạt động", "Vô hiệu hóa", "Bị khóa"});
+
         cboTrangThai.setFont(new Font("Arial", Font.PLAIN, 16));
         cboTrangThai.setPreferredSize(new Dimension(250, 35));
         
